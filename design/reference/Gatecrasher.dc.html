@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Stardos+Stencil:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+  @font-face { font-family: 'TudorVictors'; src: url('../assets/TudorVictors.ttf') format('truetype'); font-display: swap; }
+  body { margin: 0; background: #16191c; }
+  @keyframes gcCaret { 0%,49% { opacity: 1 } 50%,100% { opacity: 0 } }
+  a { color: #c8ced3; }
+  a:hover { color: #ffffff; }
+</style>
+</helmet>
+<div style="width:960px;height:434px;display:flex;font-family:'Barlow Condensed',Helvetica,Arial,sans-serif;color:#c3cace;background:linear-gradient(180deg,#bcc2c6,#a5acb0 55%,#979ea2);box-shadow:0 24px 60px rgba(0,0,0,.6);overflow:hidden">
+
+  <div style="width:26px;flex:none;background:linear-gradient(90deg,#ced4d7,#aeb5b9 40%,#929a9e);border-right:1px solid #0a0c0d;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:10px 0">
+    <div style="width:11px;height:11px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#9ba2a8,#4a5055 60%,#23272a);box-shadow:inset 0 0 0 1px #0d0f10,0 1px 1px rgba(255,255,255,.08)"></div>
+    <div style="width:1px;flex:1;margin:8px 0;background:linear-gradient(rgba(0,0,0,.20),rgba(0,0,0,0))"></div>
+    <div style="width:11px;height:11px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#9ba2a8,#4a5055 60%,#23272a);box-shadow:inset 0 0 0 1px #0d0f10,0 1px 1px rgba(255,255,255,.08)"></div>
+  </div>
+
+  <div style="flex:1;display:flex;flex-direction:column;background:linear-gradient(180deg,#c6ccd0,#b0b7bb 35%,#a0a7ab);background-image:repeating-linear-gradient(90deg,rgba(255,255,255,.10) 0 1px,rgba(0,0,0,.022) 1px 2px),linear-gradient(180deg,#c6ccd0,#b0b7bb 35%,#a0a7ab)">
+
+    <div style="height:76px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 14px;background:linear-gradient(180deg,#d2d8db,#b6bdc1);border-bottom:1px solid #71787c;box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 1px 0 rgba(255,255,255,.35)">
+      <div style="display:flex;align-items:center;gap:14px">
+        <div style="position:relative;padding:5px 0 0;font-family:'TudorVictors','Stardos Stencil',Impact,sans-serif;font-weight:400;font-size:36px;line-height:1;letter-spacing:.03em">
+          <div style="position:absolute;left:-4px;top:0;letter-spacing:.03em;color:rgba(20,24,27,.3);filter:blur(8px);transform:scale(1.06);transform-origin:left center">GATECRASHER</div>
+          <div style="position:absolute;left:0;top:1px;letter-spacing:.03em;color:rgba(24,28,32,.34);filter:blur(2.8px)">GATECRASHER</div>
+          <div style="position:relative;display:flex;align-items:baseline">
+            <span style="display:inline-block;color:#14171a;opacity:0.93;filter:blur(.2px);transform:rotate(-1.6deg) translateY(0.6px);-webkit-mask-image:radial-gradient(circle at 34% 28%,rgba(0,0,0,.72) 0 5px,#000 16px);mask-image:radial-gradient(circle at 34% 28%,rgba(0,0,0,.72) 0 5px,#000 16px)">G</span>
+            <span style="display:inline-block;color:#14171a;opacity:0.85;filter:blur(.2px);transform:rotate(1.1deg) translateY(-0.7px);-webkit-mask-image:radial-gradient(circle at 62% 55%,rgba(0,0,0,.72) 0 5px,#000 16px);mask-image:radial-gradient(circle at 62% 55%,rgba(0,0,0,.72) 0 5px,#000 16px)">A</span>
+            <span style="display:inline-block;color:#14171a;opacity:0.97;filter:blur(.2px);transform:rotate(-0.5deg) translateY(0.9px);-webkit-mask-image:radial-gradient(circle at 18% 72%,rgba(0,0,0,.72) 0 5px,#000 16px);mask-image:radial-gradient(circle at 18% 72%,rgba(0,0,0,.72) 0 5px,#000 16px)">T</span>
+            <span style="display:inline-block;color:#14171a;opacity:0.8;filter:blur(.2px);transform:rotate(1.8deg) translateY(-0.4px);-webkit-mask-image:radial-gradient(circle at 78% 22%,rgba(0,0,0,.72) 0 5px,#000 16px);mask-image:radial-gradient(circle at 78% 22%,rgba(0,0,0,.72) 0 5px,#000 16px)">E</span>
+            <span style="display:inline-block;color:#14171a;opacity:0.91;filter:blur(.2px);transform:rotate(-1.2deg) translateY(0.3px);-webkit-mask-image:radial-gradient(circle at 44% 64%,rgba(0,0,0,.72) 0 5px,#000 16px);mask-image:radial-gradient(circle at 44% 64%,rgba(0,0,0,.72) 0 5px,#000 16px)">C</span>
+            <span style="display:inline-block;color:#14171a;opacity:0.99;filter:blur(.2px);transform:rotate(0.7deg) translateY(1.1px);-webkit-mask-image:radial-gradient(circle at 26% 38%,rgba(0,0,0,.72) 0 5px,#000 16px);mask-image:radial-gradient(circle at 26% 38%,rgba(0,0,0,.72) 0 5px,#000 16px)">R</span>
+            <span style="display:inline-block;color:#14171a;opacity:0.83;filter:blur(.2px);transform:rotate(-1.9deg) translateY(-0.8px);-webkit-mask-image:radial-gradient(circle at 70% 80%,rgba(0,0,0,.72) 0 5px,#000 16px);mask-image:radial-gradient(circle at 70% 80%,rgba(0,0,0,.72) 0 5px,#000 16px)">A</span>
+            <span style="display:inline-block;color:#14171a;opacity:0.95;filter:blur(.2px);transform:rotate(1.3deg) translateY(0.6px);-webkit-mask-image:radial-gradient(circle at 52% 18%,rgba(0,0,0,.72) 0 5px,#000 16px);mask-image:radial-gradient(circle at 52% 18%,rgba(0,0,0,.72) 0 5px,#000 16px)">S</span>
+            <span style="display:inline-block;color:#14171a;opacity:0.88;filter:blur(.2px);transform:rotate(-0.8deg) translateY(-0.3px);-webkit-mask-image:radial-gradient(circle at 12% 48%,rgba(0,0,0,.72) 0 5px,#000 16px);mask-image:radial-gradient(circle at 12% 48%,rgba(0,0,0,.72) 0 5px,#000 16px)">H</span>
+            <span style="display:inline-block;color:#14171a;opacity:0.98;filter:blur(.2px);transform:rotate(1.5deg) translateY(1px);-webkit-mask-image:radial-gradient(circle at 84% 60%,rgba(0,0,0,.72) 0 5px,#000 16px);mask-image:radial-gradient(circle at 84% 60%,rgba(0,0,0,.72) 0 5px,#000 16px)">E</span>
+            <span style="display:inline-block;color:#14171a;opacity:0.84;filter:blur(.2px);transform:rotate(-1.1deg) translateY(-0.5px);-webkit-mask-image:radial-gradient(circle at 38% 86%,rgba(0,0,0,.72) 0 5px,#000 16px);mask-image:radial-gradient(circle at 38% 86%,rgba(0,0,0,.72) 0 5px,#000 16px)">R</span>
+          </div>
+          <div style="position:absolute;left:6px;top:6px;width:2.5px;height:2.5px;border-radius:50%;background:rgba(20,24,27,.45);filter:blur(.6px)"></div>
+          <div style="position:absolute;left:96px;top:-3px;width:1.8px;height:1.8px;border-radius:50%;background:rgba(20,24,27,.4);filter:blur(.5px)"></div>
+          <div style="position:absolute;left:158px;bottom:9px;width:3px;height:3px;border-radius:50%;background:rgba(20,24,27,.38);filter:blur(.8px)"></div>
+          <div style="position:absolute;left:214px;top:4px;width:1.5px;height:1.5px;border-radius:50%;background:rgba(20,24,27,.42);filter:blur(.5px)"></div>
+          <div style="position:absolute;left:44px;bottom:4px;width:2px;height:2px;border-radius:50%;background:rgba(20,24,27,.3);filter:blur(.7px)"></div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-start;gap:3px;text-align:left">
+          <div style="font-size:9px;letter-spacing:.26em;color:#33383d">GATED AMBIENCE PROCESSOR</div>
+          <div style="font-size:9px;letter-spacing:.26em;color:#4a5055">MODEL GR&#8209;85 &#183; STEREO</div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:9px">
+        <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-start">
+          <div ref="{{ progCaptionRef }}" style="font-size:9px;letter-spacing:.24em;color:#3a4045">PROGRAM</div>
+          <div style="display:flex;align-items:stretch;min-width:236px;background:#07090a;border:1px solid #363c41;box-shadow:inset 0 2px 6px rgba(0,0,0,.9)">
+            <div ref="{{ kindTagRef }}" style="flex:none;display:flex;align-items:center;padding:0 7px;border-right:1px solid #2a3035;font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:.12em;color:#6f797f">FACT</div>
+            <div ref="{{ progTextRef }}" style="flex:1;padding:4px 10px;white-space:nowrap;text-align:center;font-family:'Share Tech Mono',monospace;font-size:13px;letter-spacing:.1em;color:#dfe6ea;text-shadow:0 0 6px rgba(200,220,230,.25)">14 ROOM REINFORCEMENT<span ref="{{ caretRef }}" style="display:none;margin-left:1px;color:#dfe6ea;animation:gcCaret 1s steps(1) infinite">&#9608;</span></div>
+          </div>
+        </div>
+
+        <div style="align-self:flex-end;margin-left:-3px;display:grid;grid-template-columns:1fr 1fr;align-items:stretch;gap:5px">
+          <div ref="{{ btnARef }}" onClick="{{ onPrimary }}" style="cursor:pointer;user-select:none;display:flex;align-items:center;justify-content:center;padding:0 6px;height:24.5px;box-sizing:border-box;text-align:center;text-indent:.12em;font-size:8.5px;font-weight:600;letter-spacing:.12em;color:#22272b;background:linear-gradient(180deg,#dbe0e3,#aab1b6);border:1px solid #6d7478;box-shadow:inset 0 1px 0 rgba(255,255,255,.75),0 1px 2px rgba(0,0,0,.35)" style-active="box-shadow:inset 0 2px 4px rgba(0,0,0,.45);background:linear-gradient(180deg,#a9b0b5,#c9d0d4)">SAVE</div>
+          <div ref="{{ btnBRef }}" onClick="{{ onSecondary }}" style="cursor:default;user-select:none;display:flex;align-items:center;justify-content:center;padding:0 6px;height:24.5px;box-sizing:border-box;text-align:center;text-indent:.12em;font-size:8.5px;font-weight:600;letter-spacing:.12em;color:#8b9297;background:linear-gradient(180deg,#c2c8cc,#a8afb3);border:1px solid #8d9498;box-shadow:inset 0 1px 0 rgba(255,255,255,.4);opacity:.55">DELETE</div>
+        </div>
+
+        <div style="display:flex;gap:6px">
+          <div style="display:flex;flex-direction:column;gap:4px;align-items:center">
+            <div style="font-size:9px;letter-spacing:.2em;color:#3a4045">IN</div>
+            <div style="padding:4px 8px;background:#07090a;border:1px solid #363c41;box-shadow:inset 0 2px 6px rgba(0,0,0,.9);font-family:'Share Tech Mono',monospace;font-size:12px;color:#cfd7dc">-6.2</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:4px;align-items:center">
+            <div style="font-size:9px;letter-spacing:.2em;color:#3a4045">OUT</div>
+            <div style="padding:4px 8px;background:#07090a;border:1px solid #363c41;box-shadow:inset 0 2px 6px rgba(0,0,0,.9);font-family:'Share Tech Mono',monospace;font-size:12px;color:#cfd7dc">-1.4</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="flex:1;display:flex;gap:9px;padding:10px 10px 8px;min-height:0">
+
+      <div style="width:160px;flex:none;display:flex;flex-direction:column;padding:16px 0">
+        <div style="font-size:9.5px;font-weight:600;letter-spacing:.28em;color:#33383d;margin-bottom:10px;text-align:center">INPUT / TRIGGER</div>
+        <div style="margin-top:6px;display:flex;align-items:flex-start;justify-content:center;gap:12px">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+            <div style="position:relative;width:62px;height:62px">
+              <div style="position:absolute;inset:-7px;border-radius:50%;background:repeating-conic-gradient(from 0deg,#3f454a 0 1deg,rgba(0,0,0,0) 1deg 15deg);-webkit-mask:radial-gradient(circle,transparent 63%,#000 64%);mask:radial-gradient(circle,transparent 63%,#000 64%);opacity:.5"></div>
+              <div style="position:absolute;inset:0;border-radius:50%;background:radial-gradient(118% 118% at 34% 22%,#5b6167,#2d3236 46%,#15181b 78%,#0b0d0f);border:1px solid #08090a;box-shadow:inset 0 1px 0 rgba(255,255,255,.3),inset 0 -3px 6px rgba(0,0,0,.75),0 3px 7px rgba(0,0,0,.6)"></div>
+              <div style="position:absolute;inset:0;border-radius:50%;background:repeating-conic-gradient(from 0deg,rgba(255,255,255,.07) 0 2.5deg,rgba(0,0,0,.22) 2.5deg 6deg);-webkit-mask:radial-gradient(circle,transparent 74%,#000 76%);mask:radial-gradient(circle,transparent 74%,#000 76%)"></div>
+              <div style="position:absolute;inset:0;transform:rotate({{ thresholdDeg }}deg)">
+                <div style="position:absolute;left:50%;top:5px;margin-left:-1.5px;width:3px;height:24px;background:linear-gradient(#ffffff,#c2c8cd);box-shadow:0 0 5px rgba(255,255,255,.3)"></div>
+              </div>
+            </div>
+            <div style="font-size:9.5px;font-weight:600;letter-spacing:.18em;color:#2b3034">THRESHOLD</div>
+            <div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:#3d4348">-18.5 dB</div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;align-items:center;gap:6px;padding-top:2px">
+            <div style="position:relative;width:14px;height:74px;background:#07090a;border:1px solid #33393e;box-shadow:inset 0 2px 6px rgba(0,0,0,.9);overflow:hidden">
+              <div style="position:absolute;left:1px;right:1px;bottom:0;top:0;background-image:repeating-linear-gradient(to top,#20262a 0 4px,rgba(0,0,0,0) 4px 6px);background-position:left bottom"></div>
+              <div ref="{{ meterRef }}" style="position:absolute;left:1px;right:1px;bottom:0;height:30%;background-image:repeating-linear-gradient(to top,#f4f8fa 0 4px,rgba(0,0,0,0) 4px 6px);background-position:left bottom;filter:drop-shadow(0 0 3px rgba(230,242,248,.55))"></div>
+              <div style="position:absolute;left:0;right:0;bottom:62%;height:1px;background:#ffffff;opacity:.5"></div>
+            </div>
+            <div style="font-size:9px;letter-spacing:.18em;color:#3d4348">IN</div>
+          </div>
+        </div>
+
+        <div style="flex:1;display:flex;flex-direction:column;justify-content:center"><div style="font-size:9px;letter-spacing:.2em;color:#464c51;text-align:center">TRIGGER FILTER</div>
+        <div style="display:flex;justify-content:center;gap:18px;margin-top:9px">
+          <sc-for list="{{ trigFilters }}" as="k" hint-placeholder-count="2">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:5px">
+              <div style="position:relative;width:38px;height:38px">
+                <div style="position:absolute;inset:-5px;border-radius:50%;background:repeating-conic-gradient(from 0deg,#3f454a 0 1deg,rgba(0,0,0,0) 1deg 20deg);-webkit-mask:radial-gradient(circle,transparent 63%,#000 64%);mask:radial-gradient(circle,transparent 63%,#000 64%);opacity:.45"></div>
+                <div style="position:absolute;inset:0;border-radius:50%;background:radial-gradient(118% 118% at 34% 22%,#555b61,#2b3034 48%,#131619 80%,#0b0d0f);border:1px solid #08090a;box-shadow:inset 0 1px 0 rgba(255,255,255,.26),0 2px 5px rgba(0,0,0,.55)"></div>
+                <div style="position:absolute;inset:0;transform:rotate({{ k.deg }}deg)">
+                  <div style="position:absolute;left:50%;top:4px;margin-left:-1px;width:2px;height:14px;background:#f4f7f9"></div>
+                </div>
+              </div>
+              <div style="font-size:9.5px;font-weight:600;letter-spacing:.16em;color:#2b3034">{{ k.label }}</div>
+              <div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:#3d4348">{{ k.val }}</div>
+            </div>
+          </sc-for>
+        </div></div>
+
+        <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+          <div style="font-size:9px;letter-spacing:.2em;color:#464c51">KEY SOURCE</div>
+          <div style="position:relative;width:56px;height:20px;background:#07090a;border:1px solid #353b40;box-shadow:inset 0 2px 5px rgba(0,0,0,.9)">
+            <div style="position:absolute;top:1px;bottom:1px;left:1px;width:26px;background:linear-gradient(180deg,#8d959b,#4e545a);box-shadow:inset 0 1px 0 rgba(255,255,255,.45),1px 0 3px rgba(0,0,0,.6)"></div>
+          </div>
+          <div style="display:flex;gap:8px;font-size:9px;letter-spacing:.14em">
+            <span style="color:#2b3034">INTERNAL</span><span style="color:#7b8287">SIDECHAIN</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="width:1px;background:linear-gradient(rgba(0,0,0,0),rgba(0,0,0,.32) 20%,rgba(0,0,0,.32) 80%,rgba(0,0,0,0));box-shadow:1px 0 0 rgba(255,255,255,.55)"></div>
+
+      <div style="flex:1;min-width:0;display:flex;flex-direction:column">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px">
+          <div style="display:flex;align-items:center;gap:9px">
+            <div ref="{{ lampRef }}" style="width:15px;height:15px;border-radius:50%;background:#3a1512;border:1px solid #0a0c0d;box-shadow:inset 0 1px 1px rgba(255,255,255,.14)"></div>
+            <div ref="{{ lampLabelRef }}" style="font-size:10px;font-weight:700;letter-spacing:.26em;color:#43494e">GATE OPEN</div>
+          </div>
+          <div style="display:flex;gap:14px;font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:.1em;color:#3a4045">
+            <span>ENVELOPE</span><span>50 ms / DIV</span>
+          </div>
+        </div>
+
+        <div style="position:relative;border:1px solid #0a0c0d;box-shadow:inset 0 3px 10px rgba(0,0,0,.9),0 1px 0 rgba(255,255,255,.07);background:#06080a;padding:1px">
+          <canvas ref="{{ scopeRef }}" style="display:block;width:100%;height:122px"></canvas>
+        </div>
+
+        <div style="flex:1;display:flex;align-items:center;justify-content:center;gap:34px;padding-top:2px">
+          <sc-for list="{{ ahr }}" as="k" hint-placeholder-count="3">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+              <div style="position:relative;width:56px;height:56px">
+                <div style="position:absolute;inset:-7px;border-radius:50%;background:repeating-conic-gradient(from 0deg,#3f454a 0 1deg,rgba(0,0,0,0) 1deg 15deg);-webkit-mask:radial-gradient(circle,transparent 63%,#000 64%);mask:radial-gradient(circle,transparent 63%,#000 64%);opacity:.5"></div>
+                <div style="position:absolute;inset:0;border-radius:50%;background:radial-gradient(118% 118% at 34% 22%,#5b6167,#2d3236 46%,#15181b 78%,#0b0d0f);border:1px solid #08090a;box-shadow:inset 0 1px 0 rgba(255,255,255,.3),inset 0 -3px 6px rgba(0,0,0,.75),0 3px 7px rgba(0,0,0,.6)"></div>
+                <div style="position:absolute;inset:0;border-radius:50%;background:repeating-conic-gradient(from 0deg,rgba(255,255,255,.07) 0 2.5deg,rgba(0,0,0,.22) 2.5deg 6deg);-webkit-mask:radial-gradient(circle,transparent 74%,#000 76%);mask:radial-gradient(circle,transparent 74%,#000 76%)"></div>
+                <div style="position:absolute;inset:0;transform:rotate({{ k.deg }}deg)">
+                  <div style="position:absolute;left:50%;top:5px;margin-left:-1.5px;width:3px;height:21px;background:linear-gradient(#ffffff,#c2c8cd);box-shadow:0 0 5px rgba(255,255,255,.3)"></div>
+                </div>
+              </div>
+              <div style="font-size:10px;font-weight:600;letter-spacing:.2em;color:#1e2226">{{ k.label }}</div>
+              <div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:#3d4348">{{ k.val }}</div>
+            </div>
+          </sc-for>
+
+        </div>
+
+        <div style="display:flex;justify-content:center;padding:2px 0 6px">
+          <div onClick="{{ onToggleShape }}" style="cursor:pointer;user-select:none;display:flex;flex-direction:column;align-items:center;gap:6px">
+            <div style="font-size:9px;letter-spacing:.2em;color:#464c51">SHAPE</div>
+            <div style="position:relative;width:56px;height:20px;background:#07090a;border:1px solid #353b40;box-shadow:inset 0 2px 5px rgba(0,0,0,.9)">
+              <div ref="{{ shapeShoeRef }}" style="position:absolute;top:1px;bottom:1px;left:1px;width:26px;background:linear-gradient(180deg,#8d959b,#4e545a);box-shadow:inset 0 1px 0 rgba(255,255,255,.45),1px 0 3px rgba(0,0,0,.6)"></div>
+            </div>
+            <div style="display:flex;gap:8px;font-size:9px;letter-spacing:.14em">
+              <span ref="{{ hardRef }}" style="color:#2b3034">HARD</span><span ref="{{ softRef }}" style="color:#7b8287">SOFT</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="width:1px;background:linear-gradient(rgba(0,0,0,0),rgba(0,0,0,.32) 20%,rgba(0,0,0,.32) 80%,rgba(0,0,0,0));box-shadow:1px 0 0 rgba(255,255,255,.55)"></div>
+
+      <div style="width:208px;flex:none;display:flex;flex-direction:column;padding:16px 0">
+        <div style="font-size:9.5px;font-weight:600;letter-spacing:.28em;color:#33383d;margin-bottom:12px;text-align:center">REVERB TANK</div>
+
+        <div style="display:flex;justify-content:center">
+          <div style="position:relative;width:120px;height:78px">
+            <div style="position:absolute;left:50%;top:14px;margin-left:-25px;width:50px;height:50px">
+              <div style="position:absolute;inset:-6px;border-radius:50%;background:repeating-conic-gradient(from 45deg,#3f454a 0 1.4deg,rgba(0,0,0,0) 1.4deg 90deg);-webkit-mask:radial-gradient(circle,transparent 62%,#000 63%);mask:radial-gradient(circle,transparent 62%,#000 63%);opacity:.7"></div>
+              <div style="position:absolute;inset:0;border-radius:50%;background:radial-gradient(118% 118% at 34% 22%,#5b6167,#2d3236 46%,#15181b 78%,#0b0d0f);border:1px solid #08090a;box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 3px 6px rgba(0,0,0,.6)"></div>
+              <div style="position:absolute;inset:0;transform:rotate(45deg)">
+                <div style="position:absolute;left:50%;top:4px;margin-left:-1.5px;width:3px;height:19px;background:linear-gradient(#ffffff,#c2c8cd)"></div>
+              </div>
+            </div>
+            <div style="position:absolute;left:0;top:1px;font-size:9px;letter-spacing:.14em;color:#474d52">ROOM</div>
+            <div style="position:absolute;right:0;top:1px;font-size:9px;letter-spacing:.14em;color:#15181b">PLATE</div>
+            <div style="position:absolute;left:0;bottom:1px;font-size:9px;letter-spacing:.14em;color:#474d52">AMBI</div>
+            <div style="position:absolute;right:0;bottom:1px;font-size:9px;letter-spacing:.14em;color:#474d52">CHMBR</div>
+          </div>
+        </div>
+
+        <div style="display:flex;justify-content:center;gap:26px;margin-top:14px">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:5px">
+            <div style="position:relative;width:44px;height:44px">
+                  <div style="position:absolute;inset:-6px;border-radius:50%;background:repeating-conic-gradient(from 0deg,#3f454a 0 1deg,rgba(0,0,0,0) 1deg 18deg);-webkit-mask:radial-gradient(circle,transparent 63%,#000 64%);mask:radial-gradient(circle,transparent 63%,#000 64%);opacity:.45"></div>
+                  <div style="position:absolute;inset:0;border-radius:50%;background:radial-gradient(118% 118% at 34% 22%,#585e64,#2c3135 47%,#14171a 79%,#0b0d0f);border:1px solid #08090a;box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 2px 6px rgba(0,0,0,.6)"></div>
+                  <div style="position:absolute;inset:0;transform:rotate(62deg)">
+                    <div style="position:absolute;left:50%;top:4px;margin-left:-1.25px;width:2.5px;height:16px;background:linear-gradient(#ffffff,#c2c8cd)"></div>
+                  </div>
+                </div>
+            <div style="font-size:9.5px;font-weight:600;letter-spacing:.16em;color:#2b3034">SIZE</div>
+            <div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:#3d4348">0.72</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:5px">
+            <div style="position:relative;width:44px;height:44px">
+                  <div style="position:absolute;inset:-6px;border-radius:50%;background:repeating-conic-gradient(from 0deg,#3f454a 0 1deg,rgba(0,0,0,0) 1deg 18deg);-webkit-mask:radial-gradient(circle,transparent 63%,#000 64%);mask:radial-gradient(circle,transparent 63%,#000 64%);opacity:.45"></div>
+                  <div style="position:absolute;inset:0;border-radius:50%;background:radial-gradient(118% 118% at 34% 22%,#585e64,#2c3135 47%,#14171a 79%,#0b0d0f);border:1px solid #08090a;box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 2px 6px rgba(0,0,0,.6)"></div>
+                  <div style="position:absolute;inset:0;transform:rotate(-46deg)">
+                    <div style="position:absolute;left:50%;top:4px;margin-left:-1.25px;width:2.5px;height:16px;background:linear-gradient(#ffffff,#c2c8cd)"></div>
+                  </div>
+                </div>
+            <div style="font-size:9.5px;font-weight:600;letter-spacing:.16em;color:#2b3034">PRE-DLY</div>
+            <div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:#3d4348">18 ms</div>
+          </div>
+        </div>
+
+        <div style="margin-top:26px;display:flex;flex-direction:column;align-items:center;gap:8px">
+          <div style="font-size:9px;letter-spacing:.2em;color:#464c51">TANK DAMPING</div>
+          <div style="display:flex;justify-content:center;gap:26px">
+            <sc-for list="{{ damp }}" as="k" hint-placeholder-count="2">
+              <div style="display:flex;flex-direction:column;align-items:center;gap:5px">
+                <div style="position:relative;width:34px;height:34px">
+                  <div style="position:absolute;inset:-5px;border-radius:50%;background:repeating-conic-gradient(from 0deg,#3f454a 0 1deg,rgba(0,0,0,0) 1deg 22deg);-webkit-mask:radial-gradient(circle,transparent 63%,#000 64%);mask:radial-gradient(circle,transparent 63%,#000 64%);opacity:.4"></div>
+                  <div style="position:absolute;inset:0;border-radius:50%;background:radial-gradient(118% 118% at 34% 22%,#53595f,#2a2f33 48%,#131619 80%,#0b0d0f);border:1px solid #08090a;box-shadow:inset 0 1px 0 rgba(255,255,255,.24),0 2px 4px rgba(0,0,0,.55)"></div>
+                  <div style="position:absolute;inset:0;transform:rotate({{ k.deg }}deg)">
+                    <div style="position:absolute;left:50%;top:3px;margin-left:-1px;width:2px;height:13px;background:#f4f7f9"></div>
+                  </div>
+                </div>
+                <div style="font-size:9.5px;font-weight:600;letter-spacing:.14em;color:#2b3034">{{ k.label }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+      <div style="width:1px;background:linear-gradient(rgba(0,0,0,0),rgba(0,0,0,.32) 20%,rgba(0,0,0,.32) 80%,rgba(0,0,0,0));box-shadow:1px 0 0 rgba(255,255,255,.55)"></div>
+
+      <div style="width:113px;flex:none;display:flex;flex-direction:column;padding:16px 0">
+        <div style="font-size:9.5px;font-weight:600;letter-spacing:.28em;color:#33383d;margin-bottom:12px;text-align:center">OUTPUT</div>
+        <div style="margin-top:4px;display:grid;grid-template-columns:auto auto;justify-content:center;gap:14px 12px">
+          <sc-for list="{{ outs }}" as="k" hint-placeholder-count="4">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:5px">
+              <div style="position:relative;width:40px;height:40px">
+                <div style="position:absolute;inset:-5px;border-radius:50%;background:repeating-conic-gradient(from 0deg,#3f454a 0 1deg,rgba(0,0,0,0) 1deg 20deg);-webkit-mask:radial-gradient(circle,transparent 63%,#000 64%);mask:radial-gradient(circle,transparent 63%,#000 64%);opacity:.45"></div>
+                <div style="position:absolute;inset:0;border-radius:50%;background:radial-gradient(118% 118% at 34% 22%,#585e64,#2c3135 47%,#14171a 79%,#0b0d0f);border:1px solid #08090a;box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 2px 5px rgba(0,0,0,.6)"></div>
+                <div style="position:absolute;inset:0;transform:rotate({{ k.deg }}deg)">
+                  <div style="position:absolute;left:50%;top:4px;margin-left:-1.25px;width:2.5px;height:15px;background:linear-gradient(#ffffff,#c2c8cd)"></div>
+                </div>
+              </div>
+              <div style="font-size:9.5px;font-weight:600;letter-spacing:.14em;color:#2b3034">{{ k.label }}</div>
+              <div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:#3d4348">{{ k.val }}</div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="margin-top:auto;font-size:9px;letter-spacing:.18em;color:#4c5257;text-align:center">v1.0</div>
+      </div>
+
+    </div>
+  </div>
+
+  <div style="width:26px;flex:none;background:linear-gradient(90deg,#929a9e,#aeb5b9 40%,#ced4d7);border-left:1px solid #0a0c0d;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:10px 0">
+    <div style="width:11px;height:11px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#9ba2a8,#4a5055 60%,#23272a);box-shadow:inset 0 0 0 1px #0d0f10,0 1px 1px rgba(255,255,255,.08)"></div>
+    <div style="width:1px;flex:1;margin:8px 0;background:linear-gradient(rgba(0,0,0,.20),rgba(0,0,0,0))"></div>
+    <div style="width:11px;height:11px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#9ba2a8,#4a5055 60%,#23272a);box-shadow:inset 0 0 0 1px #0d0f10,0 1px 1px rgba(255,255,255,.08)"></div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:960,&quot;height&quot;:434},&quot;accent&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#ff2b1c&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;#ff2b1c&quot;,&quot;#ff5a2b&quot;,&quot;#e8112d&quot;,&quot;#ff3b30&quot;],&quot;section&quot;:&quot;Gate state&quot;},&quot;rate&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:1,&quot;min&quot;:0.5,&quot;max&quot;:2.5,&quot;step&quot;:0.1,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Gate state&quot;},&quot;shape&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;hard&quot;,&quot;options&quot;:[&quot;hard&quot;,&quot;soft&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Gate state&quot;},&quot;programKind&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;factory&quot;,&quot;options&quot;:[&quot;factory&quot;,&quot;user&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Program&quot;},&quot;pattern&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;quarters&quot;,&quot;options&quot;:[&quot;quarters&quot;,&quot;sparse&quot;,&quot;stutter&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Gate state&quot;}}">
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.scopeRef = React.createRef();
+    this.lampRef = React.createRef();
+    this.lampLabelRef = React.createRef();
+    this.meterRef = React.createRef();
+    this.progCaptionRef = React.createRef();
+    this.progTextRef = React.createRef();
+    this.kindTagRef = React.createRef();
+    this.caretRef = React.createRef();
+    this.btnARef = React.createRef();
+    this.btnBRef = React.createRef();
+    this.shapeShoeRef = React.createRef();
+    this.hardRef = React.createRef();
+    this.softRef = React.createRef();
+    this.state = { naming: false, kind: null, name: null, typed: "", shape: null };
+  }
+
+  get shape() { return this.state.shape ?? this.props.shape ?? "hard"; }
+
+  onToggleShape = () => {
+    this.setState({ shape: this.shape === "hard" ? "soft" : "hard" });
+  };
+
+  syncShape() {
+    const soft = this.shape === "soft";
+    const shoe = this.shapeShoeRef.current;
+    if (shoe) shoe.style.left = soft ? "29px" : "1px";
+    if (this.hardRef.current) this.hardRef.current.style.color = soft ? "#7b8287" : "#2b3034";
+    if (this.softRef.current) this.softRef.current.style.color = soft ? "#2b3034" : "#7b8287";
+  }
+
+  FACTORY = "14 ROOM REINFORCEMENT";
+
+  get kind() { return this.state.kind ?? this.props.programKind ?? "factory"; }
+  get progName() { return this.state.name ?? this.FACTORY; }
+
+  btnStyle(el, enabled) {
+    if (!el) return;
+    el.style.cursor = enabled ? "pointer" : "default";
+    el.style.color = enabled ? "#22272b" : "#8b9297";
+    el.style.background = enabled
+      ? "linear-gradient(180deg,#dbe0e3,#aab1b6)"
+      : "linear-gradient(180deg,#c2c8cc,#a8afb3)";
+    el.style.border = "1px solid " + (enabled ? "#6d7478" : "#8d9498");
+    el.style.boxShadow = enabled
+      ? "inset 0 1px 0 rgba(255,255,255,.75),0 1px 2px rgba(0,0,0,.35)"
+      : "inset 0 1px 0 rgba(255,255,255,.4)";
+    el.style.opacity = enabled ? "1" : ".55";
+  }
+
+  syncHeader() {
+    const naming = this.state.naming, user = this.kind === "user";
+    const cap = this.progCaptionRef.current, tag = this.kindTagRef.current;
+    const txt = this.progTextRef.current, caret = this.caretRef.current;
+    if (cap) cap.textContent = naming ? "NAME PROGRAM" : "PROGRAM";
+    if (tag) {
+      tag.textContent = naming || user ? "USER" : "FACT";
+      tag.style.color = naming || user ? "#cfd7dc" : "#6f797f";
+    }
+    if (txt) {
+      txt.firstChild.nodeValue = naming
+        ? (this.state.typed || "")
+        : (user ? this.progName : this.FACTORY);
+      txt.style.textAlign = naming ? "left" : "center";
+    }
+    if (caret) caret.style.display = naming ? "inline" : "none";
+    const a = this.btnARef.current, b = this.btnBRef.current;
+    if (a) a.textContent = naming ? "STORE" : "SAVE";
+    if (b) b.textContent = naming ? "CANCEL" : "DELETE";
+    this.btnStyle(a, true);
+    this.btnStyle(b, naming || user);
+  }
+
+  onPrimary = () => {
+    if (this.state.naming) {
+      const n = (this.state.typed || "").trim() || "NEW PROGRAM";
+      this.setState({ naming: false, kind: "user", name: n.toUpperCase() });
+    } else {
+      this.setState({ naming: true, typed: "" });
+    }
+  };
+
+  onSecondary = () => {
+    if (this.state.naming) { this.setState({ naming: false }); return; }
+    if (this.kind === "user") this.setState({ kind: "factory", name: null });
+  };
+
+  onKey = (e) => {
+    if (!this.state.naming) return;
+    if (e.key === "Enter") { this.onPrimary(); return; }
+    if (e.key === "Escape") { this.setState({ naming: false }); return; }
+    if (e.key === "Backspace") {
+      this.setState((s) => ({ typed: s.typed.slice(0, -1) }));
+      e.preventDefault();
+      return;
+    }
+    if (e.key.length === 1 && this.state.typed.length < 22) {
+      this.setState((s) => ({ typed: s.typed + e.key.toUpperCase() }));
+    }
+  };
+
+  get accent() { return this.props.accent ?? "#ff2b1c"; }
+
+  renderVals() {
+    return {
+      scopeRef: this.scopeRef,
+      progCaptionRef: this.progCaptionRef,
+      progTextRef: this.progTextRef,
+      kindTagRef: this.kindTagRef,
+      caretRef: this.caretRef,
+      btnARef: this.btnARef,
+      btnBRef: this.btnBRef,
+      onPrimary: this.onPrimary,
+      onToggleShape: this.onToggleShape,
+      shapeShoeRef: this.shapeShoeRef,
+      hardRef: this.hardRef,
+      softRef: this.softRef,
+      onSecondary: this.onSecondary,
+      lampRef: this.lampRef,
+      lampLabelRef: this.lampLabelRef,
+      meterRef: this.meterRef,
+      thresholdDeg: -28,
+      trigFilters: [
+        { label: "HP", val: "180 Hz", deg: -55 },
+        { label: "LP", val: "6.3 k", deg: 84 }
+      ],
+      ahr: [
+        { label: "ATTACK", val: "0.4 ms", deg: -128 },
+        { label: "HOLD", val: "165 ms", deg: 18 },
+        { label: "RELEASE", val: "4 ms", deg: -104 }
+      ],
+      tank: [
+        { label: "SIZE", val: "0.72", deg: 62 },
+        { label: "PRE-DLY", val: "18 ms", deg: -46 }
+      ],
+      damp: [
+        { label: "HF", deg: 40 },
+        { label: "LF", deg: -70 }
+      ],
+      outs: [
+        { label: "SLAM", val: "+7", deg: 74 },
+        { label: "WIDTH", val: "128%", deg: 52 },
+        { label: "MIX", val: "64%", deg: 30 },
+        { label: "TRIM", val: "-1.4", deg: -12 }
+      ]
+    };
+  }
+
+  componentDidMount() {
+    this.start();
+    this.syncHeader();
+    this.syncShape();
+    window.addEventListener("keydown", this.onKey);
+  }
+  componentDidUpdate() { this.syncHeader(); this.syncShape(); }
+  componentWillUnmount() {
+    cancelAnimationFrame(this._raf);
+    window.removeEventListener("keydown", this.onKey);
+  }
+  tickGuard() { return Array.isArray(this.cols); }
+
+  start() {
+    const cv = this.scopeRef.current;
+    if (!cv) return;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const fit = () => {
+      const r = cv.getBoundingClientRect();
+      this.W = Math.max(120, Math.round(r.width));
+      this.H = Math.max(60, Math.round(r.height));
+      cv.width = this.W * dpr;
+      cv.height = this.H * dpr;
+      const c = cv.getContext("2d");
+      c.setTransform(dpr, 0, 0, dpr, 0, 0);
+      this.ctx = c;
+    };
+    fit();
+    this._ro = new ResizeObserver(fit);
+    this._ro.observe(cv);
+
+    this.cols = [];
+    this.t = 0;
+    this.age = -1;
+    this.step = 2;
+    const seed = this.step;
+    this.step = 1;
+    for (let i = 0; i < this.W; i++) this.tick();
+    this.step = seed;
+    this.draw();
+    const loop = () => {
+      this.tick();
+      this.draw();
+      this._raf = requestAnimationFrame(loop);
+    };
+    loop();
+  }
+
+  period() {
+    const rate = this.props.rate ?? 1;
+    return Math.max(46, Math.round(112 / rate));
+  }
+
+  tick() {
+    if (!this.tickGuard()) return;
+    const pattern = this.props.pattern ?? "quarters";
+    const P = this.period();
+    const soft = this.shape === "soft";
+    const A = 5, HOLD = 34, REL = soft ? 16 : 3;
+    for (let i = 0; i < this.step; i++) {
+      if (this.t % P === 0) {
+        let fire = true;
+        if (pattern === "sparse") fire = (this.t / P) % 2 === 0;
+        if (pattern === "stutter") fire = (this.t / P) % 4 !== 3;
+        if (fire) this.age = 0;
+      }
+      let e = 0;
+      if (this.age >= 0) {
+        if (this.age < A) e = this.age / A;
+        else if (this.age < A + HOLD) e = 1;
+        else if (this.age < A + HOLD + REL) {
+          const t = (this.age - A - HOLD) / REL;
+          e = soft ? Math.pow(1 - t, 2.2) : 1 - t;
+        }
+        else { e = 0; this.age = -1; }
+        if (this.age >= 0) this.age++;
+      }
+      const a = this.age < 0 ? 999 : this.age;
+      const s = Math.exp(-a / 22) * (0.55 + 0.45 * Math.random());
+      this.cols.push({ e, s });
+      this.t++;
+    }
+    while (this.cols.length > this.W) this.cols.shift();
+
+    const last = this.cols[this.cols.length - 1] || { e: 0, s: 0 };
+    const open = last.e > 0.02;
+    if (open !== this._open) {
+      this._open = open;
+      const l = this.lampRef.current, t = this.lampLabelRef.current;
+      if (l) {
+        l.style.background = open
+          ? "radial-gradient(circle at 38% 32%," + this.accent + ",#b0140c 70%,#6d0b06)"
+          : "#3a1512";
+        l.style.boxShadow = open
+          ? "0 0 12px 3px rgba(255,43,28,.55),0 0 30px 8px rgba(255,43,28,.22),inset 0 1px 2px rgba(255,255,255,.5)"
+          : "inset 0 1px 1px rgba(255,255,255,.14)";
+      }
+      if (t) { t.style.color = open ? "#f4f7f9" : "#7c848a"; }
+    }
+    const m = this.meterRef.current;
+    if (m) {
+      const lvl = 22 + Math.min(1, last.s) * 64;
+      this._lvl = this._lvl == null ? lvl : this._lvl + (lvl - this._lvl) * (lvl > this._lvl ? 0.8 : 0.12);
+      m.style.height = this._lvl.toFixed(1) + "%";
+    }
+  }
+
+  draw() {
+    const c = this.ctx;
+    if (!c || !this.cols) return;
+    const W = this.W, H = this.H, base = H - 14, top = 14;
+    const accent = this.accent;
+
+    c.clearRect(0, 0, W, H);
+    const bg = c.createLinearGradient(0, 0, 0, H);
+    bg.addColorStop(0, "#0b0f11");
+    bg.addColorStop(1, "#050708");
+    c.fillStyle = bg;
+    c.fillRect(0, 0, W, H);
+
+    c.strokeStyle = "rgba(150,180,190,.10)";
+    c.lineWidth = 1;
+    const div = 44;
+    const off = (this.t % div);
+    for (let x = W - off; x > 0; x -= div) {
+      c.beginPath(); c.moveTo(x + 0.5, 0); c.lineTo(x + 0.5, H); c.stroke();
+    }
+    for (let i = 0; i <= 4; i++) {
+      const y = top + ((base - top) * i) / 4;
+      c.beginPath(); c.moveTo(0, y + 0.5); c.lineTo(W, y + 0.5); c.stroke();
+    }
+    c.strokeStyle = "rgba(150,180,190,.22)";
+    c.beginPath(); c.moveTo(0, base + 0.5); c.lineTo(W, base + 0.5); c.stroke();
+
+    const n = this.cols.length;
+    const x0 = W - n;
+
+    c.strokeStyle = "rgba(178,190,197,.30)";
+    c.beginPath();
+    for (let i = 0; i < n; i++) {
+      const s = this.cols[i].s * (base - top) * 0.42;
+      const x = x0 + i + 0.5;
+      c.moveTo(x, base - s * 0.5);
+      c.lineTo(x, base + Math.min(10, s * 0.35));
+    }
+    c.stroke();
+
+    const grad = c.createLinearGradient(0, top, 0, base);
+    grad.addColorStop(0, "rgba(255,43,28,.30)");
+    grad.addColorStop(1, "rgba(255,43,28,.02)");
+    c.beginPath();
+    c.moveTo(x0, base);
+    for (let i = 0; i < n; i++) c.lineTo(x0 + i, base - this.cols[i].e * (base - top));
+    c.lineTo(x0 + n - 1, base);
+    c.closePath();
+    c.fillStyle = grad;
+    c.fill();
+
+    c.save();
+    c.shadowColor = accent;
+    c.shadowBlur = 10;
+    c.strokeStyle = accent;
+    c.lineWidth = 2;
+    c.lineJoin = "miter";
+    c.beginPath();
+    for (let i = 0; i < n; i++) {
+      const x = x0 + i, y = base - this.cols[i].e * (base - top);
+      i === 0 ? c.moveTo(x, y) : c.lineTo(x, y);
+    }
+    c.stroke();
+    c.restore();
+
+    c.fillStyle = "rgba(255,255,255,.03)";
+    c.fillRect(W - 2, 0, 2, H);
+
+    c.font = "9px 'Share Tech Mono', monospace";
+    c.fillStyle = "rgba(160,178,186,.55)";
+    c.fillText("GATE ENV", 8, top - 3);
+    c.textAlign = "right";
+    c.fillText("0 dB", W - 8, top + 8);
+    c.fillText("-\u221E", W - 8, base - 3);
+    c.textAlign = "left";
+  }
+}
+</script>
+</body>
+</html>

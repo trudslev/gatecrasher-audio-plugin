@@ -1,0 +1,13 @@
+build/
+build-*/
+Builds/
+cmake-build-*/
+.xcuserdata/
+*.xcodeproj/xcuserdata/
+*.xcworkspace/xcuserdata/
+.DS_Store
+
+# TudorVictors is Chequered Ink's: their terms permit non-profit use but grant no right to
+# redistribute the font file, so it must never be committed. The wordmark it renders ships as a
+# pre-baked transparent PNG instead (design/assets/gatecrasher-wordmark@3x.png).
+design/assets/TudorVictors.ttf
