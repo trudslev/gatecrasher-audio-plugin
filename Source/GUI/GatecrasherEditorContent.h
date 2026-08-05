@@ -10,6 +10,8 @@
 #include "ToggleSwitchComponent.h"
 #include "ProgramHeader.h"
 #include "WordmarkComponent.h"
+#include "PanelChrome.h"
+#include "PanelReadouts.h"
 #include "../PluginProcessor.h"
 #include <juce_gui_basics/juce_gui_basics.h>
 #include <array>
@@ -28,7 +30,13 @@ private:
     GatecrasherAudioProcessor& processorRef;
     GatecrasherLookAndFeel lookAndFeel;
 
+    // Draw order matters: the bare chassis, then the engraved static layer on top of it, then every
+    // live control above that. PanelReadouts sits with the live controls (its values change), but
+    // below the knobs so a knob's cast-shadow bleed overlaps its own readout the way the artwork
+    // shows rather than the text sitting on top of the knob.
     GatecrasherPanelBackground panelBackground;
+    PanelChrome panelChrome;
+    PanelReadouts panelReadouts;
     WordmarkComponent wordmark;
 
     // density/decay are deliberately automation-only APVTS parameters with no panel control

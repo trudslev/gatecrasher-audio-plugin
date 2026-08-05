@@ -32,6 +32,16 @@ void InputMeter::paint(juce::Graphics& g)
     const int segmentCount = (int) (Layout::meterH / Layout::meterSegmentPitch);
     const int litCount = (int) std::round(levelNorm * (float) segmentCount);
 
+    // The static panel background bakes this meter in showing the reference mockup's own signal
+    // level - several lit segments near the bottom. The unlit ledger drawn below only covers the 4px
+    // segments themselves, not the 2px gaps between them on the 6px pitch, so those baked lit
+    // segments kept showing through the gaps as stray bright lines that never tracked the real input
+    // level. Filling the whole window dark first means only live segments are ever visible. Flat
+    // (rather than GatecrasherTheme::eraseToBackground) for the same reason the switch labels are:
+    // erasing here would just restore the baked lit segments, which is the thing being fixed.
+    g.setColour(Colour::ledWindowBg);
+    g.fillRect(rect);
+
     // Segments are 4px tall on a 6px pitch, anchored to the bottom edge, stacking upward.
     for (int i = 0; i < segmentCount; ++i)
     {

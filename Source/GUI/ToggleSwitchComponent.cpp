@@ -42,7 +42,12 @@ void ToggleSwitchComponent::paint(juce::Graphics& g)
         hasPaintedOnce = true;
     }
 
-    const juce::Rectangle<float> track(Layout::switchAssemblyPad, Layout::switchCaptionRowH,
+    // The caption ("KEY SOURCE" / "SHAPE") is static, so PanelChrome engraves it along with every
+    // other fixed label rather than this component redrawing it on every thumb movement.
+    const float originX = Layout::switchLabelOverflowPad;
+    const float originY = Layout::switchVerticalSafetyPad;
+
+    const juce::Rectangle<float> track(originX + Layout::switchAssemblyPad, originY + Layout::switchCaptionRowH,
                                         Layout::switchTrackW, Layout::switchTrackH);
 
     g.setColour(Colour::switchTrackBg);
@@ -61,22 +66,43 @@ void ToggleSwitchComponent::paint(juce::Graphics& g)
     g.setGradientFill(shoeGradient);
     g.fillRect(shoe);
 
-    // Caption above (e.g. "SHAPE" / "KEY SOURCE"), section 5: 9px / .20em tracking.
-    // TODO(design): Barlow Condensed 600 not yet in design/assets/ - default sans placeholder.
-    drawTrackedText(g, caption.toUpperCase(), labelFont(9.0f), 1.8f,
-                     juce::Rectangle<float>(0.0f, 0.0f, (float) getWidth(), Layout::switchCaptionRowH),
-                     juce::Justification::centred, Colour::tertiaryGroupLabel);
+    // Option labels below, active one dark, inactive one grey (section 5/7). Their colour swaps
+    // with the active side, so each repaint clears the previous frame back to the bare chassis
+    // first. That erase is a genuine clear now: while the background was the fully dressed render it
+    // also carried baked copies of these very words, which made erasing here a no-op (the restored
+    // pixels were the text being redrawn) and forced an opaque flat fill instead - one that couldn't
+    // reproduce the fascia's brush grain. Nothing is baked under them any more.
+    //
+    // Geometry (pair centred on the track, fixed gap, vertical centre a fixed drop below the track)
+    // is all measured off the dressed reference render - see the switchOptionLabel* constants'
+    // comment, which also covers why the font height is solved at runtime rather than hard-coded.
+    static const float optionLabelHeight =
+        labelFontHeightForTrackedWidth(Layout::switchOptionLabelRefText, Layout::switchOptionLabelTracking,
+                                        Layout::switchOptionLabelRefWidth);
+    const auto labelFontToUse = labelFont(optionLabelHeight);
 
-    // Option labels below, active one dark, inactive one grey (section 5/7).
-    const juce::Rectangle<float> labelRow(0.0f, Layout::switchCaptionRowH + Layout::switchTrackH,
-                                           (float) getWidth(), Layout::switchLabelRowH);
-    const auto leftHalf = labelRow.withWidth(labelRow.getWidth() * 0.5f);
-    const auto rightHalf = labelRow.withX(labelRow.getCentreX()).withWidth(labelRow.getWidth() * 0.5f);
+    const juce::String textForZero = labelForZero.toUpperCase();
+    const juce::String textForOne = labelForOne.toUpperCase();
+    const float widthForZero = trackedTextWidth(textForZero, labelFontToUse, Layout::switchOptionLabelTracking);
+    const float widthForOne = trackedTextWidth(textForOne, labelFontToUse, Layout::switchOptionLabelTracking);
+    const float pairWidth = widthForZero + Layout::switchOptionLabelGapX + widthForOne;
+
+    const float pairLeft = track.getCentreX() - pairWidth * 0.5f;
+    const float rowTop = track.getBottom() + Layout::switchOptionLabelCentreBelowTrack
+                          - Layout::switchLabelRowH * 0.5f;
+
+    const juce::Rectangle<float> rectForZero(pairLeft, rowTop, widthForZero, Layout::switchLabelRowH);
+    const juce::Rectangle<float> rectForOne(pairLeft + widthForZero + Layout::switchOptionLabelGapX, rowTop,
+                                             widthForOne, Layout::switchLabelRowH);
+
+    // Padded past the text pair so the clear also takes the previous frame's antialiased edges.
+    eraseToBackground(g, rectForZero.getUnion(rectForOne).expanded(5.0f, 2.0f), getPosition());
 
     const bool zeroActive = thumbPosition01 < 0.5f;
-    const auto labelFontToUse = labelFont(9.0f);
-    drawTrackedText(g, labelForZero.toUpperCase(), labelFontToUse, 0.4f, leftHalf, juce::Justification::centred,
+    drawTrackedText(g, textForZero, labelFontToUse, Layout::switchOptionLabelTracking, rectForZero,
+                     juce::Justification::centred,
                      zeroActive ? Colour::controlLabelText : Colour::inactiveLabel);
-    drawTrackedText(g, labelForOne.toUpperCase(), labelFontToUse, 0.4f, rightHalf, juce::Justification::centred,
+    drawTrackedText(g, textForOne, labelFontToUse, Layout::switchOptionLabelTracking, rectForOne,
+                     juce::Justification::centred,
                      zeroActive ? Colour::inactiveLabel : Colour::controlLabelText);
 }

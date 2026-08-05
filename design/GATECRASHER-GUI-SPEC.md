@@ -3,6 +3,11 @@
 Panel: **960 × 434 px** at 1× (fixed aspect). Reference renders in `assets/`.
 All coordinates below are panel-local, origin = top-left of the 960×434 panel.
 
+`assets/gatecrasher-panel-bare@2x.png` — 1920 × 868, the empty chassis: brushed-steel field with
+vertical grain, side rails with screws, the 76 px header band, and the three section dividers.
+No controls, labels, or nameplate. Use it as the panel background image; everything else is drawn
+on top. (`gatecrasher-panel@2x.png` and `-gate-open@2x.png` remain the fully dressed references.)
+
 ---
 
 ## 1. Palette

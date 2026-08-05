@@ -46,13 +46,21 @@ namespace
 }
 
 GatecrasherEditorContent::GatecrasherEditorContent(GatecrasherAudioProcessor& p)
-    : processorRef(p), gateScope(p), gateLamp(p), inputMeter(p), programHeader(p)
+    : processorRef(p), panelReadouts(p), gateScope(p), gateLamp(p), inputMeter(p), programHeader(p)
 {
     setSize((int) Layout::canvasWidth, (int) Layout::canvasHeight);
     setLookAndFeel(&lookAndFeel);
 
     panelBackground.setBounds(getLocalBounds());
     addAndMakeVisible(panelBackground);
+
+    // Everything engraved on the fascia - all of it live-drawn now that the background bitmap is a
+    // bare chassis. See PanelChrome's class comment for why that split matters.
+    panelChrome.setBounds(getLocalBounds());
+    addAndMakeVisible(panelChrome);
+
+    panelReadouts.setBounds(getLocalBounds());
+    addAndMakeVisible(panelReadouts);
 
     wordmark.setBounds(getLocalBounds());
     addAndMakeVisible(wordmark);
@@ -92,11 +100,17 @@ GatecrasherEditorContent::GatecrasherEditorContent(GatecrasherAudioProcessor& p)
         knobs[i] = std::move(knob);
     }
 
+    // Widened by switchLabelOverflowPad on each side and switchVerticalSafetyPad top/bottom, beyond
+    // the track's own spec'd footprint, so there's room to erase-then-redraw the whole assembly
+    // (caption, track, option labels) in full - see those constants' comments. ToggleSwitchComponent
+    // draws everything offset by the same pads, so the track's visual position matches
+    // trackX/trackY exactly regardless of this extra margin.
     auto placeSwitch = [](ToggleSwitchComponent& sw, float trackX, float trackY)
     {
-        sw.setBounds((int) std::round(trackX - Layout::switchAssemblyPad),
-                     (int) std::round(trackY - Layout::switchCaptionRowH),
-                     (int) std::round(Layout::switchAssemblyW), (int) std::round(Layout::switchAssemblyH));
+        sw.setBounds((int) std::round(trackX - Layout::switchAssemblyPad - Layout::switchLabelOverflowPad),
+                     (int) std::round(trackY - Layout::switchCaptionRowH - Layout::switchVerticalSafetyPad),
+                     (int) std::round(Layout::switchAssemblyW + 2.0f * Layout::switchLabelOverflowPad),
+                     (int) std::round(Layout::switchAssemblyH + 2.0f * Layout::switchVerticalSafetyPad));
     };
 
     placeSwitch(keySourceSwitch, Layout::keySourceTrackX, Layout::keySourceTrackY);

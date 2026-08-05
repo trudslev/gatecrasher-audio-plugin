@@ -20,29 +20,29 @@ FetchContent_Declare(JUCE
     GIT_SHALLOW TRUE)
 FetchContent_MakeAvailable(JUCE)
 
-# Runtime GUI assets only - the gate-open panel reference screenshot, the knob render comparison,
-# and the SHAPE-switch scope references (scope-hard/soft-release) are pixel-matching acceptance
-# targets for design/GATECRASHER-GUI-SPEC.md, not loaded at runtime, so they're deliberately
-# excluded here. TudorVictors.ttf IS embedded below, despite the spec calling for the wordmark to be
-# baked to a static PNG (section 8) rather than rendered live: that PNG doesn't exist yet in
-# design/assets/, so the GUI draws an interim plain-text placeholder in this typeface instead - see
-# WordmarkComponent's TODO(design) comment and gatecrasher/CLAUDE.md's Status section. Swap this back
-# out once the real baked-PNG wordmark ships and WordmarkComponent is updated to blit it.
+# Runtime GUI assets only - the dressed panel renders, the knob render comparison, and the
+# SHAPE-switch scope references (scope-hard/soft-release) are pixel-matching acceptance targets for
+# design/GATECRASHER-GUI-SPEC.md, not loaded at runtime, so they're deliberately excluded.
+#
+# gatecrasher-wordmark@3x.png is the spray-stencil wordmark baked to a transparent PNG, per the
+# spec's section 8 ("Do not render the sprayed lettering in code. Bake it."). TudorVictors.ttf is
+# deliberately NOT embedded and is NOT tracked in this repository: its licence (Chequered Ink)
+# permits non-profit use but grants no redistribution right, and allows embedding only in a form
+# that "protects the Product from extraction", which a BinaryData blob is not. See
+# WordmarkComponent's class comment.
+#
 # Barlow Condensed SemiBold (600, labels) / Bold (700, lamp text) and Share Tech Mono Regular
 # (numeric/LED readouts) per the spec's typography section - only the specific weights actually used
 # are embedded, not the full 18-file Barlow Condensed family design/assets/ ships.
 juce_add_binary_data(GatecrasherBinaryData
     SOURCES
-        design/assets/gatecrasher-panel@2x.png
-        design/assets/header-factory-program@3x.png
-        design/assets/header-user-program@3x.png
-        design/assets/header-name-entry@3x.png
+        design/assets/gatecrasher-panel-bare@2x.png
+        design/assets/gatecrasher-wordmark@3x.png
         design/assets/knob_large_128px_128f.png
         design/assets/knob_small_128px_128f.png
         design/assets/BarlowCondensed-SemiBold.ttf
         design/assets/BarlowCondensed-Bold.ttf
-        design/assets/ShareTechMono-Regular.ttf
-        design/assets/TudorVictors.ttf)
+        design/assets/ShareTechMono-Regular.ttf)
 
 # AU is Apple-only; Windows/Linux only ever build VST3 + Standalone. VST3_COPY_DIR/AU_COPY_DIR are
 # only set on Apple - leaving them unset elsewhere lets JUCE apply its own correct per-OS default
@@ -59,8 +59,8 @@ endif()
 
 juce_add_plugin(Gatecrasher
     PRODUCT_NAME "Gatecrasher"
-    COMPANY_NAME "Gatecrasher"
-    BUNDLE_ID "com.gatecrasher.gatecrasher"
+    COMPANY_NAME "Tanis"
+    BUNDLE_ID "com.tanis.gatecrasher"
     PLUGIN_MANUFACTURER_CODE Gcsh
     PLUGIN_CODE Gr85
     FORMATS ${GATECRASHER_FORMATS}
@@ -97,6 +97,8 @@ target_sources(Gatecrasher PRIVATE
     Source/GUI/ToggleSwitchComponent.cpp
     Source/GUI/ProgramHeader.cpp
     Source/GUI/WordmarkComponent.cpp
+    Source/GUI/PanelChrome.cpp
+    Source/GUI/PanelReadouts.cpp
     Source/GUI/GatecrasherEditorContent.cpp)
 
 target_compile_definitions(Gatecrasher PUBLIC

@@ -49,6 +49,7 @@ public:
     // are files in ProgramManager's program directory. "Save" is never in-place for a factory
     // program, and never overwrites an existing user program either - it always creates a new one.
     bool isFactoryProgram(int index) const noexcept { return programManager.isFactoryProgram(index); }
+    bool isCurrentProgramModified() const { return programManager.isModifiedFromLoadedProgram(); }
     void saveNewUserProgram(const juce::String& name) { programManager.saveNewUserProgram(name); }
     void deleteUserProgram(int index) { programManager.deleteUserProgram(index); }
 
@@ -61,6 +62,7 @@ public:
     bool isGateOpen() const noexcept { return gateEnvelopeGenerator.isGateOpen(); }
     float getGateEnvelope() const noexcept { return gateEnvelopeGenerator.getCurrentEnvelope(); }
     float getInputMeterLevel() const noexcept { return inputMeterLevel.load(std::memory_order_relaxed); }
+    float getOutputMeterLevel() const noexcept { return outputMeterLevel.load(std::memory_order_relaxed); }
     float getTriggerLevel() const noexcept { return triggerLevelDisplay.load(std::memory_order_relaxed); }
 
 private:
@@ -100,6 +102,7 @@ private:
     std::vector<float> gateGainScratch;
 
     std::atomic<float> inputMeterLevel { 0.0f };
+    std::atomic<float> outputMeterLevel { 0.0f };
     std::atomic<float> triggerLevelDisplay { 0.0f };
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(GatecrasherAudioProcessor)

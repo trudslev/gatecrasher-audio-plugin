@@ -68,6 +68,7 @@ void GatecrasherAudioProcessor::prepareToPlay(double sampleRate, int samplesPerB
     gateGainScratch.reserve((size_t) samplesPerBlock);
 
     inputMeterLevel.store(0.0f, std::memory_order_relaxed);
+    outputMeterLevel.store(0.0f, std::memory_order_relaxed);
     triggerLevelDisplay.store(0.0f, std::memory_order_relaxed);
 }
 
@@ -166,6 +167,21 @@ void GatecrasherAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, j
     const float current = inputMeterLevel.load(std::memory_order_relaxed);
     const float coeff = peak > current ? 0.5f : 0.12f;
     inputMeterLevel.store(current + coeff * (peak - current), std::memory_order_relaxed);
+
+    // Same ballistics, read off the final post-mix buffer instead of the dry input - this is what
+    // the header's live "OUT" LED (ProgramHeader::paint) reads, alongside "IN" reading
+    // getInputMeterLevel() above, so the two numeric readouts and the INPUT/TRIGGER segment meter
+    // all agree on what "the current level" means rather than drifting out of sync with each other.
+    float outPeak = 0.0f;
+    for (int ch = 0; ch < numChannels; ++ch)
+    {
+        const auto* data = mainIO.getReadPointer(ch);
+        for (int i = 0; i < numSamples; ++i)
+            outPeak = juce::jmax(outPeak, std::abs(data[i]));
+    }
+    const float currentOut = outputMeterLevel.load(std::memory_order_relaxed);
+    const float coeffOut = outPeak > currentOut ? 0.5f : 0.12f;
+    outputMeterLevel.store(currentOut + coeffOut * (outPeak - currentOut), std::memory_order_relaxed);
 }
 
 juce::AudioProcessorEditor* GatecrasherAudioProcessor::createEditor()

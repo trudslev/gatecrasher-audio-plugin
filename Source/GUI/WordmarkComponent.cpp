@@ -1,6 +1,8 @@
 #include "WordmarkComponent.h"
 #include "GatecrasherTheme.h"
 
+using namespace GatecrasherTheme;
+
 WordmarkComponent::WordmarkComponent()
 {
     setInterceptsMouseClicks(false, false);
@@ -8,20 +10,15 @@ WordmarkComponent::WordmarkComponent()
 
 void WordmarkComponent::paint(juce::Graphics& g)
 {
-    using namespace GatecrasherTheme;
-
-    // TODO(design): section 8 specifies a pre-baked, transparent PNG wordmark - TudorVictors with
-    // per-letter rotation (+/-1.9deg) and vertical drift (+/-1.1px), uneven per-letter opacity
-    // (.80-.99), a soft speckle mask inside each glyph, a two-stage overspray halo (8px blur @30%
-    // and 2.8px blur @34%), and five spatter flecks - shipped at @2x/@3x. That PNG doesn't exist
-    // yet in design/assets/ (only the raw TudorVictors.ttf does), so this is an interim
-    // placeholder: plain text in the embedded typeface, no spray/speckle/halo effects at all.
-    // Replace this whole method with an Image blit at Layout::wordmarkX/Y once the real asset
-    // ships - see gatecrasher/CLAUDE.md's Status section.
-    juce::Font font = juce::Font(tudorVictorsTypeface()).withHeight(34.0f);
-    g.setColour(juce::Colour(0xFF14171A));
-    g.setFont(font);
-    g.drawText("GATECRASHER",
-               juce::Rectangle<float>(Layout::wordmarkX, Layout::wordmarkY, Layout::wordmarkW, Layout::wordmarkH),
-               juce::Justification::centredLeft, false);
+    // A pre-baked, transparent PNG rather than live type - which is what GATECRASHER-GUI-SPEC.md
+    // section 8 asked for in the first place ("Do not render the sprayed lettering in code. Bake
+    // it."). See the header for the licensing reason it finally had to be done.
+    //
+    // The art is padded well beyond the nameplate block (see Layout::wordmarkArt*) because the
+    // overspray halo and the spatter flecks both fall outside it.
+    g.setImageResamplingQuality(juce::Graphics::highResamplingQuality);
+    g.drawImage(wordmarkImage(),
+                juce::Rectangle<float>(Layout::wordmarkArtX, Layout::wordmarkArtY,
+                                        Layout::wordmarkArtW, Layout::wordmarkArtH),
+                juce::RectanglePlacement::stretchToFit);
 }

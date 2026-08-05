@@ -116,17 +116,44 @@ deferred through `ProgramManager`'s own `AsyncUpdater`.
 
 **Deliberate divergence from TapeRot**: TapeRot's GUI is fully vector/code-drawn (`SectionPanel`,
 `TapeRotLookAndFeel`, etc. - see `../taperot/CLAUDE.md`'s GUI section). Gatecrasher's is
-asset-based instead, because pre-rendered bitmap sculpting reads as more authentically "real 80s
-hardware" than modern vector rendering for this particular fascia. Concretely: `design/assets/gatecrasher-panel@2x.png`
-(gate-closed) is drawn as one flat static background across the full 960x434 reference canvas -
-fascia gradient/grain, rack ears, screws, dividers, and static labels are all baked into that single
-bitmap - with only the inherently-live pieces layered on top: the 15 knobs (bitmap filmstrips,
-`KnobFilmstripComponent`), the gate-envelope oscilloscope, the GATE OPEN lamp, the input meter, the
-Key Source/Shape switches, and the program header's dynamic text. The program header itself swaps
-between three provided bitmap states (factory/user/naming) as its structural base layer. Tick rings
-are drawn separately in code, since they don't rotate with the knob. Fixed reference canvas is
-960x434 (not TapeRot's 960x400) - within `../BRAND.md`'s allowance for a denser control set to
-scale proportionally rather than match the reference ratio exactly.
+asset-based for its *sculpted* elements - the chassis and the knobs - because pre-rendered bitmap
+sculpting reads as more authentically "real 80s hardware" than modern vector rendering for this
+particular fascia. Everything flat is drawn in code.
+
+The background is `design/assets/gatecrasher-panel-bare@2x.png`: a **bare chassis** - fascia
+gradient/grain, rack ears, screws, the header band, and the three section dividers, and nothing
+else. No controls, labels, nameplate or window frames. Layered on top, in order:
+
+- `PanelChrome` - the static engraved layer: section headings, group labels, every knob label, the
+  switch captions, the nameplate subtitle, the PROGRAM/IN/OUT captions, the recessed LED window
+  frames, the input meter's frame, the scope's timebase annotation, the version stamp.
+- `PanelReadouts` - the live numeric value under each knob, plus the algorithm selector's four
+  corner labels (whose lit one follows the Algorithm parameter).
+- The controls themselves: 15 knobs (bitmap filmstrips, `KnobFilmstripComponent`, with code-drawn
+  tick rings since those don't rotate with the knob), the gate-envelope scope, the GATE OPEN lamp,
+  the input meter's segments, the Key Source/Shape switches, `WordmarkComponent`, and
+  `ProgramHeader`'s dynamic text and buttons.
+
+This replaced an earlier arrangement that used the **fully dressed** render
+(`gatecrasher-panel@2x.png`) as the background, so every live element sat on top of a baked copy of
+itself. That produced a whole family of bugs - a frozen second needle behind every knob, ghosted
+switch labels, baked meter segments showing through the gaps between the live ones, IN/OUT windows
+stuck on a reading that never moved - each needing its own erase-or-cover workaround, several of
+which could only mask the symptom (re-blitting the background over a region whose baked content is
+exactly what you are about to redraw is a no-op, not an erase). With a bare chassis none of that is
+needed: `GatecrasherTheme::eraseToBackground` is a genuine clear again, used only to wipe a live
+element's *previous frame*. The dressed renders remain in `design/assets/` as pixel-matching
+acceptance targets but are no longer shipped in BinaryData.
+
+Type sizes are quoted by the spec and the reference mockup as CSS px, which is **not** the same
+number as a `juce::Font` height (that is ascent+descent, a typeface-specific multiple of the em
+size). `GatecrasherTheme::labelFontHeightForCssPx` / `monoFontHeightForCssPx` convert, calibrating
+the ratio off a reference string whose rendered width was measured directly from the dressed
+artwork - so one real measurement scales every size on the panel. Passing a spec px value straight
+to `labelFont()` renders visibly small.
+
+Fixed reference canvas is 960x434 (not TapeRot's 960x400) - within `../BRAND.md`'s allowance for a
+denser control set to scale proportionally rather than match the reference ratio exactly.
 
 `design/GATECRASHER-GUI-SPEC.md` is the authoritative pixel spec (palette, every control coordinate,
 the filmstrip frame-mapping formula, the scope's exact draw rules including the Shape-driven
@@ -151,12 +178,19 @@ Gatecrasher declares an optional stereo sidechain input bus (for `Trigger Source
 addition to the required stereo main input/output - `isBusesLayoutSupported` also accepts the
 sidechain bus disabled or mono. This is the one structural difference from TapeRot's bus setup.
 
-`juce_add_binary_data(GatecrasherBinaryData SOURCES ...)` currently embeds the panel background, the
-three header-state bitmaps, and the two knob filmstrips. It deliberately excludes the gate-open
-panel screenshot and the two SHAPE-switch scope reference renders (`scope-hard/soft-release@3x.png`)
-- those are pixel-matching acceptance targets for an implementer to check against, not runtime
-assets - and, initially, `TudorVictors.ttf` (the wordmark font), since the design spec calls for a
-pre-baked wordmark PNG rather than live font rendering. See "Status" below for where that stands.
+`juce_add_binary_data(GatecrasherBinaryData SOURCES ...)` embeds the bare panel chassis, the two
+knob filmstrips, and the four fonts (Barlow Condensed SemiBold/Bold, Share Tech Mono, TudorVictors).
+It deliberately excludes every *dressed* render - `gatecrasher-panel@2x.png`, its gate-open
+counterpart, the three header-state bitmaps, and the two SHAPE-switch scope references
+(`scope-hard/soft-release@3x.png`). Those are pixel-matching acceptance targets to check the live
+rendering against, not runtime assets; the header-state bitmaps in particular were briefly used at
+runtime and turned out to be uncalibrated against the panel's own coordinate frame (see
+`ProgramHeader.h`).
+
+Note for asset drops: `design/assets/` is **added to, not replaced**. A wholesale replacement has
+already once deleted all 19 tracked font files (breaking the build outright, since BinaryData
+couldn't resolve them) and overwritten this file with a copy of `design/CLAUDE.md`; both were
+recovered from git.
 
 ## Status
 
@@ -165,12 +199,14 @@ pre-baked wordmark PNG rather than live font rendering. See "Status" below for w
   structurally-plausible first pass rather than a tuned one (see `BUILDING.md`'s DSP tuning note
   and `CombAllpassNetwork.h`'s class comment) - the same status TapeRot's own factory presets had
   before their by-ear pass. Build, load, listen, adjust.
-- **GUI**: implemented against the approved spec using the full-background-bitmap approach above.
-  Two interim placeholders exist pending real assets that aren't in `design/assets/` yet: the
-  wordmark is drawn from the embedded TudorVictors typeface directly rather than a pre-baked
-  sprayed-stencil PNG, and labels/numeric readouts use JUCE's default fonts rather than Barlow
-  Condensed / Share Tech Mono. Both are flagged with `// TODO(design):` comments at their usage
-  sites and tracked in `prompts/PROMPTS.md`.
+- **GUI**: implemented against the approved spec using the bare-chassis approach above. Barlow
+  Condensed and Share Tech Mono are embedded and in use throughout. One interim deviation remains:
+  section 8 calls for the wordmark to be a pre-baked sprayed-stencil PNG, and no such PNG exists in
+  `design/assets/`, so `WordmarkComponent` draws it live from the embedded TudorVictors typeface -
+  reproducing the mockup's per-letter rotation/drift/opacity and its spatter flecks, and
+  approximating the two-stage overspray halo with stacked offset copies, but *not* the per-glyph
+  speckle mask (that needs an offscreen render per letter and reads as noise at 36px). Swapping in a
+  real PNG when one arrives is a small change, tracked in `prompts/PROMPTS.md`.
 - **Decay and Density** are intentionally automation-only parameters with no panel control - this
   is a settled design decision (Density always was; a gap around Shape having no control was
   separately resolved by adding the SHAPE switch, not by adding one for Decay), not an outstanding

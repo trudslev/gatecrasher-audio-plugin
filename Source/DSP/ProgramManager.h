@@ -2,6 +2,7 @@
 
 #include "FactoryPrograms.h"
 #include <functional>
+#include <vector>
 #include <juce_audio_processors/juce_audio_processors.h>
 
 // Owns factory + user program bookkeeping and file I/O: which program is current, the sorted list
@@ -46,6 +47,12 @@ public:
     // was the currently loaded one.
     void deleteUserProgram(int index);
 
+    // True once the APVTS parameters differ from the currently-loaded program's own values - i.e.
+    // the user has actually turned something and there is a change worth saving. The GUI uses this
+    // to disable SAVE on an untouched program (see ProgramHeader), so "Save" always means "save the
+    // edits I just made as a new program" rather than "duplicate this program unchanged".
+    bool isModifiedFromLoadedProgram() const;
+
     // Called by PluginProcessor's setStateInformation after apvts.replaceState() restores a saved
     // session - keeps the FACT/USER header tag in sync with whatever program index the session
     // remembers, without re-applying its parameters (they just came from the session state itself).
@@ -67,6 +74,7 @@ private:
     void applyProgramByIndex(int index);
     void applyFactoryProgram(const FactoryProgram& program);
     void refreshUserProgramList();
+    void captureCleanSnapshot();
     static juce::File getUserProgramDirectory();
 
     juce::AudioProcessorValueTreeState& apvts;
@@ -77,6 +85,12 @@ private:
     // Sorted alphabetically by filename (stable across relaunches, unlike mtime-sort). Index i in
     // this array is program index kNumFactoryPrograms + i.
     juce::Array<juce::File> userProgramFiles;
+
+    // Normalised parameter values as of the last program load, in getParameters() order - what
+    // isModifiedFromLoadedProgram compares against. Message-thread only (every writer runs there:
+    // initialise at construction, handleAsyncUpdate, saveNewUserProgram, and the session-restore
+    // path), so it needs no synchronisation of its own.
+    std::vector<float> cleanSnapshot;
 
     static constexpr int maxProgramNameLength = 22;
 };
