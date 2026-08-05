@@ -15,7 +15,7 @@ Gatecrasher builds on macOS (AU + VST3 + Standalone), Windows (VST3 + Standalone
 ### Build
 
 ```sh
-cmake -B build -G Xcode -DCMAKE_OSX_ARCHITECTURES=arm64
+cmake -B build -G Xcode
 cmake --build build --config Release
 ```
 
@@ -30,7 +30,7 @@ This builds AU, VST3, and a Standalone app, and installs the AU/VST3 bundles to:
 
 ```sh
 auval -a | grep -i gatecrasher               # confirm AU registration + 4-char codes
-auval -v aufx Gr85 Gcsh                      # full AU validation
+auval -v aufx Gr85 Nfdy                      # full AU validation
 
 /Applications/pluginval.app/Contents/MacOS/pluginval \
     --strictness-level 8 \
@@ -139,8 +139,8 @@ explicitly **not** covered here — see the "DSP tuning" note below.
 
 ## Notes
 
-- `PLUGIN_MANUFACTURER_CODE` (`Gcsh`), `PLUGIN_CODE` (`Gr85`), `BUNDLE_ID`
-  (`com.gatecrasher.gatecrasher`), and `COMPANY_NAME` in `CMakeLists.txt` are placeholders —
+- `PLUGIN_MANUFACTURER_CODE` (`Nfdy`, shared across the suite), `PLUGIN_CODE` (`Gr85`), `BUNDLE_ID`
+  (`com.neonfoundry.gatecrasher`), and `COMPANY_NAME` (`Neon Foundry`) —
   finalize these before any real release, since they're effectively permanent once shipped or
   automated against.
 - JUCE's free/personal tier splash screen is enabled (no paid license configured).

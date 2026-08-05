@@ -17,7 +17,7 @@ Gatecrasher builds on macOS (AU + VST3 + Standalone), Windows (VST3 + Standalone
 (VST3 + Standalone) — AU is Apple-only. JUCE 8.0.14 is fetched automatically via CMake
 `FetchContent` on any platform, no local checkout needed.
 
-Configure once — macOS: `cmake -B build -G Xcode -DCMAKE_OSX_ARCHITECTURES=arm64`. Windows:
+Configure once — macOS: `cmake -B build -G Xcode`. Windows:
 `cmake -B build -A x64`. Linux (single-config generator, so `CMAKE_BUILD_TYPE` must be set here
 rather than only at build time): `cmake -B build -DCMAKE_BUILD_TYPE=Release`. Re-run the configure
 step whenever `CMakeLists.txt` changes (new sources, new `juce_add_plugin` args) — a plain rebuild
@@ -166,9 +166,11 @@ implementation began and are meant to be implemented as-is, not redesigned.
 `CMakeLists.txt` fetches JUCE via `FetchContent` (pinned to `8.0.14`, matching TapeRot so the two
 sibling plugins don't drift on JUCE version) and defines one `juce_add_plugin(Gatecrasher ...)`
 target, with `FORMATS`/copy-dir branching on `if(APPLE)` the same way TapeRot's does.
-`PLUGIN_MANUFACTURER_CODE` (`Gcsh`), `PLUGIN_CODE` (`Gr85`, referencing the design spec's own
-"GATECRASHER GR-85" model tagline), `BUNDLE_ID`, and `COMPANY_NAME` are placeholders per
-BUILDING.md - treat them as effectively permanent once anything is shipped or automated against.
+`PLUGIN_MANUFACTURER_CODE` (`Nfdy`), `PLUGIN_CODE` (`Gr85`, referencing the design spec's own
+"GATECRASHER GR-85" model tagline), `BUNDLE_ID` (`com.neonfoundry.gatecrasher`) and `COMPANY_NAME`
+("Neon Foundry") are settled, not placeholders - the vendor identity was unified across the
+suite before any versioned release, and changing it again breaks saved projects in both AU
+and VST3 (JUCE derives the VST3 class ID from the manufacturer and plugin codes together).
 `Tests/` is a separate `juce_add_console_app` target that compiles the DSP `.cpp` files directly
 (not linked against the plugin target) plus its own JUCE-`UnitTest` files - new DSP `.cpp` files
 need to be added to both `target_sources(Gatecrasher ...)` here and

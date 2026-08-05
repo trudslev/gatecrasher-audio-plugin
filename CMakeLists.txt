@@ -10,7 +10,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(APPLE)
     set(CMAKE_OSX_DEPLOYMENT_TARGET "11.0" CACHE STRING "")
-    set(CMAKE_OSX_ARCHITECTURES "arm64" CACHE STRING "")
+    set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64" CACHE STRING "")
 endif()
 
 include(FetchContent)
@@ -59,9 +59,11 @@ endif()
 
 juce_add_plugin(Gatecrasher
     PRODUCT_NAME "Gatecrasher"
-    COMPANY_NAME "Tanis"
-    BUNDLE_ID "com.tanis.gatecrasher"
-    PLUGIN_MANUFACTURER_CODE Gcsh
+    COMPANY_NAME "Neon Foundry"
+    ICON_BIG "${CMAKE_CURRENT_SOURCE_DIR}/design/assets/icon/gatecrasher-icon-1024.png"
+    ICON_SMALL "${CMAKE_CURRENT_SOURCE_DIR}/design/assets/icon/gatecrasher-icon-256.png"
+    BUNDLE_ID "com.neonfoundry.gatecrasher"
+    PLUGIN_MANUFACTURER_CODE Nfdy
     PLUGIN_CODE Gr85
     FORMATS ${GATECRASHER_FORMATS}
     VST3_CATEGORIES Fx Reverb

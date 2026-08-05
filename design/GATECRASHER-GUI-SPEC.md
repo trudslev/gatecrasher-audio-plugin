@@ -8,6 +8,15 @@ vertical grain, side rails with screws, the 76 px header band, and the three sec
 No controls, labels, or nameplate. Use it as the panel background image; everything else is drawn
 on top. (`gatecrasher-panel@2x.png` and `-gate-open@2x.png` remain the fully dressed references.)
 
+### Plugin icon
+
+`assets/icon/` — dark rounded-square plate, fine vertical grain, inset hairline border, and the
+gate envelope (attack → hold → hard cut → floor) as a glowing #FF2E17 stroke with a 13% fill
+under the held region. No text, so it survives to 16 px. Sizes: 1024, 512, 256, 128, 64, 32, 16.
+Master generator: `Gatecrasher Icon Master.dc.html`; directions explored in `Gatecrasher Icon.dc.html`.
+For .icns/.ico, pack the size set as-is — the corner radius is baked in, so don't let the OS
+round it a second time.
+
 ---
 
 ## 1. Palette
