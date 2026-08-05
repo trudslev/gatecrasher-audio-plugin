@@ -62,9 +62,19 @@ else()
     set(GATECRASHER_EXTRA_ARGS "")
 endif()
 
+# Single source of truth for the two identity strings that appear BOTH in the bundle metadata and
+# in ProgramManager's user-Programs directory path. ProgramManager.cpp can't read JUCE's
+# JucePlugin_* macros - they only exist in the plugin target's generated header, and that file is
+# also compiled into the Tests console app - so it used to carry a hand-synced copy marked "keep in
+# sync". It didn't stay in sync: COMPANY_NAME became "Neon Foundry" while the copy still said
+# "Tanis", quietly pointing saved Programs at the old directory. CMake now hands both targets the
+# same values, so drift is a build error instead of silent data loss.
+set(GATECRASHER_COMPANY_NAME "Neon Foundry")
+set(GATECRASHER_PRODUCT_NAME "Gatecrasher")
+
 juce_add_plugin(Gatecrasher
-    PRODUCT_NAME "Gatecrasher"
-    COMPANY_NAME "Neon Foundry"
+    PRODUCT_NAME "${GATECRASHER_PRODUCT_NAME}"
+    COMPANY_NAME "${GATECRASHER_COMPANY_NAME}"
     ICON_BIG "${CMAKE_CURRENT_SOURCE_DIR}/design/assets/icon/gatecrasher-icon-1024.png"
     ICON_SMALL "${CMAKE_CURRENT_SOURCE_DIR}/design/assets/icon/gatecrasher-icon-256.png"
     BUNDLE_ID "com.neonfoundry.gatecrasher"
@@ -111,7 +121,9 @@ target_sources(Gatecrasher PRIVATE
 target_compile_definitions(Gatecrasher PUBLIC
     JUCE_WEB_BROWSER=0
     JUCE_USE_CURL=0
-    JUCE_VST3_CAN_REPLACE_VST2=0)
+    JUCE_VST3_CAN_REPLACE_VST2=0
+    NF_COMPANY_NAME="${GATECRASHER_COMPANY_NAME}"
+    NF_PRODUCT_NAME="${GATECRASHER_PRODUCT_NAME}")
 
 target_link_libraries(Gatecrasher
     PRIVATE
