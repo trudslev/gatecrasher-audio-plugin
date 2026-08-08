@@ -8,9 +8,15 @@ cmake-build-*/
 .DS_Store
 
 # TudorVictors is Chequered Ink's: their terms permit non-profit use but grant no right to
-# redistribute the font file, so it must never be committed. The wordmark it renders ships as a
-# pre-baked transparent PNG instead (design/assets/gatecrasher-wordmark@3x.png).
+# redistribute the font file, so it must never be committed. It arrives in each design bundle and
+# is kept locally only so the wordmark can be re-baked; as of Rev 6 the wordmark is baked into
+# gatecrasher-panel-plate@2x.png, so nothing in the build needs it.
 design/assets/TudorVictors.ttf
+
+# Designer hand-off archives dropped into design/ - the extracted contents are tracked, the archive
+# itself is not. design/assets/ must stay tracked: the plate, knob strips, icons and the two runtime
+# fonts are build inputs, so an untracked design/ is a repo that does not build.
+design/*.zip
 
 # Prompt logs are personal working notes, not project documentation. Any decision that matters
 # belongs in a code comment beside what it governs, or in this repo's CLAUDE.md - never only in a

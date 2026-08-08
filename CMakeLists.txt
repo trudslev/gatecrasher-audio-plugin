@@ -25,29 +25,33 @@ FetchContent_Declare(JUCE
     GIT_SHALLOW TRUE)
 FetchContent_MakeAvailable(JUCE)
 
-# Runtime GUI assets only - the dressed panel renders, the knob render comparison, and the
-# SHAPE-switch scope references (scope-hard/soft-release) are pixel-matching acceptance targets for
-# design/GATECRASHER-GUI-SPEC.md, not loaded at runtime, so they're deliberately excluded.
+# Runtime GUI assets only.
 #
-# gatecrasher-wordmark@3x.png is the spray-stencil wordmark baked to a transparent PNG, per the
-# spec's section 8 ("Do not render the sprayed lettering in code. Bake it."). TudorVictors.ttf is
-# deliberately NOT embedded and is NOT tracked in this repository: its licence (Chequered Ink)
-# permits non-profit use but grants no redistribution right, and allows embedding only in a form
-# that "protects the Product from extraction", which a BinaryData blob is not. See
-# WordmarkComponent's class comment.
+# Rev 6 inverted the architecture: gatecrasher-panel-plate@2x.png is a FULLY PRINTED plate carrying
+# every label, numeral, unit and tick, and it is the build's background. The old bare chassis
+# (-bare@2x) is kept in design/assets/ for mocking layouts but is no longer a build input, and the
+# code that drew those labels is gone - see spec section 0.
 #
-# Barlow Condensed SemiBold (600, labels) / Bold (700, lamp text) and Share Tech Mono Regular
-# (numeric/LED readouts) per the spec's typography section - only the specific weights actually used
-# are embedded, not the full 18-file Barlow Condensed family design/assets/ ships.
+# The dressed renders (gatecrasher-panel@Nx, -gate-open@Nx), the knob render comparison and the
+# SHAPE-switch scope references are pixel-matching acceptance targets for design/, not runtime
+# assets, so they stay out of BinaryData. gatecrasher-wordmark@3x.png is gone with
+# WordmarkComponent - the wordmark is baked into the plate now. TudorVictors.ttf ships in design/
+# only so the wordmark can be re-baked; it is not a runtime face and is not embedded.
+#
+# Fonts: only the two faces spec section 2.3 draws at RUNTIME, per design/assets/fonts/README.md.
+# Barlow Condensed Bold (700, selected) and Regular (400, unselected) render the six
+# state-dependent labels of section 0.4; Share Tech Mono Regular renders the LCD. SemiBold (600) is
+# shipped in design/assets/fonts/ but deliberately NOT embedded - nothing draws a group caption at
+# runtime. Both families are OFL 1.1, which permits embedding; design/assets/fonts/OFL.txt carries
+# the notice the licence requires to travel with them.
 juce_add_binary_data(GatecrasherBinaryData
     SOURCES
-        design/assets/gatecrasher-panel-bare@2x.png
-        design/assets/gatecrasher-wordmark@3x.png
+        design/assets/gatecrasher-panel-plate@2x.png
         design/assets/knob_large_128px_128f.png
         design/assets/knob_small_128px_128f.png
-        design/assets/BarlowCondensed-SemiBold.ttf
-        design/assets/BarlowCondensed-Bold.ttf
-        design/assets/ShareTechMono-Regular.ttf)
+        design/assets/fonts/BarlowCondensed-Bold.ttf
+        design/assets/fonts/BarlowCondensed-Regular.ttf
+        design/assets/fonts/ShareTechMono-Regular.ttf)
 
 # AU is Apple-only; Windows/Linux only ever build VST3 + Standalone. VST3_COPY_DIR/AU_COPY_DIR are
 # only set on Apple - leaving them unset elsewhere lets JUCE apply its own correct per-OS default

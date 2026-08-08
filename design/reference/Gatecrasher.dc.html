@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Stardos+Stencil:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+  @font-face { font-family: 'TudorVictors'; src: url('uploads/TudorVictors-lgxzD.ttf') format('truetype'); font-display: swap; }
+  body { margin: 0; background: #16191c; }
+  @keyframes gcCaret { 0%,49% { opacity: 1 } 50%,100% { opacity: 0 } }
+  a { color: #16191c; }
+  a:hover { color: #ff2b1c; }
+</style>
+</helmet>
+<div id="gcpanel" style="width:960px;height:434px;display:flex;font-family:'Barlow Condensed',Helvetica,Arial,sans-serif;color:#16191c;background:linear-gradient(180deg,#bcc2c6,#a5acb0 55%,#979ea2);box-shadow:0 24px 60px rgba(0,0,0,.6);overflow:hidden">
+
+  <div style="width:26px;flex:none;background:linear-gradient(90deg,#ced4d7,#aeb5b9 40%,#929a9e);border-right:1px solid #0a0c0d;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:10px 0">
+    <div style="width:11px;height:11px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#9ba2a8,#4a5055 60%,#23272a);box-shadow:inset 0 0 0 1px #0d0f10,0 1px 1px rgba(255,255,255,.08)"></div>
+    <div style="width:1px;flex:1;margin:8px 0;background:linear-gradient(rgba(0,0,0,.20),rgba(0,0,0,0))"></div>
+    <div style="width:11px;height:11px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#9ba2a8,#4a5055 60%,#23272a);box-shadow:inset 0 0 0 1px #0d0f10,0 1px 1px rgba(255,255,255,.08)"></div>
+  </div>
+
+  <div style="flex:1;min-width:0;display:flex;flex-direction:column;background:linear-gradient(180deg,#c6ccd0,#b0b7bb 35%,#a0a7ab);background-image:repeating-linear-gradient(90deg,rgba(255,255,255,.10) 0 1px,rgba(0,0,0,.022) 1px 2px),linear-gradient(180deg,#c6ccd0,#b0b7bb 35%,#a0a7ab)">
+
+    <div style="height:76px;flex:none;display:flex;align-items:center;gap:14px;padding:0 14px;background:linear-gradient(180deg,#d2d8db,#b6bdc1);border-bottom:1px solid #71787c;box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 1px 0 rgba(255,255,255,.35)">
+      <div style="flex:none;display:flex;flex-direction:column;align-items:flex-start;gap:2px">
+        <div style="position:relative;padding:5px 0 0;font-family:'TudorVictors','Stardos Stencil',Impact,sans-serif;font-weight:400;font-size:36px;line-height:1;letter-spacing:.03em">
+          <div style="position:absolute;left:-4px;top:0;letter-spacing:.03em;color:rgba(20,24,27,.3);filter:blur(8px);transform:scale(1.06);transform-origin:left center">GATECRASHER</div>
+          <div style="position:absolute;left:0;top:1px;letter-spacing:.03em;color:rgba(24,28,32,.34);filter:blur(2.8px)">GATECRASHER</div>
+          <div style="position:relative;display:flex;align-items:baseline">
+            <span style="display:inline-block;color:#14171a;opacity:0.93;filter:blur(.2px);transform:rotate(-1.6deg) translateY(0.6px);-webkit-mask-image:radial-gradient(circle at 34% 28%,rgba(0,0,0,.72) 0 5px,#000 16px);mask-image:radial-gradient(circle at 34% 28%,rgba(0,0,0,.72) 0 5px,#000 16px)">G</span>
+            <span style="display:inline-block;color:#14171a;opacity:0.85;filter:blur(.2px);transform:rotate(1.1deg) translateY(-0.7px);-webkit-mask-image:radial-gradient(circle at 62% 55%,rgba(0,0,0,.72) 0 5px,#000 16px);mask-image:radial-gradient(circle at 62% 55%,rgba(0,0,0,.72) 0 5px,#000 16px)">A</span>
+            <span style="display:inline-block;color:#14171a;opacity:0.97;filter:blur(.2px);transform:rotate(-0.5deg) translateY(0.9px);-webkit-mask-image:radial-gradient(circle at 18% 72%,rgba(0,0,0,.72) 0 5px,#000 16px);mask-image:radial-gradient(circle at 18% 72%,rgba(0,0,0,.72) 0 5px,#000 16px)">T</span>
+            <span style="display:inline-block;color:#14171a;opacity:0.8;filter:blur(.2px);transform:rotate(1.8deg) translateY(-0.4px);-webkit-mask-image:radial-gradient(circle at 78% 22%,rgba(0,0,0,.72) 0 5px,#000 16px);mask-image:radial-gradient(circle at 78% 22%,rgba(0,0,0,.72) 0 5px,#000 16px)">E</span>
+            <span style="display:inline-block;color:#14171a;opacity:0.91;filter:blur(.2px);transform:rotate(-1.2deg) translateY(0.3px);-webkit-mask-image:radial-gradient(circle at 44% 64%,rgba(0,0,0,.72) 0 5px,#000 16px);mask-image:radial-gradient(circle at 44% 64%,rgba(0,0,0,.72) 0 5px,#000 16px)">C</span>
+            <span style="display:inline-block;color:#14171a;opacity:0.99;filter:blur(.2px);transform:rotate(0.7deg) translateY(1.1px);-webkit-mask-image:radial-gradient(circle at 26% 38%,rgba(0,0,0,.72) 0 5px,#000 16px);mask-image:radial-gradient(circle at 26% 38%,rgba(0,0,0,.72) 0 5px,#000 16px)">R</span>
+            <span style="display:inline-block;color:#14171a;opacity:0.83;filter:blur(.2px);transform:rotate(-1.9deg) translateY(-0.8px);-webkit-mask-image:radial-gradient(circle at 70% 80%,rgba(0,0,0,.72) 0 5px,#000 16px);mask-image:radial-gradient(circle at 70% 80%,rgba(0,0,0,.72) 0 5px,#000 16px)">A</span>
+            <span style="display:inline-block;color:#14171a;opacity:0.95;filter:blur(.2px);transform:rotate(1.3deg) translateY(0.6px);-webkit-mask-image:radial-gradient(circle at 52% 18%,rgba(0,0,0,.72) 0 5px,#000 16px);mask-image:radial-gradient(circle at 52% 18%,rgba(0,0,0,.72) 0 5px,#000 16px)">S</span>
+            <span style="display:inline-block;color:#14171a;opacity:0.88;filter:blur(.2px);transform:rotate(-0.8deg) translateY(-0.3px);-webkit-mask-image:radial-gradient(circle at 12% 48%,rgba(0,0,0,.72) 0 5px,#000 16px);mask-image:radial-gradient(circle at 12% 48%,rgba(0,0,0,.72) 0 5px,#000 16px)">H</span>
+            <span style="display:inline-block;color:#14171a;opacity:0.98;filter:blur(.2px);transform:rotate(1.5deg) translateY(1px);-webkit-mask-image:radial-gradient(circle at 84% 60%,rgba(0,0,0,.72) 0 5px,#000 16px);mask-image:radial-gradient(circle at 84% 60%,rgba(0,0,0,.72) 0 5px,#000 16px)">E</span>
+            <span style="display:inline-block;color:#14171a;opacity:0.84;filter:blur(.2px);transform:rotate(-1.1deg) translateY(-0.5px);-webkit-mask-image:radial-gradient(circle at 38% 86%,rgba(0,0,0,.72) 0 5px,#000 16px);mask-image:radial-gradient(circle at 38% 86%,rgba(0,0,0,.72) 0 5px,#000 16px)">R</span>
+          </div>
+          <div style="position:absolute;left:6px;top:6px;width:2.5px;height:2.5px;border-radius:50%;background:rgba(20,24,27,.45);filter:blur(.6px)"></div>
+          <div style="position:absolute;left:96px;top:-3px;width:1.8px;height:1.8px;border-radius:50%;background:rgba(20,24,27,.4);filter:blur(.5px)"></div>
+          <div style="position:absolute;left:158px;bottom:9px;width:3px;height:3px;border-radius:50%;background:rgba(20,24,27,.38);filter:blur(.8px)"></div>
+          <div style="position:absolute;left:214px;top:4px;width:1.5px;height:1.5px;border-radius:50%;background:rgba(20,24,27,.42);filter:blur(.5px)"></div>
+          <div style="position:absolute;left:44px;bottom:4px;width:2px;height:2px;border-radius:50%;background:rgba(20,24,27,.3);filter:blur(.7px)"></div>
+        </div>
+        <div style="flex:none;display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding-left:2px">
+          <div style="white-space:nowrap;font-size:9px;line-height:1;letter-spacing:.19em;color:#34383c">GATED AMBIENCE PROCESSOR</div>
+          <div style="white-space:nowrap;font-size:9px;line-height:1;letter-spacing:.19em;color:#34383c">MODEL GR&#8209;85 &#183; STEREO</div>
+        </div>
+      </div>
+
+      <div style="flex:1;min-width:0;display:flex;align-items:center;justify-content:flex-end;gap:9px">
+        <div style="flex:none;display:flex;flex-direction:column;gap:4px;align-items:stretch">
+          <div ref="{{ progCaptionRef }}" style="font-size:10px;font-weight:600;letter-spacing:.22em;color:#16191c">PROGRAM</div>
+          <div style="display:flex;align-items:stretch;width:330px;background:#07090a;border:1px solid #363c41;box-shadow:inset 0 2px 6px rgba(0,0,0,.9)">
+            <div ref="{{ kindTagRef }}" style="flex:none;display:flex;align-items:center;padding:0 7px;border-right:1px solid #2a3035;font-family:'Share Tech Mono',monospace;font-size:13px;letter-spacing:.1em;color:#f0e0b0;text-shadow:0 0 7px rgba(240,216,150,.35)">FACT</div>
+            <div ref="{{ progTextRef }}" style="flex:1;min-width:0;overflow:hidden;padding:4px 10px;white-space:nowrap;text-align:center;font-family:'Share Tech Mono',monospace;font-size:13px;letter-spacing:.1em;color:#f0e0b0;text-shadow:0 0 7px rgba(240,216,150,.35)">14 ROOM REINFORCEMENT<span ref="{{ caretRef }}" style="display:none;margin-left:1px;color:#f0e0b0;animation:gcCaret 1s steps(1) infinite">&#9608;</span></div>
+            <div style="flex:none;display:flex;align-items:center;justify-content:center;width:30px">
+              <div style="width:6px;height:6px;margin-top:-3px;border-right:1.5px solid #f0e0b0;border-bottom:1.5px solid #f0e0b0;transform:rotate(45deg);filter:drop-shadow(0 0 5px rgba(240,216,150,.45))"></div>
+            </div>
+          </div>
+        </div>
+
+        <div style="align-self:flex-end;margin-left:-3px;display:grid;grid-template-columns:1fr 1fr;align-items:stretch;gap:5px">
+          <div ref="{{ btnARef }}" onClick="{{ onPrimary }}" style="cursor:pointer;user-select:none;display:flex;align-items:center;justify-content:center;padding:0 7px;height:24.5px;box-sizing:border-box;text-align:center;text-indent:.12em;font-size:10px;font-weight:600;letter-spacing:.1em;color:#16191c;background:linear-gradient(180deg,#dbe0e3,#aab1b6);border:1px solid #6d7478;box-shadow:inset 0 1px 0 rgba(255,255,255,.75),0 1px 2px rgba(0,0,0,.35)" style-active="box-shadow:inset 0 2px 4px rgba(0,0,0,.45);background:linear-gradient(180deg,#a9b0b5,#c9d0d4)">SAVE</div>
+          <div ref="{{ btnBRef }}" onClick="{{ onSecondary }}" style="cursor:default;user-select:none;display:flex;align-items:center;justify-content:center;padding:0 7px;height:24.5px;box-sizing:border-box;text-align:center;text-indent:.12em;font-size:10px;font-weight:600;letter-spacing:.1em;color:#262b2f;background:linear-gradient(180deg,#b4bbbf,#a3aaae);border:1px solid #8d9498;box-shadow:inset 0 2px 3px rgba(0,0,0,.28)">DELETE</div>
+        </div>
+
+        <div style="display:flex;gap:6px">
+          <div style="display:flex;flex-direction:column;gap:4px;align-items:center">
+            <div style="font-size:10px;font-weight:600;letter-spacing:.18em;color:#16191c">IN</div>
+            <div style="padding:4px 8px;background:#07090a;border:1px solid #363c41;box-shadow:inset 0 2px 6px rgba(0,0,0,.9);font-family:'Share Tech Mono',monospace;font-size:12px;color:#f0e0b0;text-shadow:0 0 6px rgba(240,216,150,.3)">-6.2</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:4px;align-items:center">
+            <div style="font-size:10px;font-weight:600;letter-spacing:.18em;color:#16191c">OUT</div>
+            <div style="padding:4px 8px;background:#07090a;border:1px solid #363c41;box-shadow:inset 0 2px 6px rgba(0,0,0,.9);font-family:'Share Tech Mono',monospace;font-size:12px;color:#f0e0b0;text-shadow:0 0 6px rgba(240,216,150,.3)">-1.4</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="flex:1;display:flex;gap:9px;padding:10px 10px 8px;min-height:0">
+
+      <div style="width:152px;flex:none;display:flex;flex-direction:column;align-items:center;padding:8px 0">
+        <div style="font-size:10px;font-weight:700;letter-spacing:.26em;color:#16191c;margin-bottom:6px">INPUT / TRIGGER</div>
+
+        <div style="display:flex;align-items:flex-start;justify-content:center;gap:6px">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
+            <div onPointerDown="{{ onThresholdDown }}" style="position:relative;width:114px;height:114px;cursor:ns-resize;touch-action:none">
+              <div style="position:absolute;inset:20px;border-radius:50%;background:conic-gradient(from 225deg,rgba(24,30,34,.42) 0 270deg,rgba(0,0,0,0) 270deg 360deg);-webkit-mask:radial-gradient(circle,transparent 92%,#000 93%);mask:radial-gradient(circle,transparent 92%,#000 93%)"></div>
+              <sc-for list="{{ thrMarks }}" as="m" hint-placeholder-count="5">
+                <div style="position:absolute;inset:0;transform:rotate({{ m.deg }}deg)">
+                  <div style="position:absolute;left:50%;top:16px;margin-left:-1px;width:2px;height:9px;background:#16191c"></div>
+                </div>
+              </sc-for>
+              <sc-for list="{{ thrMarks }}" as="m" hint-placeholder-count="5">
+                <div style="position:absolute;left:{{ m.x }}px;top:{{ m.y }}px;transform:translate(-50%,-50%);font-size:10px;font-weight:500;color:#16191c;white-space:nowrap">{{ m.t }}</div>
+              </sc-for>
+              <div style="position:absolute;left:50%;bottom:0;transform:translateX(-50%);font-size:10px;font-weight:400;letter-spacing:.06em;color:#16191c">dB</div>
+              <div style="position:absolute;inset:26px;border-radius:50%;background:radial-gradient(118% 118% at 34% 22%,#5b6167,#2d3236 46%,#15181b 78%,#0b0d0f);border:1px solid #08090a;box-shadow:inset 0 1px 0 rgba(255,255,255,.3),inset 0 -3px 6px rgba(0,0,0,.75),0 3px 7px rgba(0,0,0,.6)"></div>
+              <div style="position:absolute;inset:26px;border-radius:50%;background:repeating-conic-gradient(from 0deg,rgba(255,255,255,.07) 0 2.5deg,rgba(0,0,0,.22) 2.5deg 6deg);-webkit-mask:radial-gradient(circle,transparent 74%,#000 76%);mask:radial-gradient(circle,transparent 74%,#000 76%)"></div>
+              <div style="position:absolute;inset:26px;transform:rotate({{ thresholdDeg }}deg)">
+                <div style="position:absolute;left:50%;top:5px;margin-left:-1.5px;width:3px;height:24px;background:linear-gradient(#ffffff,#c2c8cd);box-shadow:0 0 5px rgba(255,255,255,.3)"></div>
+              </div>
+            </div>
+            <div style="font-size:10px;font-weight:700;letter-spacing:.16em;color:#16191c">THRESHOLD</div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;align-items:center;gap:5px;padding-top:26px">
+            <div style="position:relative;width:14px;height:74px;background:#07090a;border:1px solid #33393e;box-shadow:inset 0 2px 6px rgba(0,0,0,.9);overflow:hidden">
+              <div style="position:absolute;left:1px;right:1px;bottom:0;top:0;background-image:repeating-linear-gradient(to top,#20262a 0 4px,rgba(0,0,0,0) 4px 6px);background-position:left bottom"></div>
+              <div ref="{{ meterRef }}" style="position:absolute;left:1px;right:1px;bottom:0;height:30%;background-image:repeating-linear-gradient(to top,#f4f8fa 0 4px,rgba(0,0,0,0) 4px 6px);background-position:left bottom;filter:drop-shadow(0 0 3px rgba(230,242,248,.55))"></div>
+              <div style="position:absolute;left:0;right:0;bottom:62%;height:1px;background:#ffffff;opacity:.5"></div>
+            </div>
+            <div style="font-size:10px;font-weight:600;letter-spacing:.16em;color:#16191c">IN</div>
+          </div>
+        </div>
+
+        <div style="margin-top:8px;font-size:10px;font-weight:600;letter-spacing:.2em;color:#16191c">TRIGGER FILTER</div>
+        <div style="display:flex;justify-content:center;gap:0px;margin-top:2px">
+          <sc-for list="{{ trigFilters }}" as="k" hint-placeholder-count="2">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
+              <div onPointerDown="{{ k.onDown }}" style="position:relative;width:76px;height:76px;cursor:ns-resize;touch-action:none">
+                <div style="position:absolute;inset:16px;border-radius:50%;background:conic-gradient(from 225deg,rgba(24,30,34,.42) 0 270deg,rgba(0,0,0,0) 270deg 360deg);-webkit-mask:radial-gradient(circle,transparent 92%,#000 93%);mask:radial-gradient(circle,transparent 92%,#000 93%)"></div>
+                <sc-for list="{{ k.marks }}" as="m" hint-placeholder-count="5">
+                  <div style="position:absolute;inset:0;transform:rotate({{ m.deg }}deg)">
+                    <div style="position:absolute;left:50%;top:12px;margin-left:-1px;width:2px;height:8px;background:#16191c"></div>
+                  </div>
+                </sc-for>
+                <sc-for list="{{ k.marks }}" as="m" hint-placeholder-count="5">
+                  <div style="position:absolute;left:{{ m.x }}px;top:{{ m.y }}px;transform:translate(-50%,-50%);font-size:10px;font-weight:500;color:#16191c;white-space:nowrap">{{ m.t }}</div>
+                </sc-for>
+                <div style="position:absolute;left:50%;bottom:0;transform:translateX(-50%);font-size:10px;font-weight:400;letter-spacing:.06em;color:#16191c">{{ k.unit }}</div>
+                <div style="position:absolute;inset:22px;border-radius:50%;background:radial-gradient(118% 118% at 34% 22%,#555b61,#2b3034 48%,#131619 80%,#0b0d0f);border:1px solid #08090a;box-shadow:inset 0 1px 0 rgba(255,255,255,.26),0 2px 5px rgba(0,0,0,.55)"></div>
+                <div style="position:absolute;inset:22px;transform:rotate({{ k.deg }}deg)">
+                  <div style="position:absolute;left:50%;top:3px;margin-left:-1px;width:2px;height:12px;background:#f4f7f9"></div>
+                </div>
+              </div>
+              <div style="font-size:10px;font-weight:700;letter-spacing:.16em;color:#16191c">{{ k.label }}</div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div onClick="{{ onToggleKey }}" style="margin-top:auto;cursor:pointer;user-select:none;display:flex;flex-direction:column;align-items:center;gap:5px">
+          <div style="font-size:10px;font-weight:600;letter-spacing:.2em;color:#16191c">KEY SOURCE</div>
+          <div style="position:relative;width:56px;height:20px;background:#07090a;border:1px solid #353b40;box-shadow:inset 0 2px 5px rgba(0,0,0,.9)">
+            <div ref="{{ keyShoeRef }}" style="position:absolute;top:1px;bottom:1px;left:1px;width:26px;background:linear-gradient(180deg,#8d959b,#4e545a);box-shadow:inset 0 1px 0 rgba(255,255,255,.45),1px 0 3px rgba(0,0,0,.6)"></div>
+          </div>
+          <div style="display:flex;gap:10px;font-size:10px;letter-spacing:.1em">
+            <span ref="{{ intRef }}" style="font-weight:700;color:#16191c">INTERNAL</span><span ref="{{ scRef }}" style="font-weight:400;color:#2b3034">SIDECHAIN</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="width:1px;background:linear-gradient(rgba(0,0,0,0),rgba(0,0,0,.32) 20%,rgba(0,0,0,.32) 80%,rgba(0,0,0,0));box-shadow:1px 0 0 rgba(255,255,255,.55)"></div>
+
+      <div style="flex:1;min-width:0;display:flex;flex-direction:column;padding:8px 0 0">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <div style="display:flex;align-items:center;gap:9px">
+            <div ref="{{ lampRef }}" style="width:15px;height:15px;border-radius:50%;background:#3a1512;border:1px solid #0a0c0d;box-shadow:inset 0 1px 1px rgba(255,255,255,.14)"></div>
+            <div style="font-size:10px;font-weight:700;letter-spacing:.24em;color:#16191c">GATE OPEN</div>
+          </div>
+          <div style="display:flex;gap:14px;font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:.1em;color:#34383c">
+            <span>ENVELOPE</span><span>50 ms / DIV</span>
+          </div>
+        </div>
+
+        <div style="position:relative;border:1px solid #0a0c0d;box-shadow:inset 0 3px 10px rgba(0,0,0,.9),0 1px 0 rgba(255,255,255,.07);background:#06080a;padding:1px">
+          <canvas ref="{{ scopeRef }}" style="display:block;width:100%;height:112px"></canvas>
+        </div>
+
+        <div style="display:flex;align-items:flex-start;justify-content:center;gap:4px;padding-top:6px">
+          <sc-for list="{{ ahr }}" as="k" hint-placeholder-count="3">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
+              <div onPointerDown="{{ k.onDown }}" style="position:relative;width:98px;height:98px;cursor:ns-resize;touch-action:none">
+                <div style="position:absolute;inset:16px;border-radius:50%;background:conic-gradient(from 225deg,rgba(24,30,34,.42) 0 270deg,rgba(0,0,0,0) 270deg 360deg);-webkit-mask:radial-gradient(circle,transparent 92%,#000 93%);mask:radial-gradient(circle,transparent 92%,#000 93%)"></div>
+                <sc-for list="{{ k.marks }}" as="m" hint-placeholder-count="5">
+                  <div style="position:absolute;inset:0;transform:rotate({{ m.deg }}deg)">
+                    <div style="position:absolute;left:50%;top:12px;margin-left:-1px;width:2px;height:9px;background:#16191c"></div>
+                  </div>
+                </sc-for>
+                <sc-for list="{{ k.marks }}" as="m" hint-placeholder-count="5">
+                  <div style="position:absolute;left:{{ m.x }}px;top:{{ m.y }}px;transform:translate(-50%,-50%);font-size:10px;font-weight:500;color:#16191c;white-space:nowrap">{{ m.t }}</div>
+                </sc-for>
+                <div style="position:absolute;left:50%;bottom:0;transform:translateX(-50%);font-size:10px;font-weight:400;letter-spacing:.06em;color:#16191c">{{ k.unit }}</div>
+                <div style="position:absolute;inset:22px;border-radius:50%;background:radial-gradient(118% 118% at 34% 22%,#5b6167,#2d3236 46%,#15181b 78%,#0b0d0f);border:1px solid #08090a;box-shadow:inset 0 1px 0 rgba(255,255,255,.3),inset 0 -3px 6px rgba(0,0,0,.75),0 3px 7px rgba(0,0,0,.6)"></div>
+                <div style="position:absolute;inset:22px;border-radius:50%;background:repeating-conic-gradient(from 0deg,rgba(255,255,255,.07) 0 2.5deg,rgba(0,0,0,.22) 2.5deg 6deg);-webkit-mask:radial-gradient(circle,transparent 74%,#000 76%);mask:radial-gradient(circle,transparent 74%,#000 76%)"></div>
+                <div style="position:absolute;inset:22px;transform:rotate({{ k.deg }}deg)">
+                  <div style="position:absolute;left:50%;top:5px;margin-left:-1.5px;width:3px;height:20px;background:linear-gradient(#ffffff,#c2c8cd);box-shadow:0 0 5px rgba(255,255,255,.3)"></div>
+                </div>
+              </div>
+              <div style="font-size:10px;font-weight:700;letter-spacing:.18em;color:#16191c">{{ k.label }}</div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div onClick="{{ onToggleShape }}" style="margin-top:auto;cursor:pointer;user-select:none;display:flex;flex-direction:column;align-items:center;gap:5px;padding-bottom:2px">
+          <div style="font-size:10px;font-weight:600;letter-spacing:.2em;color:#16191c">SHAPE</div>
+          <div style="position:relative;width:56px;height:20px;background:#07090a;border:1px solid #353b40;box-shadow:inset 0 2px 5px rgba(0,0,0,.9)">
+            <div ref="{{ shapeShoeRef }}" style="position:absolute;top:1px;bottom:1px;left:1px;width:26px;background:linear-gradient(180deg,#8d959b,#4e545a);box-shadow:inset 0 1px 0 rgba(255,255,255,.45),1px 0 3px rgba(0,0,0,.6)"></div>
+          </div>
+          <div style="display:flex;gap:10px;font-size:10px;letter-spacing:.1em">
+            <span ref="{{ hardRef }}" style="font-weight:700;color:#16191c">HARD</span><span ref="{{ softRef }}" style="font-weight:400;color:#2b3034">SOFT</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="width:1px;background:linear-gradient(rgba(0,0,0,0),rgba(0,0,0,.32) 20%,rgba(0,0,0,.32) 80%,rgba(0,0,0,0));box-shadow:1px 0 0 rgba(255,255,255,.55)"></div>
+
+      <div style="width:200px;flex:none;display:flex;flex-direction:column;align-items:center;padding:8px 0">
+        <div style="font-size:10px;font-weight:700;letter-spacing:.26em;color:#16191c;margin-bottom:8px">REVERB TANK</div>
+
+        <div style="position:relative;width:150px;height:74px">
+          <div onPointerDown="{{ onAlgoDown }}" style="position:absolute;left:50%;top:14px;margin-left:-25px;width:50px;height:50px;cursor:ns-resize;touch-action:none">
+            <div style="position:absolute;inset:-6px;border-radius:50%;background:repeating-conic-gradient(from 45deg,#20262a 0 1.8deg,rgba(0,0,0,0) 1.8deg 90deg);-webkit-mask:radial-gradient(circle,transparent 62%,#000 63%);mask:radial-gradient(circle,transparent 62%,#000 63%)"></div>
+            <div style="position:absolute;inset:0;border-radius:50%;background:radial-gradient(118% 118% at 34% 22%,#5b6167,#2d3236 46%,#15181b 78%,#0b0d0f);border:1px solid #08090a;box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 3px 6px rgba(0,0,0,.6)"></div>
+            <div style="position:absolute;inset:0;transform:rotate({{ algoDeg }}deg)">
+              <div style="position:absolute;left:50%;top:4px;margin-left:-1.5px;width:3px;height:19px;background:linear-gradient(#ffffff,#c2c8cd)"></div>
+            </div>
+          </div>
+          <div ref="{{ algoRoomRef }}" style="position:absolute;left:0;top:2px;font-size:10px;font-weight:400;letter-spacing:.1em;color:#16191c">ROOM</div>
+          <div ref="{{ algoPlateRef }}" style="position:absolute;right:0;top:2px;font-size:10px;font-weight:700;letter-spacing:.1em;color:#16191c">PLATE</div>
+          <div ref="{{ algoAmbiRef }}" style="position:absolute;left:0;bottom:2px;font-size:10px;font-weight:400;letter-spacing:.1em;color:#16191c">AMBI</div>
+          <div ref="{{ algoChmbrRef }}" style="position:absolute;right:0;bottom:2px;font-size:10px;font-weight:400;letter-spacing:.1em;color:#16191c">CHMBR</div>
+        </div>
+
+        <div style="display:flex;justify-content:center;gap:16px;margin-top:6px">
+          <sc-for list="{{ tank }}" as="k" hint-placeholder-count="2">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
+              <div onPointerDown="{{ k.onDown }}" style="position:relative;width:88px;height:88px;cursor:ns-resize;touch-action:none">
+                <div style="position:absolute;inset:16px;border-radius:50%;background:conic-gradient(from 225deg,rgba(24,30,34,.42) 0 270deg,rgba(0,0,0,0) 270deg 360deg);-webkit-mask:radial-gradient(circle,transparent 92%,#000 93%);mask:radial-gradient(circle,transparent 92%,#000 93%)"></div>
+                <sc-for list="{{ k.marks }}" as="m" hint-placeholder-count="5">
+                  <div style="position:absolute;inset:0;transform:rotate({{ m.deg }}deg)">
+                    <div style="position:absolute;left:50%;top:12px;margin-left:-1px;width:2px;height:8px;background:#16191c"></div>
+                  </div>
+                </sc-for>
+                <sc-for list="{{ k.marks }}" as="m" hint-placeholder-count="5">
+                  <div style="position:absolute;left:{{ m.x }}px;top:{{ m.y }}px;transform:translate(-50%,-50%);font-size:10px;font-weight:500;color:#16191c;white-space:nowrap">{{ m.t }}</div>
+                </sc-for>
+                <div style="position:absolute;left:50%;bottom:0;transform:translateX(-50%);font-size:10px;font-weight:400;letter-spacing:.06em;color:#16191c">{{ k.unit }}</div>
+                <div style="position:absolute;inset:22px;border-radius:50%;background:radial-gradient(118% 118% at 34% 22%,#585e64,#2c3135 47%,#14171a 79%,#0b0d0f);border:1px solid #08090a;box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 2px 6px rgba(0,0,0,.6)"></div>
+                <div style="position:absolute;inset:22px;transform:rotate({{ k.deg }}deg)">
+                  <div style="position:absolute;left:50%;top:4px;margin-left:-1.25px;width:2.5px;height:16px;background:linear-gradient(#ffffff,#c2c8cd)"></div>
+                </div>
+              </div>
+              <div style="font-size:10px;font-weight:700;letter-spacing:.14em;color:#16191c">{{ k.label }}</div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="margin-top:auto;display:flex;flex-direction:column;align-items:center;gap:2px">
+          <div style="font-size:10px;font-weight:600;letter-spacing:.2em;color:#16191c">TANK DAMPING</div>
+          <div style="display:flex;justify-content:center;gap:20px">
+            <sc-for list="{{ damp }}" as="k" hint-placeholder-count="2">
+              <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
+                <div onPointerDown="{{ k.onDown }}" style="position:relative;width:78px;height:78px;cursor:ns-resize;touch-action:none">
+                  <div style="position:absolute;inset:16px;border-radius:50%;background:conic-gradient(from 225deg,rgba(24,30,34,.42) 0 270deg,rgba(0,0,0,0) 270deg 360deg);-webkit-mask:radial-gradient(circle,transparent 92%,#000 93%);mask:radial-gradient(circle,transparent 92%,#000 93%)"></div>
+                  <sc-for list="{{ k.marks }}" as="m" hint-placeholder-count="5">
+                    <div style="position:absolute;inset:0;transform:rotate({{ m.deg }}deg)">
+                      <div style="position:absolute;left:50%;top:12px;margin-left:-1px;width:2px;height:8px;background:#16191c"></div>
+                    </div>
+                  </sc-for>
+                  <sc-for list="{{ k.marks }}" as="m" hint-placeholder-count="5">
+                    <div style="position:absolute;left:{{ m.x }}px;top:{{ m.y }}px;transform:translate(-50%,-50%);font-size:10px;font-weight:500;color:#16191c;white-space:nowrap">{{ m.t }}</div>
+                  </sc-for>
+                  <div style="position:absolute;inset:22px;border-radius:50%;background:radial-gradient(118% 118% at 34% 22%,#53595f,#2a2f33 48%,#131619 80%,#0b0d0f);border:1px solid #08090a;box-shadow:inset 0 1px 0 rgba(255,255,255,.24),0 2px 4px rgba(0,0,0,.55)"></div>
+                  <div style="position:absolute;inset:22px;transform:rotate({{ k.deg }}deg)">
+                    <div style="position:absolute;left:50%;top:3px;margin-left:-1px;width:2px;height:13px;background:#f4f7f9"></div>
+                  </div>
+                </div>
+                <div style="font-size:10px;font-weight:700;letter-spacing:.14em;color:#16191c">{{ k.label }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+
+      <div style="width:1px;background:linear-gradient(rgba(0,0,0,0),rgba(0,0,0,.32) 20%,rgba(0,0,0,.32) 80%,rgba(0,0,0,0));box-shadow:1px 0 0 rgba(255,255,255,.55)"></div>
+
+      <div style="width:172px;flex:none;display:flex;flex-direction:column;align-items:center;padding:8px 0">
+        <div style="font-size:10px;font-weight:700;letter-spacing:.26em;color:#16191c;margin-bottom:8px">OUTPUT</div>
+        <div style="display:grid;grid-template-columns:auto auto;justify-content:center;gap:6px 4px">
+          <sc-for list="{{ outs }}" as="k" hint-placeholder-count="4">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
+              <div onPointerDown="{{ k.onDown }}" style="position:relative;width:84px;height:84px;cursor:ns-resize;touch-action:none">
+                <div style="position:absolute;inset:16px;border-radius:50%;background:conic-gradient(from 225deg,rgba(24,30,34,.42) 0 270deg,rgba(0,0,0,0) 270deg 360deg);-webkit-mask:radial-gradient(circle,transparent 92%,#000 93%);mask:radial-gradient(circle,transparent 92%,#000 93%)"></div>
+                <sc-for list="{{ k.marks }}" as="m" hint-placeholder-count="5">
+                  <div style="position:absolute;inset:0;transform:rotate({{ m.deg }}deg)">
+                    <div style="position:absolute;left:50%;top:12px;margin-left:-1px;width:2px;height:8px;background:#16191c"></div>
+                  </div>
+                </sc-for>
+                <sc-for list="{{ k.marks }}" as="m" hint-placeholder-count="5">
+                  <div style="position:absolute;left:{{ m.x }}px;top:{{ m.y }}px;transform:translate(-50%,-50%);font-size:10px;font-weight:500;color:#16191c;white-space:nowrap">{{ m.t }}</div>
+                </sc-for>
+                <div style="position:absolute;left:50%;bottom:0;transform:translateX(-50%);font-size:10px;font-weight:400;letter-spacing:.06em;color:#16191c">{{ k.unit }}</div>
+                <div style="position:absolute;inset:22px;border-radius:50%;background:radial-gradient(118% 118% at 34% 22%,#585e64,#2c3135 47%,#14171a 79%,#0b0d0f);border:1px solid #08090a;box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 2px 5px rgba(0,0,0,.6)"></div>
+                <div style="position:absolute;inset:22px;transform:rotate({{ k.deg }}deg)">
+                  <div style="position:absolute;left:50%;top:4px;margin-left:-1.25px;width:2.5px;height:15px;background:linear-gradient(#ffffff,#c2c8cd)"></div>
+                </div>
+              </div>
+              <div style="font-size:10px;font-weight:700;letter-spacing:.14em;color:#16191c">{{ k.label }}</div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="margin-top:auto;font-size:9px;letter-spacing:.18em;color:#34383c">v1.0</div>
+      </div>
+
+    </div>
+  </div>
+
+  <div style="width:26px;flex:none;background:linear-gradient(90deg,#929a9e,#aeb5b9 40%,#ced4d7);border-left:1px solid #0a0c0d;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:10px 0">
+    <div style="width:11px;height:11px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#9ba2a8,#4a5055 60%,#23272a);box-shadow:inset 0 0 0 1px #0d0f10,0 1px 1px rgba(255,255,255,.08)"></div>
+    <div style="width:1px;flex:1;margin:8px 0;background:linear-gradient(rgba(0,0,0,.20),rgba(0,0,0,0))"></div>
+    <div style="width:11px;height:11px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#9ba2a8,#4a5055 60%,#23272a);box-shadow:inset 0 0 0 1px #0d0f10,0 1px 1px rgba(255,255,255,.08)"></div>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:960,&quot;height&quot;:434},&quot;accent&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#ff2b1c&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;#ff2b1c&quot;,&quot;#ff5a2b&quot;,&quot;#e8112d&quot;,&quot;#ff3b30&quot;],&quot;section&quot;:&quot;Gate state&quot;},&quot;rate&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:1,&quot;min&quot;:0.5,&quot;max&quot;:2.5,&quot;step&quot;:0.1,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Gate state&quot;},&quot;shape&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;hard&quot;,&quot;options&quot;:[&quot;hard&quot;,&quot;soft&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Gate state&quot;},&quot;keySource&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;internal&quot;,&quot;options&quot;:[&quot;internal&quot;,&quot;sidechain&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Gate state&quot;},&quot;algorithm&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:2,&quot;min&quot;:0,&quot;max&quot;:3,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Reverb tank&quot;},&quot;programKind&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;factory&quot;,&quot;options&quot;:[&quot;factory&quot;,&quot;user&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Program&quot;},&quot;pattern&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;quarters&quot;,&quot;options&quot;:[&quot;quarters&quot;,&quot;sparse&quot;,&quot;stutter&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Gate state&quot;}}">
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.scopeRef = React.createRef();
+    this.lampRef = React.createRef();
+    this.meterRef = React.createRef();
+    this.progCaptionRef = React.createRef();
+    this.progTextRef = React.createRef();
+    this.kindTagRef = React.createRef();
+    this.caretRef = React.createRef();
+    this.btnARef = React.createRef();
+    this.btnBRef = React.createRef();
+    this.shapeShoeRef = React.createRef();
+    this.hardRef = React.createRef();
+    this.softRef = React.createRef();
+    this.keyShoeRef = React.createRef();
+    this.intRef = React.createRef();
+    this.scRef = React.createRef();
+    this.state = { naming: false, kind: null, name: null, typed: "", shape: null, keySource: null,
+      // derived from the §9 defaults, not tuned by eye:
+      // n = ((default - min) / (max - min)) ^ skew
+      vals: { threshold:0.6917, hp:0.4702, lp:0.6950, attack:0.3504, hold:0.3163, release:0.2841,
+              size:0.7200, predly:0.1500, hf:0.5500, lf:0.3500, slam:0.5833, width:0.6400,
+              mix:0.6400, trim:0.6278 },
+      live: null, algo: null, dirty: false };
+    this.algoRefs = [React.createRef(), React.createRef(), React.createRef(), React.createRef()];
+  }
+
+  // ---- printed scales -------------------------------------------------
+  // size = knob diameter, pad = ring padding (wrapper = size + 2*pad).
+  // Numeral ring radius = size/2 + (pad - 6). 0% = -135 deg, 100% = +135 deg.
+  mk(size, pad, list) {
+    const C = size / 2 + pad, r = size / 2 + (pad - 4);
+    return list.map((m) => {
+      const d = -135 + m[1] * 270, a = (d * Math.PI) / 180;
+      return {
+        t: m[0],
+        deg: +d.toFixed(2),
+        x: +(C + r * Math.sin(a)).toFixed(1),
+        y: +(C - r * Math.cos(a)).toFixed(1)
+      };
+    });
+  }
+  lin(vals) { return vals.map((v, i) => [v, i / (vals.length - 1)]); }
+
+  get shape() { return this.state.shape ?? this.props.shape ?? "hard"; }
+
+  onToggleShape = () => {
+    this.setState({ shape: this.shape === "hard" ? "soft" : "hard", dirty: true });
+  };
+
+  // id -> [label, unit, min, max, skew, decimals]
+  // skew is the exponent in fraction = ((v - min) / (max - min)) ^ skew.
+  // 1 = linear. The printed marks were placed from this same curve, so the
+  // readout and the tick the pointer sits on agree by construction.
+  PARAMS = {
+    threshold: ["THRESHOLD", "dB", -60, 0, 1, 1],
+    hp:        ["TRIG HP", "Hz", 20, 2000, 0.30, 0],
+    lp:        ["TRIG LP", "Hz", 500, 20000, 0.30, 0],
+    attack:    ["ATTACK", "ms", 0.1, 20, 0.25, 2],
+    hold:      ["HOLD", "ms", 10, 500, 1, 0],
+    release:   ["RELEASE", "ms", 1, 200, 0.30, 1],
+    size:      ["SIZE", "", 0, 1, 1, 2],
+    predly:    ["PRE-DELAY", "ms", 0, 120, 1, 0],
+    hf:        ["DAMP HF", "", 0, 1, 1, 2],
+    lf:        ["DAMP LF", "", 0, 1, 1, 2],
+    slam:      ["SLAM", "dB", 0, 12, 1, 1],
+    width:     ["WIDTH", "%", 0, 200, 1, 0],
+    mix:       ["MIX", "%", 0, 100, 1, 0],
+    trim:      ["TRIM", "dB", -24, 12, 1, 1]
+  };
+
+  val(id) { return this.state.vals[id]; }
+  deg(id) { return +(-135 + this.val(id) * 270).toFixed(2); }
+
+  readout(id) {
+    const [label, unit, lo, hi, skew, dp] = this.PARAMS[id];
+    const n = this.val(id);
+    const v = lo + (hi - lo) * Math.pow(n, 1 / skew);
+    let s = "";
+    if (unit === "Hz" && v >= 1000) s = (v / 1000).toFixed(v >= 10000 ? 0 : 1) + " kHz";
+    else s = v.toFixed(v >= 100 ? 0 : dp) + (unit ? " " + unit : "");
+    if (id === "trim" && v > 0) s = "+" + s;
+    return label + ": " + s;
+  }
+
+  knobDown = (id) => (e) => {
+    e.preventDefault();
+    const startY = e.clientY, startV = this.val(id);
+    const move = (ev) => {
+      const span = ev.shiftKey ? 600 : 160;
+      const v = Math.max(0, Math.min(1, startV + (startY - ev.clientY) / span));
+      this.setState((s) => ({ vals: { ...s.vals, [id]: v }, live: id, dirty: true }));
+    };
+    const up = () => {
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", up);
+      clearTimeout(this._liveT);
+      this._liveT = setTimeout(() => this.setState({ live: null }), 800);
+    };
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", up);
+    clearTimeout(this._liveT);
+    this.setState({ live: id });
+  };
+
+  knob(id, label, marks) {
+    return { id, label, marks, unit: this.PARAMS[id][1], deg: this.deg(id), onDown: this.knobDown(id) };
+  }
+
+  // sweep runs -135 -> +135: AMBI (lower-left), ROOM (upper-left),
+  // PLATE (upper-right), CHMBR (lower-right)
+  ALGO_NAMES = ["AMBIENCE", "ROOM", "PLATE", "CHAMBER"];
+
+  get algo() { return this.state.algo ?? this.props.algorithm ?? 2; }
+
+  setAlgo = (i) => {
+    clearTimeout(this._liveT);
+    this.setState({ algo: i, live: "algo", dirty: true });
+    this._liveT = setTimeout(() => this.setState({ live: null }), 800);
+  };
+
+  onAlgoClick = () => this.setAlgo((this.algo + 1) % 4);
+
+  onAlgoDown = (e) => {
+    e.preventDefault();
+    const startY = e.clientY, startI = this.algo;
+    let moved = false;
+    const move = (ev) => {
+      const i = Math.max(0, Math.min(3, startI + Math.round((startY - ev.clientY) / 26)));
+      if (i !== this.algo) { moved = true; this.setAlgo(i); }
+      if (Math.abs(startY - ev.clientY) > 3) moved = true;
+    };
+    const up = () => {
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", up);
+      if (!moved) this.onAlgoClick();
+    };
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", up);
+  };
+
+  syncAlgo() {
+    this.algoRefs.forEach((r, i) => {
+      if (!r.current) return;
+      r.current.style.fontWeight = i === this.algo ? "700" : "400";
+      r.current.style.color = i === this.algo ? "#16191c" : "#2b3034";
+    });
+  }
+
+  get keySource() { return this.state.keySource ?? this.props.keySource ?? "internal"; }
+
+  onToggleKey = () => {
+    this.setState({ keySource: this.keySource === "internal" ? "sidechain" : "internal", dirty: true });
+  };
+
+  syncKey() {
+    const sc = this.keySource === "sidechain";
+    const shoe = this.keyShoeRef.current;
+    if (shoe) shoe.style.left = sc ? "29px" : "1px";
+    // unselected label is dimmed on purpose: redundant encoding alongside the shoe
+    if (this.intRef.current) {
+      this.intRef.current.style.fontWeight = sc ? "400" : "700";
+      this.intRef.current.style.color = sc ? "#2b3034" : "#16191c";
+    }
+    if (this.scRef.current) {
+      this.scRef.current.style.fontWeight = sc ? "700" : "400";
+      this.scRef.current.style.color = sc ? "#16191c" : "#2b3034";
+    }
+  }
+
+  syncShape() {
+    const soft = this.shape === "soft";
+    const shoe = this.shapeShoeRef.current;
+    if (shoe) shoe.style.left = soft ? "29px" : "1px";
+    if (this.hardRef.current) {
+      this.hardRef.current.style.fontWeight = soft ? "400" : "700";
+      this.hardRef.current.style.color = soft ? "#2b3034" : "#16191c";
+    }
+    if (this.softRef.current) {
+      this.softRef.current.style.fontWeight = soft ? "700" : "400";
+      this.softRef.current.style.color = soft ? "#16191c" : "#2b3034";
+    }
+  }
+
+  FACTORY = "01 PLATE GATE 250";
+  NAME_MAX = 24;   // + "NN " prefix = 27, the name cell's budget
+
+  get kind() { return this.state.kind ?? this.props.programKind ?? "factory"; }
+  get progName() { return this.state.name ?? this.FACTORY; }
+
+  btnStyle(el, enabled) {
+    if (!el) return;
+    el.style.cursor = enabled ? "pointer" : "default";
+    el.style.color = enabled ? "#16191c" : "#262b2f";
+    el.style.background = enabled
+      ? "linear-gradient(180deg,#dbe0e3,#aab1b6)"
+      : "linear-gradient(180deg,#b4bbbf,#a3aaae)";
+    el.style.border = "1px solid " + (enabled ? "#6d7478" : "#8d9498");
+    el.style.boxShadow = enabled
+      ? "inset 0 1px 0 rgba(255,255,255,.75),0 1px 2px rgba(0,0,0,.35)"
+      : "inset 0 2px 3px rgba(0,0,0,.28)";
+  }
+
+  syncHeader() {
+    const naming = this.state.naming, user = this.kind === "user";
+    const cap = this.progCaptionRef.current, tag = this.kindTagRef.current;
+    const txt = this.progTextRef.current, caret = this.caretRef.current;
+    if (cap) cap.textContent = naming ? "NAME PROGRAM" : "PROGRAM";
+    if (tag) {
+      tag.textContent = naming || user ? "USER" : "FACT";
+      tag.style.color = "#f0e0b0";
+    }
+    if (txt) {
+      txt.firstChild.nodeValue = naming
+        ? (this.state.typed || "")
+        : this.state.live === "algo"
+          ? "ALGORITHM: " + this.ALGO_NAMES[this.algo]
+        : this.state.live
+          ? this.readout(this.state.live)
+          : (user ? this.progName : this.FACTORY);
+      txt.style.textAlign = naming ? "left" : "center";
+    }
+    if (caret) caret.style.display = naming ? "inline" : "none";
+    const a = this.btnARef.current, b = this.btnBRef.current;
+    if (a) a.textContent = naming ? "STORE" : "SAVE";
+    if (b) b.textContent = naming ? "CANCEL" : "DELETE";
+    this.btnStyle(a, naming || this.state.dirty);
+    this.btnStyle(b, naming || user);
+    // an edited program shows a trailing asterisk, the way hardware marks an unsaved edit
+    if (txt && !naming && !this.state.live) {
+      txt.firstChild.nodeValue += this.state.dirty ? " *" : "";
+    }
+  }
+
+  onPrimary = () => {
+    if (this.state.naming) {
+      const n = (this.state.typed || "").trim() || "NEW PROGRAM";
+      this.setState({ naming: false, kind: "user", name: n.toUpperCase(), dirty: false });
+    } else if (this.state.dirty) {
+      this.setState({ naming: true, typed: "" });
+    }
+  };
+
+  onSecondary = () => {
+    if (this.state.naming) { this.setState({ naming: false }); return; }
+    if (this.kind === "user") this.setState({ kind: "factory", name: null, dirty: false });
+  };
+
+  onKey = (e) => {
+    if (!this.state.naming) return;
+    if (e.key === "Enter") { this.onPrimary(); return; }
+    if (e.key === "Escape") { this.setState({ naming: false }); return; }
+    if (e.key === "Backspace") {
+      this.setState((s) => ({ typed: s.typed.slice(0, -1) }));
+      e.preventDefault();
+      return;
+    }
+    if (e.key.length === 1 && this.state.typed.length < this.NAME_MAX) {
+      this.setState((s) => ({ typed: s.typed + e.key.toUpperCase() }));
+    }
+  };
+
+  get accent() { return this.props.accent ?? "#ff2b1c"; }
+
+  renderVals() {
+    const L = (v) => this.lin(v);
+    return {
+      scopeRef: this.scopeRef,
+      progCaptionRef: this.progCaptionRef,
+      progTextRef: this.progTextRef,
+      kindTagRef: this.kindTagRef,
+      caretRef: this.caretRef,
+      btnARef: this.btnARef,
+      btnBRef: this.btnBRef,
+      onPrimary: this.onPrimary,
+      onToggleShape: this.onToggleShape,
+      onToggleKey: this.onToggleKey,
+      onAlgoDown: this.onAlgoDown,
+      algoDeg: -135 + this.algo * 90,
+      algoAmbiRef: this.algoRefs[0],
+      algoRoomRef: this.algoRefs[1],
+      algoPlateRef: this.algoRefs[2],
+      algoChmbrRef: this.algoRefs[3],
+      keyShoeRef: this.keyShoeRef,
+      intRef: this.intRef,
+      scRef: this.scRef,
+      shapeShoeRef: this.shapeShoeRef,
+      hardRef: this.hardRef,
+      softRef: this.softRef,
+      onSecondary: this.onSecondary,
+      lampRef: this.lampRef,
+      meterRef: this.meterRef,
+
+      thresholdDeg: this.deg("threshold"),
+      onThresholdDown: this.knobDown("threshold"),
+      thrMarks: this.mk(62, 26, L(["-60", "-45", "-30", "-15", "0"])),
+
+      trigFilters: [
+        this.knob("hp", "HP", this.mk(32, 22, [["20", 0], ["50", 0.285], ["200", 0.487], ["800", 0.756], ["2000", 1]])),
+        this.knob("lp", "LP", this.mk(32, 22, [["500", 0], ["1k", 0.333], ["2k", 0.463], ["5k", 0.644], ["20k", 1]]))
+      ],
+
+      ahr: [
+        this.knob("attack", "ATTACK", this.mk(54, 22, [["0.1", 0], ["0.5", 0.377], ["2", 0.556], ["5", 0.704], ["20", 1]])),
+        this.knob("hold", "HOLD", this.mk(54, 22, L(["10", "125", "250", "375", "500"]))),
+        this.knob("release", "RELEASE", this.mk(54, 22, [["1", 0], ["5", 0.310], ["20", 0.494], ["60", 0.694], ["200", 1]]))
+      ],
+
+      tank: [
+        this.knob("size", "SIZE", this.mk(44, 22, L(["0", "0.25", "0.5", "0.75", "1.0"]))),
+        this.knob("predly", "PRE-DLY", this.mk(44, 22, L(["0", "30", "60", "90", "120"])))
+      ],
+
+      damp: [
+        this.knob("hf", "HF", this.mk(34, 22, L(["0", "0.25", "0.5", "0.75", "1.0"]))),
+        this.knob("lf", "LF", this.mk(34, 22, L(["0", "0.25", "0.5", "0.75", "1.0"])))
+      ],
+
+      outs: [
+        this.knob("slam", "SLAM", this.mk(40, 22, L(["0", "3", "6", "9", "12"]))),
+        this.knob("width", "WIDTH", this.mk(40, 22, L(["0", "50", "100", "150", "200"]))),
+        this.knob("mix", "MIX", this.mk(40, 22, L(["0", "25", "50", "75", "100"]))),
+        this.knob("trim", "TRIM", this.mk(40, 22, [["-24", 0], ["-12", 0.3333], ["0", 0.6667], ["+12", 1]]))
+      ]
+    };
+  }
+
+  componentDidMount() {
+    this.start();
+    this.syncHeader();
+    this.syncShape();
+    this.syncKey();
+    this.syncAlgo();
+    window.addEventListener("keydown", this.onKey);
+  }
+  componentDidUpdate() { this.syncHeader(); this.syncShape(); this.syncKey(); this.syncAlgo(); }
+  componentWillUnmount() {
+    cancelAnimationFrame(this._raf);
+    if (this._ro) this._ro.disconnect();
+    window.removeEventListener("keydown", this.onKey);
+  }
+  tickGuard() { return Array.isArray(this.cols); }
+
+  start() {
+    const cv = this.scopeRef.current;
+    if (!cv || !cv.getBoundingClientRect().width) {
+      this._retry = (this._retry || 0) + 1;
+      if (this._retry < 60) requestAnimationFrame(() => this.start());
+      return;
+    }
+    if (this.ctx) return;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const fit = () => {
+      const r = cv.getBoundingClientRect();
+      this.W = Math.max(120, Math.round(r.width));
+      this.H = Math.max(60, Math.round(r.height));
+      // reserved strips inside the dark rect that the trace may never enter
+      this.TITLE = 14;              // top strip, holds GATE ENV
+      this.GUT = 34;                // right gutter, holds 0 dB / -inf
+      this.PW = this.W - this.GUT;  // plot region width
+      cv.width = this.W * dpr;
+      cv.height = this.H * dpr;
+      const c = cv.getContext("2d");
+      c.setTransform(dpr, 0, 0, dpr, 0, 0);
+      this.ctx = c;
+    };
+    fit();
+    this._ro = new ResizeObserver(fit);
+    this._ro.observe(cv);
+
+    this.cols = [];
+    this.t = 0;
+    this.age = -1;
+    this.step = 2;
+    const seed = this.step;
+    this.step = 1;
+    for (let i = 0; i < this.PW; i++) this.tick();
+    this.step = seed;
+    this.draw();
+    const loop = () => {
+      this.tick();
+      this.draw();
+      this._raf = requestAnimationFrame(loop);
+    };
+    loop();
+  }
+
+  period() {
+    const rate = this.props.rate ?? 1;
+    return Math.max(46, Math.round(112 / rate));
+  }
+
+  tick() {
+    if (!this.tickGuard()) return;
+    const pattern = this.props.pattern ?? "quarters";
+    const P = this.period();
+    const soft = this.shape === "soft";
+    const A = 5, HOLD = 34, REL = soft ? 16 : 3;
+    for (let i = 0; i < this.step; i++) {
+      if (this.t % P === 0) {
+        let fire = true;
+        if (pattern === "sparse") fire = (this.t / P) % 2 === 0;
+        if (pattern === "stutter") fire = (this.t / P) % 4 !== 3;
+        if (fire) this.age = 0;
+      }
+      let e = 0;
+      if (this.age >= 0) {
+        if (this.age < A) e = this.age / A;
+        else if (this.age < A + HOLD) e = 1;
+        else if (this.age < A + HOLD + REL) {
+          const t = (this.age - A - HOLD) / REL;
+          e = soft ? Math.pow(1 - t, 2.2) : 1 - t;
+        }
+        else { e = 0; this.age = -1; }
+        if (this.age >= 0) this.age++;
+      }
+      const a = this.age < 0 ? 999 : this.age;
+      const s = Math.exp(-a / 22) * (0.55 + 0.45 * Math.random());
+      this.cols.push({ e, s });
+      this.t++;
+    }
+    while (this.cols.length > this.PW) this.cols.shift();
+
+    const last = this.cols[this.cols.length - 1] || { e: 0, s: 0 };
+    const open = last.e > 0.02;
+    if (open !== this._open) {
+      this._open = open;
+      const l = this.lampRef.current;
+      if (l) {
+        l.style.background = open
+          ? "radial-gradient(circle at 38% 32%," + this.accent + ",#b0140c 70%,#6d0b06)"
+          : "#3a1512";
+        l.style.boxShadow = open
+          ? "0 0 12px 3px rgba(255,43,28,.55),0 0 30px 8px rgba(255,43,28,.22),inset 0 1px 2px rgba(255,255,255,.5)"
+          : "inset 0 1px 1px rgba(255,255,255,.14)";
+      }
+    }
+    const m = this.meterRef.current;
+    if (m) {
+      const lvl = 22 + Math.min(1, last.s) * 64;
+      this._lvl = this._lvl == null ? lvl : this._lvl + (lvl - this._lvl) * (lvl > this._lvl ? 0.8 : 0.12);
+      m.style.height = this._lvl.toFixed(1) + "%";
+    }
+  }
+
+  draw() {
+    const c = this.ctx;
+    if (!c || !this.cols) return;
+    const W = this.W, H = this.H;
+    const TITLE = this.TITLE, PW = this.PW;
+    const top = TITLE + 8, base = H - 10;   // plot range; the trace reaches both
+    const accent = this.accent;
+
+    c.clearRect(0, 0, W, H);
+    const bg = c.createLinearGradient(0, 0, 0, H);
+    bg.addColorStop(0, "#0b0f11");
+    bg.addColorStop(1, "#050708");
+    c.fillStyle = bg;
+    c.fillRect(0, 0, W, H);
+
+    c.save();
+    c.beginPath();
+    c.rect(0, TITLE, PW, H - TITLE);
+    c.clip();
+
+    c.strokeStyle = "rgba(150,180,190,.10)";
+    c.lineWidth = 1;
+    const div = 44;
+    const off = (this.t % div);
+    for (let x = PW - off; x > 0; x -= div) {
+      c.beginPath(); c.moveTo(x + 0.5, TITLE); c.lineTo(x + 0.5, H); c.stroke();
+    }
+    for (let i = 0; i <= 4; i++) {
+      const y = top + ((base - top) * i) / 4;
+      c.beginPath(); c.moveTo(0, y + 0.5); c.lineTo(PW, y + 0.5); c.stroke();
+    }
+    c.strokeStyle = "rgba(150,180,190,.22)";
+    c.beginPath(); c.moveTo(0, base + 0.5); c.lineTo(PW, base + 0.5); c.stroke();
+
+    const n = this.cols.length;
+    const x0 = PW - n;
+
+    c.strokeStyle = "rgba(178,190,197,.30)";
+    c.beginPath();
+    for (let i = 0; i < n; i++) {
+      const s = this.cols[i].s * (base - top) * 0.42;
+      const x = x0 + i + 0.5;
+      c.moveTo(x, base - s * 0.5);
+      c.lineTo(x, base + Math.min(10, s * 0.35));
+    }
+    c.stroke();
+
+    const grad = c.createLinearGradient(0, top, 0, base);
+    grad.addColorStop(0, "rgba(255,43,28,.30)");
+    grad.addColorStop(1, "rgba(255,43,28,.02)");
+    c.beginPath();
+    c.moveTo(x0, base);
+    for (let i = 0; i < n; i++) c.lineTo(x0 + i, base - this.cols[i].e * (base - top));
+    c.lineTo(x0 + n - 1, base);
+    c.closePath();
+    c.fillStyle = grad;
+    c.fill();
+
+    c.save();
+    c.shadowColor = accent;
+    c.shadowBlur = 10;
+    c.strokeStyle = accent;
+    c.lineWidth = 2;
+    c.lineJoin = "miter";
+    c.beginPath();
+    for (let i = 0; i < n; i++) {
+      const x = x0 + i, y = base - this.cols[i].e * (base - top);
+      i === 0 ? c.moveTo(x, y) : c.lineTo(x, y);
+    }
+    c.stroke();
+    c.restore();
+
+    c.fillStyle = "rgba(255,255,255,.03)";
+    c.fillRect(PW - 2, TITLE, 2, H - TITLE);
+
+    c.restore();   // end plot-region clip
+
+    // --- reserved strips: title above, scale gutter right ---
+    c.fillStyle = "#080b0d";
+    c.fillRect(0, 0, W, TITLE);
+    c.fillRect(PW, TITLE, W - PW, H - TITLE);
+    c.strokeStyle = "rgba(150,180,190,.18)";
+    c.lineWidth = 1;
+    c.beginPath(); c.moveTo(0, TITLE + 0.5); c.lineTo(W, TITLE + 0.5); c.stroke();
+    c.beginPath(); c.moveTo(PW + 0.5, TITLE); c.lineTo(PW + 0.5, H); c.stroke();
+
+    c.font = "9px 'Share Tech Mono', monospace";
+    c.fillStyle = "rgba(170,188,196,.62)";
+    c.fillText("GATE ENV", 8, TITLE - 4);
+
+    // level ticks tie each label to the row it annotates
+    c.strokeStyle = "rgba(170,188,196,.45)";
+    [top, base].forEach((y) => {
+      c.beginPath(); c.moveTo(PW + 1, y + 0.5); c.lineTo(PW + 5, y + 0.5); c.stroke();
+    });
+    c.textAlign = "center";
+    c.textBaseline = "middle";
+    const gx = PW + (W - PW) / 2 + 2;
+    c.fillText("0 dB", gx, top);
+    c.fillText("-\u221E", gx, base);
+    c.textAlign = "left";
+    c.textBaseline = "alphabetic";
+  }
+}
+
+</script>
+</body>
+</html>
