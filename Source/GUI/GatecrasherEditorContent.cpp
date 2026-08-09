@@ -46,7 +46,7 @@ namespace
 }
 
 GatecrasherEditorContent::GatecrasherEditorContent(GatecrasherAudioProcessor& p)
-    : processorRef(p), panelReadouts(p), gateScope(p), gateLamp(p), inputMeter(p), programHeader(p)
+    : processorRef(p), stateLabels(p), gateScope(p), gateLamp(p), inputMeter(p), programHeader(p)
 {
     setSize((int) Layout::canvasWidth, (int) Layout::canvasHeight);
     setLookAndFeel(&lookAndFeel);
@@ -54,31 +54,24 @@ GatecrasherEditorContent::GatecrasherEditorContent(GatecrasherAudioProcessor& p)
     panelBackground.setBounds(getLocalBounds());
     addAndMakeVisible(panelBackground);
 
-    // Everything engraved on the fascia - all of it live-drawn now that the background bitmap is a
-    // bare chassis. See PanelChrome's class comment for why that split matters.
-    panelChrome.setBounds(getLocalBounds());
-    addAndMakeVisible(panelChrome);
-
-    panelReadouts.setBounds(getLocalBounds());
-    addAndMakeVisible(panelReadouts);
-
-    wordmark.setBounds(getLocalBounds());
-    addAndMakeVisible(wordmark);
+    // The plate carries every static label, numeral, tick and the wordmark (spec section 0.2), so
+    // there is no engraved layer to draw and no wordmark component. The only fascia text this build
+    // produces is the eight state-dependent labels below.
+    stateLabels.setBounds(getLocalBounds());
+    addAndMakeVisible(stateLabels);
 
     for (size_t i = 0; i < Layout::knobs.size(); ++i)
     {
         const auto& spec = Layout::knobs[i];
-        const float tickSpacing = spec.size == KnobFilmstripSize::large
-                                       ? Layout::largeKnobTickSpacingDegrees
-                                       : Layout::smallKnobTickSpacingDegrees;
 
-        auto knob = std::make_unique<KnobFilmstripComponent>(spec.size, spec.diameter, tickSpacing,
-                                                               spec.isAlgorithmSelector);
+        auto knob = std::make_unique<KnobFilmstripComponent>(spec.size, spec.diameter);
         knob->setName(spec.paramID);
 
-        // Bounding box reaches the tick ring's outer radius (+3px click margin), not just the
-        // knob's own diameter - matches TapeRot's `knobTickOuterRadius + 3` convention.
-        const float half = spec.diameter * 0.5f + Layout::tickOuterOffset + 3.0f;
+        // Bounding box is the filmstrip's own footprint - the knob plus the ~7% bleed its baked
+        // cast shadow occupies - with a 3px click margin. It used to reach the code-drawn tick
+        // ring's outer radius; those ticks are baked into the plate now (spec section 0.3), and a
+        // hit area still stretching to them would swallow clicks on bare fascia.
+        const float half = spec.diameter * Layout::knobBoundingBoxBleed * 0.5f + 3.0f;
         knob->setBounds((int) std::round(spec.cx - half), (int) std::round(spec.cy - half),
                          (int) std::round(half * 2.0f), (int) std::round(half * 2.0f));
 
@@ -88,13 +81,9 @@ GatecrasherEditorContent::GatecrasherEditorContent(GatecrasherAudioProcessor& p)
         knobAttachments[i] = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
             processorRef.apvts, spec.paramID, *knob);
 
-        // Live value readout while dragging, parented to this (not nullptr) so PluginEditor's
-        // uniform scale transform applies to the popup too, same as every other on-canvas element.
-        if (auto* param = processorRef.apvts.getParameter(spec.paramID))
-        {
-            knob->textFromValueFunction = [param](double value) { return formatKnobPopupText(*param, value); };
-            knob->setPopupDisplayEnabled(true, false, this);
-        }
+        // No drag popup. Spec section 6.3 puts the live value in the PROGRAM LCD instead, and
+        // section 0.2 is explicit that no number appears anywhere on the fascia outside the two LCD
+        // windows and the printed scales.
 
         addAndMakeVisible(*knob);
         knobs[i] = std::move(knob);

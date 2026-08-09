@@ -66,43 +66,8 @@ void ToggleSwitchComponent::paint(juce::Graphics& g)
     g.setGradientFill(shoeGradient);
     g.fillRect(shoe);
 
-    // Option labels below, active one dark, inactive one grey (section 5/7). Their colour swaps
-    // with the active side, so each repaint clears the previous frame back to the bare chassis
-    // first. That erase is a genuine clear now: while the background was the fully dressed render it
-    // also carried baked copies of these very words, which made erasing here a no-op (the restored
-    // pixels were the text being redrawn) and forced an opaque flat fill instead - one that couldn't
-    // reproduce the fascia's brush grain. Nothing is baked under them any more.
-    //
-    // Geometry (pair centred on the track, fixed gap, vertical centre a fixed drop below the track)
-    // is all measured off the dressed reference render - see the switchOptionLabel* constants'
-    // comment, which also covers why the font height is solved at runtime rather than hard-coded.
-    static const float optionLabelHeight =
-        labelFontHeightForTrackedWidth(Layout::switchOptionLabelRefText, Layout::switchOptionLabelTracking,
-                                        Layout::switchOptionLabelRefWidth);
-    const auto labelFontToUse = labelFont(optionLabelHeight);
-
-    const juce::String textForZero = labelForZero.toUpperCase();
-    const juce::String textForOne = labelForOne.toUpperCase();
-    const float widthForZero = trackedTextWidth(textForZero, labelFontToUse, Layout::switchOptionLabelTracking);
-    const float widthForOne = trackedTextWidth(textForOne, labelFontToUse, Layout::switchOptionLabelTracking);
-    const float pairWidth = widthForZero + Layout::switchOptionLabelGapX + widthForOne;
-
-    const float pairLeft = track.getCentreX() - pairWidth * 0.5f;
-    const float rowTop = track.getBottom() + Layout::switchOptionLabelCentreBelowTrack
-                          - Layout::switchLabelRowH * 0.5f;
-
-    const juce::Rectangle<float> rectForZero(pairLeft, rowTop, widthForZero, Layout::switchLabelRowH);
-    const juce::Rectangle<float> rectForOne(pairLeft + widthForZero + Layout::switchOptionLabelGapX, rowTop,
-                                             widthForOne, Layout::switchLabelRowH);
-
-    // Padded past the text pair so the clear also takes the previous frame's antialiased edges.
-    eraseToBackground(g, rectForZero.getUnion(rectForOne).expanded(5.0f, 2.0f), getPosition());
-
-    const bool zeroActive = thumbPosition01 < 0.5f;
-    drawTrackedText(g, textForZero, labelFontToUse, Layout::switchOptionLabelTracking, rectForZero,
-                     juce::Justification::centred,
-                     zeroActive ? Colour::controlLabelText : Colour::inactiveLabel);
-    drawTrackedText(g, textForOne, labelFontToUse, Layout::switchOptionLabelTracking, rectForOne,
-                     juce::Justification::centred,
-                     zeroActive ? Colour::inactiveLabel : Colour::controlLabelText);
+    // The option labels (INTERNAL/SIDECHAIN, HARD/SOFT) are NOT drawn here. They are two of the
+    // eight state-dependent labels of spec section 0.4 and belong to StateLabels, which draws all
+    // eight together from one table so the switch pair and the algorithm corners cannot drift apart.
+    // This component owns the track and the shoe only.
 }

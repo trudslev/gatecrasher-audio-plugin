@@ -2,31 +2,26 @@
 
 #include "GatecrasherTheme.h"
 #include <juce_gui_basics/juce_gui_basics.h>
-#include <vector>
 
 // A knob rendered from a 128-frame bitmap filmstrip (design/assets/knob_large_128px_128f.png /
 // knob_small_128px_128f.png) rather than code-drawn - the deliberate GUI divergence from TapeRot's
 // SmallKnob, see design/CLAUDE.md. Subclasses juce::Slider purely for its click/drag-to-value
-// mapping and SliderAttachment compatibility (same pattern as TapeRotLookAndFeel::createKnobSlider),
-// but paint() fully replaces the default look - LookAndFeel::drawRotarySlider is never invoked.
+// mapping and SliderAttachment compatibility, but paint() fully replaces the default look -
+// LookAndFeel::drawRotarySlider is never invoked.
 //
-// The tick ring around the knob is drawn here in code (GATECRASHER-GUI-SPEC.md section 3: "draw in
-// code, not part of the filmstrip - it does not rotate"), underneath the filmstrip frame so the
-// frame's own baked cast-shadow bleed can naturally overlap the ring's inner edge.
+// This draws the filmstrip frame and NOTHING ELSE. The tick ring, the sweep arc, the printed
+// numerals and the algorithm selector's detent ring are all baked into the panel plate (spec
+// section 0.3), positioned at their LABELLED VALUES rather than at even angular subdivisions - four
+// knobs are power-law skewed, so an evenly-spaced ring drawn in code would disagree with the
+// numerals beside it. Rev 5 drew that ring at a fixed 15/21 degree spacing; it is gone.
 class KnobFilmstripComponent final : public juce::Slider
 {
 public:
-    // tickSpacingDegrees is the target spacing for the regular swept tick ring (ignored when
-    // isAlgorithmSelector is true, which instead draws the 4 fixed diagonal ticks section 3
-    // specifies for the algorithm selector).
-    KnobFilmstripComponent(GatecrasherTheme::KnobFilmstripSize size, float diameterPx,
-                            float tickSpacingDegrees, bool isAlgorithmSelector = false);
+    KnobFilmstripComponent(GatecrasherTheme::KnobFilmstripSize size, float diameterPx);
 
     void paint(juce::Graphics&) override;
 
 private:
     GatecrasherTheme::KnobFilmstripSize filmstripSize;
     float diameter;
-    float tickSpacingDegrees;
-    bool algorithmSelectorTicks;
 };

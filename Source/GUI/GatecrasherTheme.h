@@ -15,29 +15,24 @@ namespace GatecrasherTheme
 {
     namespace Colour
     {
-        // Section 1 palette - only the values actually needed by live-drawn components (most of
-        // the fascia gradient/grain/rack-ear/divider colours never leave the static background
-        // bitmap, so aren't reproduced here).
-        inline const juce::Colour controlLabelText{0xFF2B3034};
-        inline const juce::Colour inactiveLabel{0xFF7B8287};
-        inline const juce::Colour tertiaryGroupLabel{0xFF464C51};
+        // Section 2 palette. Every static label is baked into the plate, so the only fascia ink
+        // still drawn in code is the EIGHT state-dependent labels of section 0.4 - which is why
+        // this list is now two entries rather than a dozen.
+        //
+        // Both values are chosen against the BOTTOM of the fascia gradient, where the background is
+        // darkest and contrast is worst; measured against the shipped plate they read 7.49:1 and
+        // 5.66:1. Rev 5's #7B8287 inactive grey (1.60:1 at the bottom) is DELETED - if it turns up
+        // again, it is a regression.
+        inline const juce::Colour labelSelected{0xFF16191C};     // 700 weight, 7.57:1 per section 2
+        inline const juce::Colour labelUnselected{0xFF2B3034};   // 400 weight, 5.52:1
 
-        // Static chrome, all straight from section 1 / the reference mockup's own CSS.
-        inline const juce::Colour engravedHeading{0xFF33383D};   // section headings, subtitle line 1
-        inline const juce::Colour subtitleSecondary{0xFF4A5055}; // "MODEL GR-85 - STEREO"
-        inline const juce::Colour headerCaption{0xFF3A4045};     // PROGRAM / IN / OUT captions
-        inline const juce::Colour valueText{0xFF3D4348};         // numeric readouts under knobs
-        inline const juce::Colour ahrLabelText{0xFF1E2226};      // ATTACK/HOLD/RELEASE sit darker
-        inline const juce::Colour algorithmActive{0xFF15181B};
-        inline const juce::Colour algorithmInactive{0xFF474D52};
-        inline const juce::Colour versionText{0xFF4C5257};
-        inline const juce::Colour meterFrameBorder{0xFF33393E};
         inline const juce::Colour programCellDivider{0xFF2A3035};
-        inline const juce::Colour wordmarkInk{0xFF14171A}; // section 8
 
         inline const juce::Colour ledWindowBg{0xFF07090A};
         inline const juce::Colour ledWindowBorder{0xFF363C41};
-        inline const juce::Colour ledText{0xFFDFE6EA};
+        // Section 6.2. Rev 6 warmed this from the old #DFE6EA to amber; the glow is drawn with it.
+        inline const juce::Colour ledText{0xFFF0E0B0};
+        inline const juce::Colour ledGlow{juce::Colour::fromRGBA(240, 216, 150, 89)};   // .35
 
         // "Gate accent (ONLY colour on panel)" - reserved exclusively for the GATE OPEN lamp and
         // the envelope trace, per spec section 1's explicit rule and BRAND.md's one-accent-colour
@@ -55,8 +50,14 @@ namespace GatecrasherTheme
 
         // Gate envelope scope, section 5.
         inline const juce::Colour scopeBorder{0xFF0A0C0D};
-        inline const juce::Colour scopeBgTop{0xFF06080A};
-        inline const juce::Colour scopeBgBottom{0xFF0B0F11};
+        // Section 5.1: the dark rect runs #0B0F11 at the top to #050708 at the bottom. These were
+        // inverted (and the bottom value wrong) through Rev 5.
+        inline const juce::Colour scopeBgTop{0xFF0B0F11};
+        inline const juce::Colour scopeBgBottom{0xFF050708};
+        // The title strip and scale gutter: flat, slightly darker than the plot backing so they
+        // read as chrome, with a 1px rule separating each from the plot.
+        inline const juce::Colour scopeStrip{0xFF080B0D};
+        inline const juce::Colour scopeStripRule{0x2E96B4BE};   // rgba(150,180,190,.18)
         inline const juce::Colour scopeGrid{0x1A96B4BE};       // rgba(150,180,190,.10)
         inline const juce::Colour scopeBaseline{0x3896B4BE};   // rgba(150,180,190,.22)
         inline const juce::Colour scopeInputWaveform{0x4DB2BEC5}; // rgba(178,190,197,.30)
@@ -68,8 +69,6 @@ namespace GatecrasherTheme
         inline const juce::Colour lampOpenCore{0xFFFF2B1C};
         inline const juce::Colour lampOpenMid{0xFFB0140C};
         inline const juce::Colour lampOpenEdge{0xFF6D0B06};
-        inline const juce::Colour gateOpenLabelActive{0xFF141719};
-        inline const juce::Colour gateOpenLabelInactive{0xFF43494E};
 
         // Input meter, section 7.
         inline const juce::Colour meterUnlitSegment{0xFF20262A};
@@ -124,78 +123,114 @@ namespace GatecrasherTheme
         // into the full bounding box (diameter + ~7% bleed), not just the knob circle.
         constexpr float knobBoundingBoxBleed = 1.07f;
 
-        // How a knob's numeric readout is formatted. The reference render uses a different
-        // convention per control rather than one global rule - "180 Hz" but "6.3 k" once past a
-        // kilohertz, "0.4 ms" but "165 ms" once the value is big enough that a decimal is noise,
-        // and the OUTPUT column drops units entirely ("+7", "-1.4") where the column is too narrow
-        // for them. Deliberately not the parameters' own getText(): that renders a fixed 2 decimal
-        // places with no unit, which matches neither the artwork nor each other.
-        enum class ValueFormat
-        {
-            none,       // no readout under this knob
-            decibels1,  // "-18.5 dB"
-            hertzAuto,  // "180 Hz" / "6.3 k"
-            millisAuto, // "0.4 ms" / "165 ms"
-            percent0,   // "64%"
-            plain2,     // "0.72"
-            signedInt,  // "+7"
-            signed1     // "-1.4"
-        };
+        /** A knob's identity: which parameter, where its DIAL CENTRE sits, how big, and which
+            filmstrip. Spec section 3.
 
+            This used to also carry the engraved label, its type metrics, and the live readout's
+            format and position - all consumed by PanelChrome and PanelReadouts. Both are gone: the
+            labels are baked into the plate and the standing readouts were removed outright (section
+            0.2, 6.3), so the value now appears only in the LCD while a control is moved. */
         struct KnobSpec
         {
             const char* paramID;
             float cx, cy, diameter;
             KnobFilmstripSize size;
-            bool isAlgorithmSelector = false; // 4 fixed decorative ticks instead of the swept ring
-
-            // Engraved label under the knob, and the live numeric readout under that. Both are
-            // centred on cx. The Y positions are absolute rather than derived from cy + diameter
-            // because the reference artwork's own vertical rhythm isn't a single constant offset -
-            // the mockup's flex gaps differ per group (5px on the small/output knobs, 6px on
-            // THRESHOLD and A/H/R) and the label sizes differ too, so these were measured off the
-            // dressed render per group. labelCssPx/labelTrackingEm mirror the mockup's CSS for that
-            // specific label; valueCentreY == 0 means the knob has no readout (HF/LF), and a null
-            // label means no engraved label at all (the algorithm selector, which instead gets the
-            // four corner labels PanelReadouts draws).
-            const char* label = nullptr;
-            float labelCssPx = 9.5f;
-            float labelTrackingEm = 0.14f;
-            float labelCentreY = 0.0f;
-            float valueCentreY = 0.0f;
-            ValueFormat valueFormat = ValueFormat::none;
         };
 
         // Section 3's full 15-knob table. density/decay are deliberately absent - automation-only,
         // no panel control (section 9 / GatecrasherEditorContent's own comment).
+        /** Spec section 3, verbatim. Every one of these moved in the Rev 6/7 redesign - the
+            previous values were Rev 5's and were out by up to 74px, which put knobs on top of their
+            own printed numerals once the plate started carrying the scales. Take them from the
+            spec, never from a screenshot. */
         inline constexpr std::array<KnobSpec, 15> knobs{ {
-            {"threshold", 103.0f, 162.0f, 62.0f, KnobFilmstripSize::large, false, "THRESHOLD", 9.5f, 0.18f, 204.7f, 220.7f, ValueFormat::decibels1},
-            {"trigHP",     89.0f, 284.0f, 38.0f, KnobFilmstripSize::small, false, "HP",        9.5f, 0.16f, 314.7f, 330.7f, ValueFormat::hertzAuto},
-            {"trigLP",    145.0f, 284.0f, 38.0f, KnobFilmstripSize::small, false, "LP",        9.5f, 0.16f, 314.7f, 330.7f, ValueFormat::hertzAuto},
-            {"attack",    300.0f, 284.0f, 56.0f, KnobFilmstripSize::large, false, "ATTACK",   10.0f, 0.20f, 324.4f, 340.8f, ValueFormat::millisAuto},
-            {"hold",      390.0f, 284.0f, 56.0f, KnobFilmstripSize::large, false, "HOLD",     10.0f, 0.20f, 324.4f, 340.8f, ValueFormat::millisAuto},
-            {"release",   480.0f, 284.0f, 56.0f, KnobFilmstripSize::large, false, "RELEASE",  10.0f, 0.20f, 324.4f, 340.8f, ValueFormat::millisAuto},
-            {"algorithm", 686.0f, 165.0f, 50.0f, KnobFilmstripSize::large, true},
-            {"size",      652.0f, 241.0f, 44.0f, KnobFilmstripSize::large, false, "SIZE",      9.5f, 0.16f, 274.7f, 290.7f, ValueFormat::plain2},
-            {"preDelay",  722.0f, 241.0f, 44.0f, KnobFilmstripSize::large, false, "PRE-DLY",   9.5f, 0.16f, 274.7f, 290.7f, ValueFormat::millisAuto},
-            {"dampHF",    657.0f, 357.0f, 34.0f, KnobFilmstripSize::small, false, "HF",        9.5f, 0.14f, 385.7f, 0.0f,   ValueFormat::none},
-            {"dampLF",    717.0f, 357.0f, 34.0f, KnobFilmstripSize::small, false, "LF",        9.5f, 0.14f, 385.7f, 0.0f,   ValueFormat::none},
-            {"slam",      841.0f, 151.0f, 40.0f, KnobFilmstripSize::large, false, "SLAM",      9.5f, 0.14f, 182.7f, 198.7f, ValueFormat::signedInt},
-            {"width",     893.0f, 151.0f, 40.0f, KnobFilmstripSize::large, false, "WIDTH",     9.5f, 0.14f, 182.7f, 198.7f, ValueFormat::percent0},
-            {"mix",       841.0f, 237.0f, 40.0f, KnobFilmstripSize::large, false, "MIX",       9.5f, 0.14f, 268.7f, 284.7f, ValueFormat::percent0},
-            {"trim",      893.0f, 237.0f, 40.0f, KnobFilmstripSize::large, false, "TRIM",      9.5f, 0.14f, 268.7f, 284.7f, ValueFormat::signed1},
+            {"threshold", 102.0f, 170.0f, 62.0f, KnobFilmstripSize::large},
+            {"trigHP",     75.0f, 302.0f, 32.0f, KnobFilmstripSize::small},
+            {"trigLP",    151.0f, 302.0f, 32.0f, KnobFilmstripSize::small},
+            {"attack",    259.0f, 289.0f, 54.0f, KnobFilmstripSize::large},
+            {"hold",      361.0f, 289.0f, 54.0f, KnobFilmstripSize::large},
+            {"release",   463.0f, 289.0f, 54.0f, KnobFilmstripSize::large},
+            {"algorithm", 632.0f, 154.0f, 50.0f, KnobFilmstripSize::large},
+            {"size",      580.0f, 239.0f, 44.0f, KnobFilmstripSize::large},
+            {"preDelay",  684.0f, 239.0f, 44.0f, KnobFilmstripSize::large},
+            {"dampHF",    583.0f, 364.0f, 34.0f, KnobFilmstripSize::small},
+            {"dampLF",    681.0f, 364.0f, 34.0f, KnobFilmstripSize::small},
+            {"slam",      793.0f, 157.0f, 40.0f, KnobFilmstripSize::large},
+            {"width",     881.0f, 157.0f, 40.0f, KnobFilmstripSize::large},
+            {"mix",       793.0f, 262.0f, 40.0f, KnobFilmstripSize::large},
+            {"trim",      881.0f, 262.0f, 40.0f, KnobFilmstripSize::large},
         } };
 
         // Gate envelope scope, section 5.
-        constexpr float scopeX = 218.0f, scopeY = 113.0f, scopeW = 344.0f, scopeH = 122.0f;
-        constexpr float scopeInnerInset = 2.0f; // 1px border + 1px inner padding
-        constexpr float scopeBaselineInset = 14.0f; // baseline at h - 14
-        constexpr float scopeCeilingInset = 14.0f;  // ceiling at y + 14
+        // Spec section 5.1: THREE nested rectangles, and they must stay distinct. The well is the
+        // baked recess; the dark rect is the full painted canvas; the plot region is the only area
+        // the trace may occupy. Clipping the trace to the dark rect instead of the plot region is
+        // the specific mistake section 5.1 exists to prevent - it lets the trace run under the
+        // scale gutter and collide with the level annotations.
+        //
+        // These were 218/113/344x122 through Rev 5, which is 43px wider than the plate's actual
+        // recess - wide enough that the scope's right edge overlapped the algorithm selector's ROOM
+        // and AMBI labels once those started being drawn.
+        constexpr float scopeWellX = 208.0f, scopeWellY = 118.0f, scopeWellW = 305.0f, scopeWellH = 116.0f;
+        constexpr float scopeDarkX = 210.0f, scopeDarkY = 120.0f, scopeDarkW = 301.0f, scopeDarkH = 112.0f;
+
+        // Plot region, local to the dark rect's top-left.
+        constexpr float scopePlotLocalX = 0.0f, scopePlotLocalY = 14.0f;
+        constexpr float scopePlotW = 267.0f, scopePlotH = 98.0f;
+
+        // The two reserved strips carved out of the dark rect, also local.
+        constexpr float scopeTitleStripH = 14.0f;   // 0,0,301x14 - holds GATE ENV
+        constexpr float scopeGutterLocalX = 267.0f; // 267,14,34x98 - holds 0 dB and -inf
+        constexpr float scopeGutterW = 34.0f;
+
         constexpr float scopePixelsPerFrame = 2.0f;
         constexpr float scopeGridSpacing = 44.0f;
         constexpr int scopeNumStaticHorizontals = 5;
 
-        constexpr float lampCx = 224.0f, lampCy = 95.0f, lampDiameter = 15.0f;
+        // Spec section 5.5: centre (216, 104), diameter 15. This read (224, 95) until Rev 7 - wrong
+        // by (+8, -9), and masked for as long as the plate baked an unlit bulb at the correct spot:
+        // the dark disc you saw was the ARTWORK's, with the drawn lamp sitting offset on top of it.
+        // Rev 7 removed the baked bulb, so the drawn position is now the only one and had to be
+        // right. If the lamp ever looks displaced from its GATE OPEN legend, start here.
+        constexpr float lampCx = 216.0f, lampCy = 104.0f, lampDiameter = 15.0f;
+
+        //======================================================================================
+        /** The eight state-dependent labels of spec section 0.4 - the ONLY text this build draws
+            outside the two LCD windows.
+
+            They are absent from the plate: bare fascia sits where they go, and all eight are drawn
+            every frame at whichever weight their control is currently in. Rev 6 baked them at their
+            defaults and asked for the changed pair to be redrawn, which cannot work - baked pixels
+            cannot be un-drawn, so turning a bold baked word dim would have meant painting matched
+            fascia over it first. Rev 7 withdrew that; do not reintroduce it.
+
+            **Draw from `x`, never by re-centring on `centreX`.** A 700-weight word is wider than the
+            same word at 400, so re-centring would shift it sideways as the control changes. The
+            centre is recorded only because the spec quotes it. */
+        struct StateLabel
+        {
+            const char* text;
+            float x;          // left edge, spec section 0.4
+            float baselineY;
+            float centreX;    // rendered default's centre - reference only, do not lay out from it
+        };
+
+        /** Index pairs: 0/1 are KEY SOURCE (Internal/Sidechain), 2/3 SHAPE (Hard/Soft), 4-7 the
+            algorithm corners in ROOM, PLATE, AMBI, CHMBR order - note that is panel order, NOT the
+            parameter's index order, which section 9.1 gives as Ambience, Room, Plate, Chamber. */
+        inline constexpr std::array<StateLabel, 8> stateLabels { {
+            { "INTERNAL",   64.0f, 416.0f,  85.7f },
+            { "SIDECHAIN", 117.0f, 416.0f, 139.7f },
+            { "HARD",      333.0f, 422.0f, 345.0f },
+            { "SOFT",      367.0f, 422.0f, 377.0f },
+            { "ROOM",      557.0f, 127.0f, 568.4f },
+            { "PLATE",     680.0f, 127.0f, 693.3f },
+            { "AMBI",      557.0f, 185.0f, 567.0f },
+            { "CHMBR",     679.0f, 185.0f, 692.8f } } };
+
+        /** Section 2.3: Barlow Condensed 10px, .10em tracking. */
+        constexpr float stateLabelCssPx = 10.0f;
+        constexpr float stateLabelTrackingEm = 0.10f;
 
         // Input meter, section 7.
         constexpr float meterX = 147.0f, meterY = 133.0f, meterW = 14.0f, meterH = 76.0f;
@@ -209,7 +244,7 @@ namespace GatecrasherTheme
         // internal proportions (spec gives the track/assembly anchors, not sub-pixel caption/label
         // baselines - these are a careful, symmetric interpolation between the two, not lifted
         // directly from a pixel-measured mockup).
-        constexpr float switchTrackW = 56.0f, switchTrackH = 20.0f;
+        constexpr float switchTrackW = 58.0f, switchTrackH = 22.0f;   // section 7
         constexpr float switchShoeW = 26.0f;
 
         // The switch's full assembly (caption row / track / label row, stacked) is what actually
@@ -244,20 +279,13 @@ namespace GatecrasherTheme
         // fix no longer depends on it, see ToggleSwitchComponent's paint()).
         constexpr float switchVerticalSafetyPad = 12.0f;
 
-        // KEY SOURCE's track position (section 7: "track at x 88, y 371") was given directly and
-        // verified pixel-for-pixel against the raw background asset - correct as-is. SHAPE's spec
-        // text ("centred beneath the A/H/R knobs at x 361, y 364, 58 x 56") describes the *assembly's*
-        // top-left corner (58x56 is the whole caption+track+labels stack, not the 56x20 track), which
-        // an earlier pass misread as the assembly's *centre* - shapeTrackX/Y below were back-computed
-        // from that wrong reading (giving 333/352) and never verified against the actual asset. Doing
-        // that verification (cropping+upscaling narrow strips of gatecrasher-panel@2x.png through the
-        // track) found the real baked track top at canvas y=380, not y=352 - a ~28px miss that left
-        // this component's whole bounds sitting above where the baked assembly actually is, so it was
-        // erasing/redrawing over plain fascia while the real baked switch stayed fully exposed
-        // untouched below it (the "duplicated control" bug: two full track+thumb assemblies visible
-        // at once). Corrected to match the verified asset position.
-        constexpr float shapeTrackX = 362.0f, shapeTrackY = 380.0f;
-        constexpr float keySourceTrackX = 88.0f, keySourceTrackY = 371.0f;
+        // Spec section 7, taken directly: KEY SOURCE track x 84, y 379; SHAPE x 332, y 385; both
+        // 58 x 22. Every one of these moved in the Rev 6/7 redesign - the previous values (88/371
+        // and 362/380 at 56 x 20) were Rev 5's, and the long archaeology that produced them is no
+        // longer relevant now that the plate is authoritative and the spec quotes the track rect
+        // directly. Take them from section 7, not from a crop of the render.
+        constexpr float keySourceTrackX = 84.0f, keySourceTrackY = 379.0f;
+        constexpr float shapeTrackX = 332.0f, shapeTrackY = 385.0f;
 
         // Option-label ("INTERNAL"/"SIDECHAIN", "HARD"/"SOFT") layout, all measured directly off
         // gatecrasher-panel@2x.png by cropping the baked label rows and scaling back to canvas units
@@ -305,21 +333,33 @@ namespace GatecrasherTheme
         // (which was never reported as clipped) at the same x=906 it was already correctly at.
         constexpr float headerCropX = 433.0f, headerCropY = 14.0f, headerCropW = 473.0f, headerCropH = 54.0f;
 
-        constexpr float programWindowX = 480.0f, programWindowY = 33.0f, programWindowW = 238.0f, programWindowH = 25.0f;
-        constexpr float programTagCellX = 481.0f, programTagCellY = 34.0f, programTagCellW = 39.0f, programTagCellH = 23.0f;
-        constexpr float programNameCellX = 521.0f, programNameCellY = 34.0f, programNameCellW = 197.0f, programNameCellH = 23.0f;
+        // Spec section 6, taken directly. The header was rearranged in Rev 6: the strapline and
+        // model line moved from beside the wordmark to underneath it, which freed 74px that went
+        // into the program window - the name cell grew 197 -> 252 and everything right of it moved.
+        //
+        // All of these were previously measured off the dressed render rather than read from the
+        // spec, because the plate and the spec used to disagree. They no longer do: section 6 and
+        // the Rev 7 plate agree, so these are the spec's numbers.
+        constexpr float programWindowX = 374.0f, programWindowY = 34.0f, programWindowW = 332.0f, programWindowH = 25.0f;
+        constexpr float programTagCellX = 375.0f, programTagCellY = 35.0f, programTagCellW = 48.0f, programTagCellH = 23.0f;
+        constexpr float programNameCellX = 423.0f, programNameCellY = 35.0f, programNameCellW = 252.0f, programNameCellH = 23.0f;
+        constexpr float programChevronCellX = 675.0f, programChevronCellY = 35.0f, programChevronCellW = 30.0f, programChevronCellH = 23.0f;
 
-        constexpr float saveButtonX = 724.0f, saveButtonY = 33.0f, saveButtonW = 44.0f, saveButtonH = 25.0f;
-        constexpr float deleteButtonX = 773.0f, deleteButtonY = 33.0f, deleteButtonW = 44.0f, deleteButtonH = 25.0f;
+        constexpr float saveButtonX = 712.0f, saveButtonY = 34.0f, saveButtonW = 50.0f, saveButtonH = 25.0f;
+        constexpr float deleteButtonX = 767.0f, deleteButtonY = 34.0f, deleteButtonW = 50.0f, deleteButtonH = 25.0f;
 
-        // Measured off gatecrasher-panel@2x.png (cropping narrow strips through the windows and
-        // scaling back to canvas units), not taken from section 6's table: that row reads
-        // "822 -> 908 | 33 | ~44 each | 25", but the artwork actually puts OUT's right edge at ~920,
-        // a dozen px past where 908 would place it. Same situation as headerCropX above - where the
-        // spec's coordinates and the shipped asset disagree, the asset wins, because these rects
-        // exist to erase and redraw over exactly what's baked there.
-        constexpr float inWindowX = 825.0f, inWindowY = 32.5f, inWindowW = 43.5f, inWindowH = 25.0f;
-        constexpr float outWindowX = 876.5f, outWindowY = 32.5f, outWindowW = 43.5f, outWindowH = 25.0f;
+        constexpr float inWindowX = 825.0f, inWindowY = 34.0f, inWindowW = 44.0f, inWindowH = 24.0f;
+        constexpr float outWindowX = 875.0f, outWindowY = 34.0f, outWindowW = 44.0f, outWindowH = 24.0f;
+
+        /** Section 6.1's name-cell budget: 252px cell, 10px padding each side, 232 usable, Share
+            Tech Mono 13px at .10em = 8.32px per character = 27 characters. Program names are capped
+            at 24, which with a two-digit index and a space is exactly 27. Verified against the real
+            content: the longest factory name with its index ("14 ROOM REINFORCEMENT") is 174.7px
+            with 57px spare, and the longest live value ("THRESHOLD: -18.5 dB") 158.1px.
+
+            Do not narrow the window without re-checking those strings. */
+        constexpr float programNameCellPadding = 10.0f;
+        constexpr int programNameCharBudget = 27;
 
         // Reference width of the baked "-6.2" readout in canvas units - the mono font's height is
         // solved from this at runtime (see fontHeightForTrackedWidth) rather than hard-coded.
@@ -380,7 +420,6 @@ namespace GatecrasherTheme
         // see GateLamp.cpp's class comment) so the erase-then-redraw this label does is guaranteed
         // to fully cover whatever's baked underneath regardless of exact glyph-width uncertainty;
         // there's clear space before the scope's own "ENVELOPE ..." readout to the right.
-        constexpr float gateOpenLabelX = 240.0f, gateOpenLabelY = 87.0f, gateOpenLabelW = 190.0f, gateOpenLabelH = 16.0f;
     }
 
     // Angle (degrees, clockwise from 12 o'clock) for a normalised 0..1 value across the knob arc.
@@ -460,6 +499,14 @@ namespace GatecrasherTheme
                                                       (size_t) BinaryData::BarlowCondensedSemiBold_ttfSize);
         return typeface;
     }
+    inline juce::Typeface::Ptr barlowRegularTypeface()
+    {
+        static const juce::Typeface::Ptr typeface =
+            juce::Typeface::createSystemTypefaceFor(BinaryData::BarlowCondensedRegular_ttf,
+                                                      (size_t) BinaryData::BarlowCondensedRegular_ttfSize);
+        return typeface;
+    }
+
     inline juce::Typeface::Ptr barlowBoldTypeface()
     {
         static const juce::Typeface::Ptr typeface =
@@ -488,6 +535,11 @@ namespace GatecrasherTheme
     inline juce::Font labelFontBold(float heightPx)
     {
         return juce::Font(juce::FontOptions(heightPx).withTypeface(barlowBoldTypeface()));
+    }
+    // Section 2.3's 400 weight, for the UNSELECTED half of each section-0.4 label pair.
+    inline juce::Font labelFontRegular(float heightPx)
+    {
+        return juce::Font(juce::FontOptions(heightPx).withTypeface(barlowRegularTypeface()));
     }
     inline juce::Font monoFont(float heightPx)
     {
@@ -544,30 +596,37 @@ namespace GatecrasherTheme
     // each component so BinaryData's identifier-mangling of these particular filenames (hyphens and
     // "@" stripped entirely, "." becomes "_" - see TapeRotTheme.h's InterRegular_ttf precedent for
     // the same JUCE version) only needs verifying/fixing in one place if a name doesn't match.
-    // The bare chassis: fascia gradient + brush grain, side rails with screws, the header band and
-    // its bottom border, and the three section dividers. Deliberately has NO controls, labels,
-    // nameplate or window frames on it - every one of those is drawn live on top (PanelChrome for
-    // the static engraved layer, the individual components for anything that moves). The fully
-    // dressed renders remain in design/assets/ as visual acceptance references, but are no longer
-    // shipped in BinaryData.
+    // The PRINTED PLATE (spec Rev 6, section 1.1). Everything static is baked into it: fascia,
+    // grain, rails, screws, header band, dividers, wordmark, every label, every printed scale and
+    // tick, the recessed wells and the footer. It carries no knobs, pointers, lamp, LCD glyphs,
+    // meter fill, scope contents or buttons - those composite on top in the order given in
+    // section 0.5.
+    //
+    // This replaced the bare chassis in Rev 6, which inverted Rev 5's architecture. Rev 5 drew
+    // every label in code; that code is deleted, not adapted, because running both paths
+    // double-draws every label at a one-pixel offset. If you are about to draw a string on the
+    // fascia, check section 0.2 first - the answer is almost certainly that it is already baked.
     inline const juce::Image& panelBackgroundImage()
     {
         static const juce::Image image = juce::ImageFileFormat::loadFrom(
-            BinaryData::gatecrasherpanelbare2x_png, (size_t) BinaryData::gatecrasherpanelbare2x_pngSize);
+            BinaryData::gatecrasherpanelplate2x_png, (size_t) BinaryData::gatecrasherpanelplate2x_pngSize);
         return image;
     }
 
-    // Re-blits the panel background bitmap at a given PANEL-LOCAL rect, restoring that patch to the
-    // bare chassis artwork underneath. Live components whose text/graphics change need to clear
-    // their previous frame before drawing the new one, and the fascia there is a gradient with a
-    // 1px vertical brush grain - so re-blitting the real background pixels stays seamless where a
-    // flat-colour fill would show as a smooth patch against the grain around it.
+    // Re-blits the panel background bitmap at a given PANEL-LOCAL rect. Live components whose
+    // graphics change clear their previous frame this way, and because the fascia is a gradient
+    // with a 1px vertical brush grain (amplitude ~14 levels, clearly visible), re-blitting the real
+    // pixels stays seamless where a flat fill would show as a smooth patch.
     //
-    // (Before the bare chassis existed this also had to paper over baked-in labels, which is a very
-    // different job: erasing a region whose baked content was exactly what you were about to redraw
-    // is a no-op, so several components had to use opaque flat fills instead. Those workarounds are
-    // gone - nothing is baked into the background any more, so an erase here always genuinely
-    // clears.)
+    // **Rev 7 caveat.** The background is a printed plate, so this only genuinely clears regions the
+    // plate leaves EMPTY. Erasing a region whose baked content is what you were about to redraw is
+    // a no-op - draw a dimmed label over a baked bold one and you get both.
+    //
+    // That is why the eight state-dependent labels of section 0.4 are absent from the plate: bare
+    // fascia sits where they go, the build draws all eight every frame, and this stays a real
+    // clear. Rev 6 baked them at their default weights and asked the build to redraw the pair on
+    // change, which cannot work in that direction; Rev 7 withdrew it. If a future revision bakes
+    // any state-dependent artwork again, this helper is not the answer.
     //
     // localRect/destOrigin are in the CALLING COMPONENT's own local coordinate space; destOrigin is
     // that component's position relative to the panel-local root (its getPosition(), when the
@@ -590,14 +649,6 @@ namespace GatecrasherTheme
         g.setImageResamplingQuality(juce::Graphics::highResamplingQuality);
         g.drawImage(bg, destRect.getX(), destRect.getY(), destRect.getWidth(), destRect.getHeight(),
                     srcRect.getX(), srcRect.getY(), srcRect.getWidth(), srcRect.getHeight());
-    }
-
-    // The baked spray-stencil wordmark, transparent, at 3x - see WordmarkComponent's class comment.
-    inline const juce::Image& wordmarkImage()
-    {
-        static const juce::Image image = juce::ImageFileFormat::loadFrom(
-            BinaryData::gatecrasherwordmark3x_png, (size_t) BinaryData::gatecrasherwordmark3x_pngSize);
-        return image;
     }
 
     inline const juce::Image& knobLargeFilmstrip()

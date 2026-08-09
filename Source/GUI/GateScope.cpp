@@ -40,57 +40,78 @@ void GateScope::paint(juce::Graphics& g)
 {
     using namespace GatecrasherTheme;
 
-    const juce::Rectangle<float> outerRect(Layout::scopeX, Layout::scopeY, Layout::scopeW, Layout::scopeH);
-    const auto innerRect = outerRect.reduced(Layout::scopeInnerInset);
+    // Section 5.1's three nested rectangles. Keeping them distinct is the whole point: the trace,
+    // fill, underlay and grid are clipped to the PLOT REGION, never to the dark rect - clipping to
+    // the dark rect lets the trace run under the scale gutter and collide with the annotations,
+    // which is the one mistake that section exists to prevent.
+    const juce::Rectangle<float> darkRect(Layout::scopeDarkX, Layout::scopeDarkY,
+                                           Layout::scopeDarkW, Layout::scopeDarkH);
+    const juce::Rectangle<float> plotRect(darkRect.getX() + Layout::scopePlotLocalX,
+                                           darkRect.getY() + Layout::scopePlotLocalY,
+                                           Layout::scopePlotW, Layout::scopePlotH);
 
-    const float baselineY = outerRect.getY() + outerRect.getHeight() - Layout::scopeBaselineInset;
-    const float ceilingY = outerRect.getY() + Layout::scopeCeilingInset;
+    const float baselineY = plotRect.getBottom();
+    const float ceilingY = plotRect.getY();
 
-    // Background gradient + border (section 5: 1px #0A0C0D border, 1px inner padding,
-    // bg #06080A -> #0B0F11 vertical).
-    juce::ColourGradient bgGradient(Colour::scopeBgTop, innerRect.getCentreX(), innerRect.getY(),
-                                     Colour::scopeBgBottom, innerRect.getCentreX(), innerRect.getBottom(), false);
+    // The dark rect's own backing, section 5.1: #0B0F11 -> #050708 vertical. The well's recess and
+    // its 1px border are baked into the plate; nothing draws them here.
+    juce::ColourGradient bgGradient(Colour::scopeBgTop, darkRect.getCentreX(), darkRect.getY(),
+                                     Colour::scopeBgBottom, darkRect.getCentreX(), darkRect.getBottom(), false);
     g.setGradientFill(bgGradient);
-    g.fillRect(innerRect);
-    g.setColour(Colour::scopeBorder);
-    g.drawRect(outerRect, 1.0f);
+    g.fillRect(darkRect);
+
+    // The two reserved strips, flat and slightly darker so they read as chrome rather than as part
+    // of the plot, with their 1px separating rules.
+    const juce::Rectangle<float> titleStrip(darkRect.getX(), darkRect.getY(),
+                                             darkRect.getWidth(), Layout::scopeTitleStripH);
+    const juce::Rectangle<float> gutterStrip(darkRect.getX() + Layout::scopeGutterLocalX,
+                                              darkRect.getY() + Layout::scopeTitleStripH,
+                                              Layout::scopeGutterW,
+                                              darkRect.getHeight() - Layout::scopeTitleStripH);
+    g.setColour(Colour::scopeStrip);
+    g.fillRect(titleStrip);
+    g.fillRect(gutterStrip);
+
+    g.setColour(Colour::scopeStripRule);
+    g.drawHorizontalLine((int) titleStrip.getBottom(), darkRect.getX(), darkRect.getRight());
+    g.drawVerticalLine((int) gutterStrip.getX(), gutterStrip.getY(), gutterStrip.getBottom());
 
     g.saveState();
-    g.reduceClipRegion(innerRect.getSmallestIntegerContainer());
+    g.reduceClipRegion(plotRect.getSmallestIntegerContainer());
 
     // Scrolling vertical grid, 44px pitch, moving in lockstep with the trace's own 2px/frame
     // scroll (section 5).
     g.setColour(Colour::scopeGrid);
-    for (float x = innerRect.getRight() - gridScrollPhase; x >= innerRect.getX(); x -= Layout::scopeGridSpacing)
-        g.drawVerticalLine((int) x, innerRect.getY(), innerRect.getBottom());
+    for (float x = plotRect.getRight() - gridScrollPhase; x >= plotRect.getX(); x -= Layout::scopeGridSpacing)
+        g.drawVerticalLine((int) x, plotRect.getY(), plotRect.getBottom());
 
     // 5 static horizontal grid lines.
     for (int i = 0; i < Layout::scopeNumStaticHorizontals; ++i)
     {
         const float t = (float) i / (float) (Layout::scopeNumStaticHorizontals - 1);
-        const float y = innerRect.getY() + t * innerRect.getHeight();
-        g.drawHorizontalLine((int) y, innerRect.getX(), innerRect.getRight());
+        const float y = plotRect.getY() + t * plotRect.getHeight();
+        g.drawHorizontalLine((int) y, plotRect.getX(), plotRect.getRight());
     }
 
     // Baseline, brighter than the general grid.
     g.setColour(Colour::scopeBaseline);
-    g.drawHorizontalLine((int) baselineY, innerRect.getX(), innerRect.getRight());
+    g.drawHorizontalLine((int) baselineY, plotRect.getX(), plotRect.getRight());
 
     // Build this frame's visible column list (oldest -> newest, left -> right) from the local
     // history ring buffer.
     const int visibleColumns = juce::jmin(historySize,
-        (int) std::ceil(innerRect.getWidth() / Layout::scopePixelsPerFrame) + 1);
+        (int) std::ceil(plotRect.getWidth() / Layout::scopePixelsPerFrame) + 1);
 
     juce::Path envelopePath, fillPath;
     bool firstColumn = true;
-    float lastX = innerRect.getRight();
+    float lastX = plotRect.getRight();
 
     for (int col = 0; col < visibleColumns; ++col)
     {
         const int age = visibleColumns - 1 - col; // 0 = newest (rightmost)
         const int idx = ((writeIndex - 1 - age) % historySize + historySize) % historySize;
-        const float x = innerRect.getRight() - (float) age * Layout::scopePixelsPerFrame;
-        if (x < innerRect.getX() - Layout::scopePixelsPerFrame)
+        const float x = plotRect.getRight() - (float) age * Layout::scopePixelsPerFrame;
+        if (x < plotRect.getX() - Layout::scopePixelsPerFrame)
             continue;
 
         // Grey input-waveform underlay - 1px vertical strokes, grey, never red (section 5).
@@ -120,8 +141,8 @@ void GateScope::paint(juce::Graphics& g)
         fillPath.closeSubPath();
 
         // Fill beneath the trace.
-        juce::ColourGradient fillGradient(Colour::scopeFillTop, innerRect.getCentreX(), ceilingY,
-                                           Colour::scopeFillBottom, innerRect.getCentreX(), baselineY, false);
+        juce::ColourGradient fillGradient(Colour::scopeFillTop, plotRect.getCentreX(), ceilingY,
+                                           Colour::scopeFillBottom, plotRect.getCentreX(), baselineY, false);
         g.setGradientFill(fillGradient);
         g.fillPath(fillPath);
 
@@ -141,14 +162,14 @@ void GateScope::paint(juce::Graphics& g)
 
     g.restoreState();
 
-    // Annotations, Share Tech Mono placeholder (see GatecrasherTheme::monoFont's TODO).
+    // Annotations sit in the two reserved strips, OUTSIDE the plot clip - that separation is why
+    // the strips exist. Section 0.2 marks these R: they are drawn with the scope, not baked.
     g.setColour(Colour::scopeAnnotation);
-    g.setFont(monoFont(9.0f));
-    g.drawText("GATE ENV", juce::Rectangle<float>(innerRect.getX() + 4.0f, innerRect.getY() + 2.0f, 80.0f, 12.0f),
-               juce::Justification::centredLeft, false);
-    g.drawText("0 dB", juce::Rectangle<float>(innerRect.getRight() - 50.0f, innerRect.getY() + 2.0f, 46.0f, 12.0f),
+    g.setFont(monoFont(monoFontHeightForCssPx(9.0f)));
+    g.drawText("GATE ENV", titleStrip.reduced(4.0f, 0.0f), juce::Justification::centredLeft, false);
+    g.drawText("0 dB", gutterStrip.withHeight(14.0f).reduced(3.0f, 0.0f),
                juce::Justification::centredRight, false);
     g.drawText(juce::String(juce::CharPointer_UTF8("-\xe2\x88\x9e")),
-               juce::Rectangle<float>(innerRect.getRight() - 50.0f, innerRect.getBottom() - 14.0f, 46.0f, 12.0f),
+               gutterStrip.withTop(gutterStrip.getBottom() - 14.0f).reduced(3.0f, 0.0f),
                juce::Justification::centredRight, false);
 }

@@ -9,9 +9,7 @@
 #include "InputMeter.h"
 #include "ToggleSwitchComponent.h"
 #include "ProgramHeader.h"
-#include "WordmarkComponent.h"
-#include "PanelChrome.h"
-#include "PanelReadouts.h"
+#include "StateLabels.h"
 #include "../PluginProcessor.h"
 #include <juce_gui_basics/juce_gui_basics.h>
 #include <array>
@@ -30,14 +28,10 @@ private:
     GatecrasherAudioProcessor& processorRef;
     GatecrasherLookAndFeel lookAndFeel;
 
-    // Draw order matters: the bare chassis, then the engraved static layer on top of it, then every
-    // live control above that. PanelReadouts sits with the live controls (its values change), but
-    // below the knobs so a knob's cast-shadow bleed overlaps its own readout the way the artwork
-    // shows rather than the text sitting on top of the knob.
+    // Draw order follows spec section 0.5: the printed plate, then the eight state-dependent
+    // labels, then every live control above them.
     GatecrasherPanelBackground panelBackground;
-    PanelChrome panelChrome;
-    PanelReadouts panelReadouts;
-    WordmarkComponent wordmark;
+    StateLabels stateLabels;
 
     // density/decay are deliberately automation-only APVTS parameters with no panel control
     // (GATECRASHER-GUI-SPEC.md section 9) - every other parameter gets a knob here, one per entry

@@ -1,6 +1,6 @@
 # Gatecrasher GR-85 — GUI handoff
 
-**Rev 6.** You are building the JUCE plugin GUI for **Gatecrasher**, an 80s gated-reverb
+**Rev 7.** You are building the JUCE plugin GUI for **Gatecrasher**, an 80s gated-reverb
 processor. The visual design is approved and final — implement it, don't redesign it.
 
 Read `GATECRASHER-GUI-SPEC.md` first, and read **§0 before anything else**. It decides the shape of
@@ -17,9 +17,14 @@ top of it.
 yourself and shipped a bare chassis to draw it onto. That is superseded. Adapting the old code
 rather than deleting it will double-draw every label at a one-pixel offset.
 
-The build draws exactly nine things (§0.5): knob filmstrip frames, switch shoes, six
+The build draws exactly nine things (§0.5): knob filmstrip frames, switch shoes, the eight
 state-dependent labels, the input meter fill, the scope, the gate lamp, the LCD text, and the two
 buttons. That is the complete list.
+
+The sorting rule behind the plate is **"does this change?"**, not "is this a label?". Printed scales
+are baked because their numerals sit on irregular radii at irregular angles. The switch and
+algorithm labels are drawn live because their weight follows a control — and baked pixels cannot be
+un-drawn.
 
 ## Assets
 
@@ -39,7 +44,7 @@ buttons. That is the complete list.
 - `assets/scope-hard-release@3x.png` / `scope-soft-release@3x.png` — SHAPE = HARD vs SOFT
 
 **Runtime fonts** — embed both, see `assets/fonts/README.md`
-- **Barlow Condensed** 700 / 600 / 400 — the §0.4 label redraw
+- **Barlow Condensed** 700 / 600 / 400 — the eight state-dependent labels (§0.4)
 - **Share Tech Mono** 400 — LCD name, live values, IN / OUT
 
 **Reference only**
@@ -89,9 +94,10 @@ knob decision).
 3. **No knob is quantised.** Ticks are a scale, not detents. Only the Algorithm selector, KEY SOURCE
    and SHAPE are genuinely stepped. Do not add snapping or magnetic centres to anything else.
 
-4. **Switch and algorithm labels are baked at their defaults** (§0.4) — `INTERNAL`, `HARD`, `PLATE`
-   bold, the rest dimmed. Redraw those six strings when the user changes them. They are the only
-   text outside the LCDs that the build touches.
+4. **The eight state-dependent labels are absent from the plate** (§0.4) — `INTERNAL` / `SIDECHAIN`,
+   `HARD` / `SOFT`, and the four algorithm corners. Bare fascia sits where they go; draw all eight
+   every frame from the position table in §0.4. They are the only text outside the LCDs the build
+   touches.
 
 ## Program management (§6)
 

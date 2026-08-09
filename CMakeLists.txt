@@ -38,18 +38,25 @@ FetchContent_MakeAvailable(JUCE)
 # WordmarkComponent - the wordmark is baked into the plate now. TudorVictors.ttf ships in design/
 # only so the wordmark can be re-baked; it is not a runtime face and is not embedded.
 #
-# Fonts: only the two faces spec section 2.3 draws at RUNTIME, per design/assets/fonts/README.md.
-# Barlow Condensed Bold (700, selected) and Regular (400, unselected) render the six
-# state-dependent labels of section 0.4; Share Tech Mono Regular renders the LCD. SemiBold (600) is
-# shipped in design/assets/fonts/ but deliberately NOT embedded - nothing draws a group caption at
-# runtime. Both families are OFL 1.1, which permits embedding; design/assets/fonts/OFL.txt carries
-# the notice the licence requires to travel with them.
+# Fonts: the faces spec section 2.3 draws at RUNTIME. All THREE Barlow weights are needed, which is
+# one more than design/assets/fonts/README.md implies - it says SemiBold (600) is wanted only for a
+# group caption, but section 6.4 puts the SAVE/DELETE button labels at 600 as well, and those are
+# drawn live. So:
+#
+#   Bold 700     - selected state-dependent labels (section 0.4)
+#   Regular 400  - unselected state-dependent labels
+#   SemiBold 600 - SAVE / DELETE / STORE / CANCEL button labels (section 6.4)
+#
+# Share Tech Mono Regular renders the LCD name, live values and IN/OUT. Both families are OFL 1.1,
+# which permits embedding; design/assets/fonts/OFL.txt carries the notice the licence requires to
+# travel with them.
 juce_add_binary_data(GatecrasherBinaryData
     SOURCES
         design/assets/gatecrasher-panel-plate@2x.png
         design/assets/knob_large_128px_128f.png
         design/assets/knob_small_128px_128f.png
         design/assets/fonts/BarlowCondensed-Bold.ttf
+        design/assets/fonts/BarlowCondensed-SemiBold.ttf
         design/assets/fonts/BarlowCondensed-Regular.ttf
         design/assets/fonts/ShareTechMono-Regular.ttf)
 
@@ -116,10 +123,8 @@ target_sources(Gatecrasher PRIVATE
     Source/GUI/GateLamp.cpp
     Source/GUI/InputMeter.cpp
     Source/GUI/ToggleSwitchComponent.cpp
+    Source/GUI/StateLabels.cpp
     Source/GUI/ProgramHeader.cpp
-    Source/GUI/WordmarkComponent.cpp
-    Source/GUI/PanelChrome.cpp
-    Source/GUI/PanelReadouts.cpp
     Source/GUI/GatecrasherEditorContent.cpp)
 
 target_compile_definitions(Gatecrasher PUBLIC

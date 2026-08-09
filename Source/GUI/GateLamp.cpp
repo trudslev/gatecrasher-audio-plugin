@@ -75,21 +75,4 @@ void GateLamp::paint(juce::Graphics& g)
         g.setGradientFill(bulbGradient);
         g.fillEllipse(bulbX, bulbY, bulbD, bulbD);
     }
-
-    // GATE OPEN label - switches colour on the raw isGateOpen() boolean, in lockstep with the lamp
-    // (section 5), independent of the lamp's own cosmetic closing decay. Cleared back to the bare
-    // chassis before each redraw so the previous state's colour doesn't show through; that's a real
-    // clear now that the background no longer carries a baked copy of this same text (which used to
-    // make erasing here a no-op and forced an opaque flat fill instead).
-    const juce::Rectangle<float> labelRect(Layout::gateOpenLabelX, Layout::gateOpenLabelY,
-                                            Layout::gateOpenLabelW, Layout::gateOpenLabelH);
-    eraseToBackground(g, labelRect);
-
-    // Section 5's 10px / .26em, converted through labelFontHeightForCssPx rather than passed
-    // straight to the font (a juce::Font height is ascent+descent, not the CSS em size - see that
-    // function). Drawn with tracking, like every other engraved label on the panel.
-    const bool open = processorRef.isGateOpen();
-    drawTrackedText(g, "GATE OPEN", labelFontBold(labelFontHeightForCssPx(10.0f)),
-                     trackingPxForEm(0.26f, 10.0f), labelRect, juce::Justification::centredLeft,
-                     open ? Colour::gateOpenLabelActive : Colour::gateOpenLabelInactive);
 }

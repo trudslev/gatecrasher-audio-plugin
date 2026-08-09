@@ -1,6 +1,6 @@
 # GATECRASHER GR-85 — GUI Implementation Spec
 
-**Revision 6.** Panel: **960 × 434 px** at 1× (fixed aspect).
+**Revision 7.** Panel: **960 × 434 px** at 1× (fixed aspect).
 All coordinates are panel-local, origin = top-left of the 960 × 434 panel.
 
 This revision is a **re-export of what changed**, not a new package. Read §0 first — it changes
@@ -46,8 +46,8 @@ build at runtime.
 | Group labels TRIGGER FILTER, KEY SOURCE, SHAPE, TANK DAMPING | **B** | |
 | Printed scale numerals (all 14 knobs) | **B** | The whole point of baking |
 | Unit markings dB, Hz, ms, % | **B** | |
-| Algorithm labels ROOM, PLATE, AMBI, CHMBR | **B** | Baked at their **default** weights — see §0.4 |
-| Switch labels INTERNAL, SIDECHAIN, HARD, SOFT | **B** | Baked at their **default** weights — see §0.4 |
+| Algorithm labels ROOM, PLATE, AMBI, CHMBR | **R** | State-dependent — absent from the plate (§0.4) |
+| Switch labels INTERNAL, SIDECHAIN, HARD, SOFT | **R** | State-dependent — absent from the plate (§0.4) |
 | LCD captions PROGRAM, IN, OUT | **B** | |
 | LCD tag FACT / USER | **R** | |
 | LCD program name / live value | **R** | |
@@ -59,6 +59,13 @@ build at runtime.
 **No other text exists on the panel.** In particular there are no standing value readouts under the
 knobs — see §5.
 
+**The sorting rule is "does this change?", not "is this a label?".** Everything baked is
+state-independent. The printed scales must be baked because their numerals sit on irregular radii at
+irregular angles and re-deriving them in code is exactly the drift baking exists to prevent. The
+eight state-dependent labels are the opposite case — six short centred strings whose weight and
+colour follow a control — and they are drawn live. Apply that test, not the category, to anything
+added later.
+
 ## 0.3 Tick ring manifest
 
 | Ring | | Notes |
@@ -68,25 +75,41 @@ knobs — see §5.
 | Algorithm selector 4-detent ring | **B** | The only ring that *is* a detent ring |
 | Knob pointer / index line | **R** | Part of the filmstrip frame, not a separate draw |
 
-## 0.4 The two elements that are baked but change
+## 0.4 The eight state-dependent labels
 
-Switch labels and algorithm labels are baked at their **default** weights: `INTERNAL` and `HARD`
-bold, `SIDECHAIN` and `SOFT` dimmed; `PLATE` bold, the other three dimmed. When the user changes
-those controls the baked weights are wrong.
+Switch labels and algorithm labels are **absent from the plate** — bare fascia sits where they go.
+The build draws all eight, every frame, at both states.
 
-Handle it by **redrawing just those label pairs** over the plate — they are the one documented
-exception to "draw no text". Their colours and metrics are in §3 and §7. Everything else on the
-plate is state-independent.
+Earlier revisions baked them at their default weights and had the build redraw the pair on change.
+That does not work: baked pixels cannot be un-drawn, so turning a bold baked word dim would mean
+painting fascia over it first — six hard-coded donor offsets tied to one export, covering artwork
+that exists only to be covered, failing silently as a smear the moment a label moves. Leaving them
+off removes the mechanism entirely.
 
-If you prefer not to draw text at all, the alternative is four extra plate exports (one per
-algorithm) × two switch states — eight bitmaps. Not recommended; the redraw is six short strings.
+| Label | x | baseline y | centre x |
+|---|---|---|---|
+| INTERNAL | 64 | 416 | 85.7 |
+| SIDECHAIN | 117 | 416 | 139.7 |
+| HARD | 333 | 422 | 345.0 |
+| SOFT | 367 | 422 | 377.0 |
+| ROOM | 557 | 127 | 568.4 |
+| PLATE | 680 | 127 | 693.3 |
+| AMBI | 557 | 185 | 567.0 |
+| CHMBR | 679 | 185 | 692.8 |
+
+Barlow Condensed 10 px, tracking .10em. Selected **700** `#16191C`; unselected **400** `#2B3034`.
+The widths above are the rendered defaults — draw from the left x, not by re-centring, so a weight
+change doesn't shift the word. The §2.1 dimming is deliberate; do not "fix" it to match the
+selected colour.
+
+These are the only text the build draws outside the two LCD windows.
 
 ## 0.5 Composite order
 
 ```
 1  gatecrasher-panel-plate@Nx.png        full-panel blit at 0,0
 2  switch shoes            × 2           §7
-3  switch + algorithm labels             §0.4, only when not at default
+3  switch + algorithm labels             §0.4, all eight, every frame
 4  knob filmstrip frames   × 14          §3, alpha-blended
 5  input meter lit segments              §8
 6  gate envelope scope                   §5, dark rect at 210,120; trace clipped to plot region
@@ -103,7 +126,7 @@ algorithm) × two switch states — eight bitmaps. Not recommended; the redraw i
 
 | File | Size | Placement | What it is |
 |---|---|---|---|
-| `gatecrasher-panel-plate@1x.png` | 960 × 434 | 0,0 | **The build's background.** All static furniture: fascia, grain, rails, screws, header band, dividers, wordmark, every label, every printed scale and tick, all recessed wells, footer. No knobs, pointers, lamp, LCD glyphs, meter fill, scope contents or buttons. |
+| `gatecrasher-panel-plate@1x.png` | 960 × 434 | 0,0 | **The build's background.** All static furniture: fascia, grain, rails, screws, header band, dividers, wordmark, every label **except the eight in §0.4**, every printed scale and tick, all recessed wells, footer. No knobs, pointers, lamp, LCD glyphs, meter fill, scope contents or buttons. |
 | `gatecrasher-panel-plate@2x.png` | 1920 × 868 | 0,0 | Same, retina |
 | `gatecrasher-panel@1x.png` | 960 × 434 | — | Reference only: default state, fully dressed, gate closed |
 | `gatecrasher-panel@2x.png` | 1920 × 868 | — | Same, retina |
@@ -112,6 +135,19 @@ algorithm) × two switch states — eight bitmaps. Not recommended; the redraw i
 
 The three `-panel` / `-gate-open` files are **visual targets for QA**, not build inputs. Composite
 your own output and diff against them.
+
+**Also removed from the plate this revision: the GATE OPEN lamp.** Earlier plates baked a flat
+`#3A1512` disc at (216, 104), Ø 15 — the unlit fill. The build already draws the whole lamp (unlit
+fill, inset highlight, open gradient, glow) at composite step 7, so the baked copy was a second
+draw of a live element and is gone. Nothing sits under the lamp now but fascia; §5.5 is corrected
+to match.
+
+**When a revision drops a baked element the build also draws, expect a coordinate bug to surface.**
+A baked copy at the spec position hides a drawn copy at the wrong position — the screen looks right
+because the artwork is right, and the code's offset only appears when the artwork goes away. That
+is what happened here (the lamp was being drawn 8 px right and 9 px high of §5.5) and it happened
+with TapeRot's knob centres before it. Any future removal of this kind gets called out in this
+section by name, so the build knows which coordinates to re-check first.
 
 Every knob angle in those renders is derived from the §9 defaults as
 `n = ((default − min)/(max − min)) ^ skew`, so a build that initialises from the parameter table
@@ -444,7 +480,8 @@ difference between the two edges is the whole point of the control.
 | Closed | `#3A1512` | inset `rgba(255,255,255,.14)` only |
 | Open | radial `#FF2B1C` → `#B0140C` @70 % → `#6D0B06` | `0 0 12px 3px rgba(255,43,28,.55)`, `0 0 30px 8px rgba(255,43,28,.22)` |
 
-The socket recess is baked; the build draws the fill and glow over it. The lamp must light on the
+The lamp is drawn entirely by the build; nothing for it is baked. Centre (216, 104), Ø 15. The
+lamp must light on the
 **same sample** the gate opens — no fade-in. Release may decay over ~40 ms. The `GATE OPEN` label
 never dims: it is a legend, not an indicator.
 
@@ -554,11 +591,10 @@ Identical construction: recessed `#07090A` track, 1 px `#353B40` border, 26 px s
 `#8D959B` → `#4E545A` at `left: 1px` (position A) or `left: 29px` (position B). Track is baked; the
 shoe is drawn at runtime.
 
-Labels beneath, 10 px / .10em: selected 700 `#16191C`, unselected 400 `#2B3034`. Baked at defaults
-(`INTERNAL`, `HARD`); redraw the pair when the switch is thrown (§0.4).
+Labels beneath, 10 px / .10em: selected 700 `#16191C`, unselected 400 `#2B3034`. **Not on the
+plate** — the build draws both, always (§0.4).
 
-Algorithm labels behave the same way: `PLATE` baked bold, the other three baked dim; redraw all four
-when the selector moves.
+Algorithm labels behave the same way: all four drawn live, `PLATE` bold at the default.
 
 ---
 
@@ -626,8 +662,8 @@ because the index is what gets serialised, correcting it afterwards requires a s
 # 10. What matters most
 
 1. **Composite, don't redraw.** The plate is the source of truth for every label, numeral and tick.
-   The only text the build draws is inside the LCD windows, plus the six state-dependent labels
-   in §0.4.
+   The only text the build draws is inside the LCD windows, plus the eight state-dependent labels
+   in §0.4 — which are absent from the plate, so there is nothing to cover.
 2. The scope is the product. Hard mitred corners, instant slam-open, real red glow.
 3. The lamp fires on the same sample as the gate.
 4. Red appears nowhere else.
