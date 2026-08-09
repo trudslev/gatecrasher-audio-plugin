@@ -318,6 +318,15 @@ namespace GatecrasherTheme
         // All of these were previously measured off the dressed render rather than read from the
         // spec, because the plate and the spec used to disagree. They no longer do: section 6 and
         // the Rev 7 plate agree, so these are the spec's numbers.
+        // Section 6.2's LCD caption. Rev 8 removed it from the plate: it swaps to NAME PROGRAM
+        // during name entry, which makes it state-dependent, and a baked copy would have to be
+        // painted over to change - the technique section 0.4 withdrew. Bare fascia sits here now.
+        // Drawn from the LEFT x, never re-centred, for the same reason the section-0.4 labels are:
+        // the two words are different widths (48.5px and 80.9px) and re-centring would slide the
+        // caption sideways every time SAVE was pressed.
+        constexpr float programCaptionX = 374.0f, programCaptionBaselineY = 27.75f;
+        constexpr float programCaptionCssPx = 10.0f, programCaptionTrackingEm = 0.22f;
+
         constexpr float programWindowX = 374.0f, programWindowY = 34.0f, programWindowW = 332.0f, programWindowH = 25.0f;
         constexpr float programTagCellX = 375.0f, programTagCellY = 35.0f, programTagCellW = 48.0f, programTagCellH = 23.0f;
         constexpr float programNameCellX = 423.0f, programNameCellY = 35.0f, programNameCellW = 252.0f, programNameCellH = 23.0f;

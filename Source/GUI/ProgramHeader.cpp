@@ -391,6 +391,22 @@ void ProgramHeader::paint(juce::Graphics& g)
 {
     using namespace GatecrasherTheme;
 
+    // Section 6.2's caption, drawn rather than baked since Rev 8 - PROGRAM normally, NAME PROGRAM
+    // while naming. Barlow Condensed 600 at 10 CSS px, .22em, in the functional ink. No explicit
+    // erase: this component is not opaque, so JUCE repaints the plate underneath first, and the
+    // longer word's tail therefore clears itself when naming ends.
+    {
+        const auto captionFont = labelFont(labelFontHeightForCssPx(Layout::programCaptionCssPx));
+        const juce::Rectangle<float> captionRect(
+            Layout::programCaptionX,
+            Layout::programCaptionBaselineY - captionFont.getAscent(),
+            200.0f, captionFont.getAscent() + captionFont.getDescent());
+
+        drawTrackedText(g, namingMode ? "NAME PROGRAM" : "PROGRAM", captionFont,
+                         trackingPxForEm(Layout::programCaptionTrackingEm, Layout::programCaptionCssPx),
+                         captionRect, juce::Justification::left, Colour::labelSelected);
+    }
+
     // Clear the two cells before drawing. The plate leaves the LCD windows empty (section 0.2:
     // the tag, name and live value are all R), so this is clearing the PREVIOUS FRAME, not baked
     // artwork. Inset 1px to leave the window's own baked border and divider intact. The glass is a

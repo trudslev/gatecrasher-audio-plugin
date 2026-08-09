@@ -5,7 +5,7 @@ SIL Open Font License 1.1, so embedding is unrestricted.
 
 | Family | Files needed | Drawn for |
 |---|---|---|
-| **Barlow Condensed** | `BarlowCondensed-Bold.ttf` (700)<br>`BarlowCondensed-SemiBold.ttf` (600)<br>`BarlowCondensed-Regular.ttf` (400) | The eight state-dependent labels (§0.4) — `INTERNAL` / `SIDECHAIN`, `HARD` / `SOFT`, and the four algorithm corners. These are absent from the plate; the build draws all eight every frame. Selected 700, unselected 400; the 600 weight is only needed if you also redraw a group caption. |
+| **Barlow Condensed** | `BarlowCondensed-Bold.ttf` (700)<br>`BarlowCondensed-SemiBold.ttf` (600)<br>`BarlowCondensed-Regular.ttf` (400) | The eight state-dependent labels (§0.4) — `INTERNAL` / `SIDECHAIN`, `HARD` / `SOFT`, and the four algorithm corners. These are absent from the plate; the build draws all eight every frame. Selected 700, unselected 400. The **600** weight is also live: the LCD caption `PROGRAM` / `NAME PROGRAM` (§6.2) and the SAVE / DELETE button labels (§6.4). All three weights are required. |
 | **Share Tech Mono** | `ShareTechMono-Regular.ttf` (400) | LCD program name, live parameter values, IN / OUT meter values. |
 
 Sources — both are on Google Fonts:
@@ -25,7 +25,10 @@ From spec §2.3:
 
 | Role | Face | Size | Weight | Tracking |
 |---|---|---|---|---|
-| Switch / algorithm label | Barlow Condensed | 10 px | 700 selected / 400 unselected | .10em || LCD program / value | Share Tech Mono | 13 px | 400 | .10em (1.3 px) |
+| Switch / algorithm label | Barlow Condensed | 10 px | 700 selected / 400 unselected | .10em |
+| LCD caption | Barlow Condensed | 10 px | 600 | .22em (2.2 px) |
+| SAVE / DELETE label | Barlow Condensed | 10 px | 600 | .10em (1 px) |
+| LCD program / value | Share Tech Mono | 13 px | 400 | .10em (1.3 px) |
 | LCD IN / OUT | Share Tech Mono | 12 px | 400 | normal |
 
 Colours: selected label `#16191C`, unselected `#2B3034`, LCD text `#F0E0B0` with a

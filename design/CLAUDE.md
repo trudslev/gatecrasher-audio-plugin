@@ -1,6 +1,6 @@
 # Gatecrasher GR-85 — GUI handoff
 
-**Rev 7.** You are building the JUCE plugin GUI for **Gatecrasher**, an 80s gated-reverb
+**Rev 8.** You are building the JUCE plugin GUI for **Gatecrasher**, an 80s gated-reverb
 processor. The visual design is approved and final — implement it, don't redesign it.
 
 Read `GATECRASHER-GUI-SPEC.md` first, and read **§0 before anything else**. It decides the shape of

@@ -1,6 +1,6 @@
 # GATECRASHER GR-85 — GUI Implementation Spec
 
-**Revision 7.** Panel: **960 × 434 px** at 1× (fixed aspect).
+**Revision 8.** Panel: **960 × 434 px** at 1× (fixed aspect).
 All coordinates are panel-local, origin = top-left of the 960 × 434 panel.
 
 This revision is a **re-export of what changed**, not a new package. Read §0 first — it changes
@@ -48,7 +48,8 @@ build at runtime.
 | Unit markings dB, Hz, ms, % | **B** | |
 | Algorithm labels ROOM, PLATE, AMBI, CHMBR | **R** | State-dependent — absent from the plate (§0.4) |
 | Switch labels INTERNAL, SIDECHAIN, HARD, SOFT | **R** | State-dependent — absent from the plate (§0.4) |
-| LCD captions PROGRAM, IN, OUT | **B** | |
+| LCD caption PROGRAM / NAME PROGRAM | **R** | State-dependent — absent from the plate (§6.2) |
+| LCD captions IN, OUT | **B** | |
 | LCD tag FACT / USER | **R** | |
 | LCD program name / live value | **R** | |
 | LCD chevron ˅ | **B** | Static affordance, not a button |
@@ -102,7 +103,9 @@ The widths above are the rendered defaults — draw from the left x, not by re-c
 change doesn't shift the word. The §2.1 dimming is deliberate; do not "fix" it to match the
 selected colour.
 
-These are the only text the build draws outside the two LCD windows.
+These eight are the only text the build draws outside the LCD region. One more live string sits
+just above it — the program caption, which swaps to `NAME PROGRAM` in name entry; its geometry is
+in §6.2 and it follows the same draw-from-the-left rule.
 
 ## 0.5 Composite order
 
@@ -114,7 +117,7 @@ These are the only text the build draws outside the two LCD windows.
 5  input meter lit segments              §8
 6  gate envelope scope                   §5, dark rect at 210,120; trace clipped to plot region
 7  GATE OPEN lamp                        §5
-8  LCD text: tag, name/value, IN, OUT    §6
+8  LCD caption, tag, name/value, IN, OUT §6
 9  SAVE / DELETE buttons                 §6
 ```
 
@@ -126,7 +129,7 @@ These are the only text the build draws outside the two LCD windows.
 
 | File | Size | Placement | What it is |
 |---|---|---|---|
-| `gatecrasher-panel-plate@1x.png` | 960 × 434 | 0,0 | **The build's background.** All static furniture: fascia, grain, rails, screws, header band, dividers, wordmark, every label **except the eight in §0.4**, every printed scale and tick, all recessed wells, footer. No knobs, pointers, lamp, LCD glyphs, meter fill, scope contents or buttons. |
+| `gatecrasher-panel-plate@1x.png` | 960 × 434 | 0,0 | **The build's background.** All static furniture: fascia, grain, rails, screws, header band, dividers, wordmark, every label **except the eight in §0.4 and the LCD caption (§6.2)**, every printed scale and tick, all recessed wells, footer. No knobs, pointers, lamp, LCD glyphs, meter fill, scope contents or buttons. |
 | `gatecrasher-panel-plate@2x.png` | 1920 × 868 | 0,0 | Same, retina |
 | `gatecrasher-panel@1x.png` | 960 × 434 | — | Reference only: default state, fully dressed, gate closed |
 | `gatecrasher-panel@2x.png` | 1920 × 868 | — | Same, retina |
@@ -142,11 +145,16 @@ fill, inset highlight, open gradient, glow) at composite step 7, so the baked co
 draw of a live element and is gone. Nothing sits under the lamp now but fascia; §5.5 is corrected
 to match.
 
+**Also removed from the plate this revision: the LCD caption `PROGRAM`.** It changes to
+`NAME PROGRAM` during name entry (§6.4), which makes it state-dependent, and a baked copy would
+have to be painted over to change — the technique §0.4 withdrew. The build now draws it every
+frame; bare fascia sits at the caption slot. Geometry in §6.2.
+
 **When a revision drops a baked element the build also draws, expect a coordinate bug to surface.**
 A baked copy at the spec position hides a drawn copy at the wrong position — the screen looks right
 because the artwork is right, and the code's offset only appears when the artwork goes away. That
-is what happened here (the lamp was being drawn 8 px right and 9 px high of §5.5) and it happened
-with TapeRot's knob centres before it. Any future removal of this kind gets called out in this
+is what happened with the Rev 7 lamp (drawn 8 px right and 9 px high of §5.5) and with TapeRot's
+knob centres before that. **This revision's removal to re-check is the LCD caption at (374, 27.75).** Any future removal of this kind gets called out in this
 section by name, so the build knows which coordinates to re-check first.
 
 Every knob angle in those renders is derived from the §9 defaults as
@@ -537,6 +545,18 @@ overflowed by 0.4 px. Do not narrow the window back without re-checking these fo
 
 ## 6.2 Program window
 
+**The caption is drawn by the build, not baked** — it reads `PROGRAM` normally and `NAME PROGRAM`
+in name entry (§6.4), so it is state-dependent by the §0.2 test. Bare fascia sits at its slot.
+
+| | Left x | Baseline y | Face | Size | Weight | Tracking | Colour |
+|---|---|---|---|---|---|---|---|
+| `PROGRAM` / `NAME PROGRAM` | 374 | 27.75 | Barlow Condensed | 10 px | 600 | .22em (2.2 px) | `#16191C` |
+
+Left-aligned with the program window below it (both start at x 374). **Draw from the left x** — do
+not re-centre on the string, or the caption will shift sideways when the word changes. Rendered
+widths are 48.5 px (`PROGRAM`) and 80.9 px (`NAME PROGRAM`), including the trailing letter-space;
+the window is 332 px, so neither crowds anything.
+
 Three cells in one recessed LCD:
 
 - **Tag cell** — `FACT` / `USER`, Share Tech Mono 13 px `#F0E0B0`, same face, size and colour as the
@@ -576,7 +596,7 @@ Behaviour:
   ` *`. Clears on store, on delete, and on loading another program.
 - **Factory program** — tag `FACT`, `DELETE` disabled (read-only).
 - **User program** — tag `USER`, `DELETE` enabled; removes it and falls back to the factory program.
-- **SAVE → name entry** — caption `PROGRAM` → `NAME PROGRAM`; tag switches to `USER`; name cell
+- **SAVE → name entry** — caption `PROGRAM` → `NAME PROGRAM` (drawn live, §6.2); tag switches to `USER`; name cell
   left-aligns, clears, shows a blinking block caret (`█`, 1 s steps, 50 % duty); buttons relabel
   `STORE` / `CANCEL`, both enabled. Typing uppercases, 24-char cap. Enter stores, Esc cancels.
   Empty name falls back to `NEW PROGRAM`.

@@ -130,8 +130,12 @@ Only nine things are drawn at runtime, and spec section 0.1 lists them in draw o
 4. Input meter **lit segments only** (`InputMeter`) - the well and unlit ledger are baked
 5. The gate-envelope scope's contents (`GateScope`)
 6. The GATE OPEN lamp (`GateLamp`)
-7. LCD text: tag, name/live value, IN, OUT (`ProgramHeader`)
+7. LCD caption, tag, name/live value, IN, OUT (`ProgramHeader`)
 8. SAVE / DELETE (`ProgramHeader`)
+
+The LCD caption joined that list in Rev 8, for the same reason as the section-0.4 labels: it reads
+`PROGRAM` normally and `NAME PROGRAM` during name entry, so a baked copy would have to be painted
+over to change. Bare fascia sits at its slot and section 6.2 carries its geometry.
 
 **Do not reintroduce a drawing layer for anything else.** Rev 5 drew 20+ static strings, all 14 knob
 labels and its own tick rings; that code is deleted, not adapted, and the spec is explicit that
@@ -243,10 +247,13 @@ recovered from git.
   the Standalone and diffed against `gatecrasher-panel@2x.png`, and every region the build paints
   over the plate was accounted for against section 0.1's list (no double-draws, nothing straying onto
   baked furniture). The wordmark is baked now, so the old live-drawn `WordmarkComponent` deviation is
-  closed. Two open items belong to the designers, not the build, and are written up in
-  `prompts/PROMPTS.md`: section 6.4 asks the `PROGRAM` caption to become `NAME PROGRAM` during name
-  entry, but section 0.2 bakes that caption into the plate, so the build cannot change it; and the
-  knob filmstrips have a fluted cap while the dressed reference render shows a smooth one.
+  closed, and Rev 8 un-baked the LCD caption so the section-6.4 caption swap works.
+- **One asset defect is open**, written up as PROMPT #4: both knob filmstrips clip their own cast
+  shadow at the frame border - alpha is still 88/95/38 (top/bottom/sides) where the image ends - so
+  every knob sits inside a hard-edged dark rectangle instead of a soft shadow. The bounding box is
+  correct (62 x 1.07 = 66, and 66 x 120/128 = 61.9, so the cap lands at its spec'd 62 px); the
+  shadow simply is not in the PNG. Do not try to compensate in code. The same prompt still carries
+  the fluted-versus-smooth cap question.
 - **Not yet verified**: the gate-open composite (`gatecrasher-panel-gate-open@2x.png`) needs the gate
   actually open, which means audio through the Standalone - it has not been diffed. Everything else
   in the spec's QA list has.
