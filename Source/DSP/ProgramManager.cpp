@@ -150,6 +150,11 @@ void ProgramManager::applyProgramByIndex(int index)
         if (xml == nullptr || ! xml->hasTagName(apvts.state.getType()))
             return;
 
+        // User Programs are a second serialisation path alongside the host session, and they carry
+        // the same schema attribute - so they need the same migration. A Program saved before the
+        // Algorithm reorder would otherwise load the old index meaning and select a different tank.
+        LegacyMigration::remapLegacyAlgorithmIfNeeded(*xml);
+
         apvts.replaceState(juce::ValueTree::fromXml(*xml));
     }
 

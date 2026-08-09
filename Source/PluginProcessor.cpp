@@ -136,8 +136,15 @@ void GatecrasherAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, j
         }
     }
 
+    // The parameter's choice order is the PANEL's (Ambience, Room, Plate, Chamber - spec section
+    // 9.1); ReverbAlgorithm's is the DSP's own and is unrelated. Map explicitly rather than casting
+    // the index: a static_cast happens to compile and would silently run the wrong tank.
+    static constexpr ReverbAlgorithm tankForChoice[4] = {
+        ReverbAlgorithm::ambience, ReverbAlgorithm::room,
+        ReverbAlgorithm::plate,    ReverbAlgorithm::chamber };
+
     const int algorithmIndex = juce::jlimit(0, 3, (int) algorithmParam->load());
-    reverbEngine.process(mainIO, static_cast<ReverbAlgorithm>(algorithmIndex),
+    reverbEngine.process(mainIO, tankForChoice[algorithmIndex],
                           sizeParam->load(), decayParam->load(), densityParam->load());
 
     dampingStage.process(mainIO, dampHFParam->load(), dampLFParam->load());
@@ -207,6 +214,11 @@ void GatecrasherAudioProcessor::setStateInformation(const void* data, int sizeIn
         if (xml->hasTagName(apvts.state.getType()))
         {
             programManager.cancelPendingChange();
+
+            // Sessions written before the Algorithm reorder store the old index meaning - remap
+            // before the state goes in, not after, or the wrong tank is briefly live.
+            LegacyMigration::remapLegacyAlgorithmIfNeeded(*xml);
+
             apvts.replaceState(juce::ValueTree::fromXml(*xml));
 
             const int savedProgramIndex =

@@ -39,21 +39,55 @@ namespace ShapeNames
 
 namespace AlgorithmNames
 {
+    // Declared in PANEL ORDER, which spec section 9.1 makes part of the contract: the selector's
+    // four detents sweep AMBI -> ROOM -> PLATE -> CHMBR across -135 / -45 / +45 / +135, so index 0
+    // is Ambience and the default Plate sits at index 2 (+45 degrees).
+    constexpr auto ambience = "Ambience";
     constexpr auto room = "Room";
     constexpr auto plate = "Plate";
     constexpr auto chamber = "Chamber";
-    constexpr auto ambience = "Ambience";
 }
 
 namespace LegacyMigration
 {
     // Bumped whenever a stored parameter's *meaning* (not just its ID) changes incompatibly.
-    // Written into getStateInformation's XML root; setStateInformation would check it and remap
-    // legacy values before restoring. No remaps exist yet - this is the seam TapeRot's own
-    // Parameters.h shows gets needed eventually, adopted here from day one rather than retrofitted
-    // under time pressure later.
+    // Written into getStateInformation's XML root; setStateInformation checks it and remaps legacy
+    // values before restoring.
     constexpr auto stateSchemaVersionAttribute = "gatecrasherStateSchemaVersion";
-    constexpr int currentStateSchemaVersion = 1;
+    constexpr int currentStateSchemaVersion = 2;
+
+    // v1 -> v2: the Algorithm choice list was reordered to match the panel. It used to be declared
+    // Room, Plate, Chamber, Ambience, which put all four labels on the wrong detent and rendered
+    // the default where the plate prints ROOM; spec section 9.1 now fixes the order as part of the
+    // contract. The index is what gets serialised, so every session, user Program and automation
+    // lane written before this carries the old meaning and must be remapped.
+    //
+    //   old 0 Room     -> new 1
+    //   old 1 Plate    -> new 2
+    //   old 2 Chamber  -> new 3
+    //   old 3 Ambience -> new 0
+    inline constexpr std::array<int, 4> legacyAlgorithmRemapV1ToV2{ { 1, 2, 3, 0 } };
+
+    /** Free function rather than a processor method so it is unit-testable against a synthetic
+        XmlElement, without needing the plugin target's JucePlugin_* macros - the same shape as
+        TapeRot's remapLegacyModelIndexIfNeeded. */
+    inline void remapLegacyAlgorithmIfNeeded(juce::XmlElement& xml)
+    {
+        if (xml.getIntAttribute(stateSchemaVersionAttribute, 1) >= currentStateSchemaVersion)
+            return;
+
+        for (int i = 0; i < xml.getNumChildElements(); ++i)
+        {
+            auto* child = xml.getChildElement(i);
+            if (child != nullptr && child->getStringAttribute("id") == ParamIDs::algorithm)
+            {
+                const int oldIndex = (int) child->getDoubleAttribute("value");
+                child->setAttribute("value", (double) legacyAlgorithmRemapV1ToV2[
+                    (size_t) juce::jlimit(0, 3, oldIndex)]);
+                break;
+            }
+        }
+    }
 }
 
 inline juce::AudioProcessorValueTreeState::ParameterLayout createGatecrasherParameterLayout()
@@ -106,9 +140,9 @@ inline juce::AudioProcessorValueTreeState::ParameterLayout createGatecrasherPara
     // Reverb section
     params.push_back(std::make_unique<juce::AudioParameterChoice>(
         juce::ParameterID{ParamIDs::algorithm, 1}, "Algorithm",
-        juce::StringArray{AlgorithmNames::room, AlgorithmNames::plate,
-                           AlgorithmNames::chamber, AlgorithmNames::ambience},
-        1));
+        juce::StringArray{AlgorithmNames::ambience, AlgorithmNames::room,
+                           AlgorithmNames::plate, AlgorithmNames::chamber},
+        2));   // default Plate, at +45 degrees - section 9.1
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         juce::ParameterID{ParamIDs::size, 1}, "Size",

@@ -49,7 +49,7 @@ public:
             expectWithinAbsoluteError((float) *apvts.getRawParameterValue(ParamIDs::hold), 165.0f, 0.01f);
             expectWithinAbsoluteError((float) *apvts.getRawParameterValue(ParamIDs::release), 4.0f, 0.01f);
             expectEquals((int) *apvts.getRawParameterValue(ParamIDs::shape), 0); // Hard
-            expectEquals((int) *apvts.getRawParameterValue(ParamIDs::algorithm), 1); // Plate
+            expectEquals((int) *apvts.getRawParameterValue(ParamIDs::algorithm), 2); // Plate, spec 9.1
             expectWithinAbsoluteError((float) *apvts.getRawParameterValue(ParamIDs::size), 0.72f, 0.01f);
             expectWithinAbsoluteError((float) *apvts.getRawParameterValue(ParamIDs::preDelay), 18.0f, 0.01f);
             expectWithinAbsoluteError((float) *apvts.getRawParameterValue(ParamIDs::decay), 0.6f, 0.01f);
@@ -69,7 +69,7 @@ public:
 
             *dynamic_cast<juce::AudioParameterFloat*>(apvtsA.getParameter(ParamIDs::threshold)) = -6.0f;
             *dynamic_cast<juce::AudioParameterFloat*>(apvtsA.getParameter(ParamIDs::attack)) = 12.5f;
-            *dynamic_cast<juce::AudioParameterChoice*>(apvtsA.getParameter(ParamIDs::algorithm)) = 3; // Ambience
+            *dynamic_cast<juce::AudioParameterChoice*>(apvtsA.getParameter(ParamIDs::algorithm)) = 0; // Ambience
             *dynamic_cast<juce::AudioParameterChoice*>(apvtsA.getParameter(ParamIDs::shape)) = 1; // Soft
             *dynamic_cast<juce::AudioParameterChoice*>(apvtsA.getParameter(ParamIDs::keySource)) = 1; // Sidechain
             *dynamic_cast<juce::AudioParameterFloat*>(apvtsA.getParameter(ParamIDs::slam)) = 11.0f;
@@ -83,7 +83,7 @@ public:
 
             expectWithinAbsoluteError((float) *apvtsB.getRawParameterValue(ParamIDs::threshold), -6.0f, 0.01f);
             expectWithinAbsoluteError((float) *apvtsB.getRawParameterValue(ParamIDs::attack), 12.5f, 0.01f);
-            expectEquals((int) *apvtsB.getRawParameterValue(ParamIDs::algorithm), 3);
+            expectEquals((int) *apvtsB.getRawParameterValue(ParamIDs::algorithm), 0);
             expectEquals((int) *apvtsB.getRawParameterValue(ParamIDs::shape), 1);
             expectEquals((int) *apvtsB.getRawParameterValue(ParamIDs::keySource), 1);
             expectWithinAbsoluteError((float) *apvtsB.getRawParameterValue(ParamIDs::slam), 11.0f, 0.01f);
@@ -115,6 +115,60 @@ public:
             expectEquals((int) *apvtsNew.getRawParameterValue(ParamIDs::shape), 0);
             expectWithinAbsoluteError((float) *apvtsNew.getRawParameterValue(ParamIDs::slam), 7.0f, 0.01f);
             expectWithinAbsoluteError((float) *apvtsNew.getRawParameterValue(ParamIDs::width), 128.0f, 0.01f);
+        }
+
+        beginTest("A pre-reorder session has its Algorithm remapped to the panel order");
+        {
+            // v1 stored the choice as Room/Plate/Chamber/Ambience; v2 is the panel's own order
+            // (spec 9.1). The index is what gets serialised, so a v1 session naming "Plate" holds a
+            // 1, which in v2 means Room - it must come back as 2.
+            //
+            // Ids and the attribute name are spelled as LITERALS here on purpose: written through
+            // the constants this would rename itself alongside the code and assert nothing.
+            const auto v1 = R"(<PARAMETERS gatecrasherStateSchemaVersion="1">
+  <PARAM id="algorithm" value="1.0"/>
+  <PARAM id="mix" value="64.0"/>
+</PARAMETERS>)";
+
+            std::unique_ptr<juce::XmlElement> xml(juce::XmlDocument::parse(v1));
+            expect(xml != nullptr);
+
+            LegacyMigration::remapLegacyAlgorithmIfNeeded(*xml);
+
+            int found = -1;
+            for (int i = 0; i < xml->getNumChildElements(); ++i)
+                if (xml->getChildElement(i)->getStringAttribute("id") == "algorithm")
+                    found = (int) xml->getChildElement(i)->getDoubleAttribute("value");
+
+            expectEquals(found, 2, "v1 Plate (1) must become v2 Plate (2)");
+        }
+
+        beginTest("Every v1 Algorithm index maps to the same named tank in v2");
+        {
+            // old order -> new order, by NAME rather than by index, which is the property that
+            // actually matters: a session must sound the same after the reorder.
+            const std::array<std::pair<int, int>, 4> cases {{ {0, 1}, {1, 2}, {2, 3}, {3, 0} }};
+
+            for (const auto& [oldIndex, expected] : cases)
+            {
+                const auto text = juce::String(R"(<PARAMETERS gatecrasherStateSchemaVersion="1">
+  <PARAM id="algorithm" value=")") + juce::String(oldIndex) + R"("/>
+</PARAMETERS>)";
+                std::unique_ptr<juce::XmlElement> xml(juce::XmlDocument::parse(text));
+                LegacyMigration::remapLegacyAlgorithmIfNeeded(*xml);
+                expectEquals((int) xml->getChildElement(0)->getDoubleAttribute("value"), expected);
+            }
+        }
+
+        beginTest("A current-schema session is left untouched");
+        {
+            const auto v2 = R"(<PARAMETERS gatecrasherStateSchemaVersion="2">
+  <PARAM id="algorithm" value="2.0"/>
+</PARAMETERS>)";
+            std::unique_ptr<juce::XmlElement> xml(juce::XmlDocument::parse(v2));
+            LegacyMigration::remapLegacyAlgorithmIfNeeded(*xml);
+            expectEquals((int) xml->getChildElement(0)->getDoubleAttribute("value"), 2,
+                         "remapping twice would silently rotate the algorithm on every load");
         }
     }
 };
