@@ -14,11 +14,11 @@ void KnobFilmstripComponent::paint(juce::Graphics& g)
 
     const auto centre = getLocalBounds().toFloat().getCentre();
 
-    // The filmstrip frame is the whole of this component's output. Drawn into the knob's full
-    // bounding box (diameter + ~7% bleed), not just the circle, since the cast shadow is baked into
-    // the strip and bleeds outside it (spec section 1.3). Blitted straight onto the plate with
-    // normal alpha blending and no backdrop or shadow of our own - the plate carries the recessed
-    // well and the strip carries its own shadow.
+    // The filmstrip frame is the whole of this component's output. Drawn into the full FRAME box -
+    // 1.333 x the cap diameter, spec section 1.3 - not just the circle, since the cast shadow is
+    // baked into the strip and needs every pixel of that margin to fade out in. Blitted straight
+    // onto the plate with normal alpha blending and no backdrop or shadow of our own: the plate
+    // carries the recessed well and the strip carries its own shadow.
     const float boxSize = diameter * Layout::knobBoundingBoxBleed;
     const juce::Rectangle<int> box((int) std::round(centre.x - boxSize * 0.5f),
                                     (int) std::round(centre.y - boxSize * 0.5f),
@@ -30,9 +30,22 @@ void KnobFilmstripComponent::paint(juce::Graphics& g)
     // Slider's NormalisableRange, set up by SliderAttachment from the bound RangedAudioParameter -
     // so the knob's physical rotation always matches the parameter's true travel proportion.
     const float sliderPos = (float) valueToProportionOfLength(getValue());
-    const int frame = juce::jlimit(0, 127, (int) std::round(sliderPos * 127.0f));
+    constexpr int lastFrame = Layout::knobFilmstripFrameCount - 1;
+    const int frame = juce::jlimit(0, lastFrame, (int) std::round(sliderPos * (float) lastFrame));
 
     g.setImageResamplingQuality(juce::Graphics::highResamplingQuality);
+    constexpr int framePx = Layout::knobFilmstripFramePx;
     g.drawImage(strip, box.getX(), box.getY(), box.getWidth(), box.getHeight(),
-                0, frame * 128, 128, 128);
+                0, frame * framePx, framePx, framePx);
+}
+
+bool KnobFilmstripComponent::hitTest(int x, int y)
+{
+    // Claim the CAP, not the bounds. The bounds are the frame box, which since Rev 9 reaches .167 of
+    // the diameter past the cap so the baked shadow has room to fade - on THRESHOLD that is 10px of
+    // transparent margin sitting over the plate's printed "-45" and "-15". Without this, clicking a
+    // printed numeral would grab the knob.
+    const auto centre = getLocalBounds().toFloat().getCentre();
+    const float r = diameter * 0.5f + GatecrasherTheme::Layout::knobClickMargin;
+    return centre.getDistanceFrom(juce::Point<float>((float) x, (float) y)) <= r;
 }

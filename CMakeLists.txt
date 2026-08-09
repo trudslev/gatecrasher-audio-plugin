@@ -53,8 +53,8 @@ FetchContent_MakeAvailable(JUCE)
 juce_add_binary_data(GatecrasherBinaryData
     SOURCES
         design/assets/gatecrasher-panel-plate@2x.png
-        design/assets/knob_large_128px_128f.png
-        design/assets/knob_small_128px_128f.png
+        design/assets/knob_large_160px_128f.png
+        design/assets/knob_small_160px_128f.png
         design/assets/fonts/BarlowCondensed-Bold.ttf
         design/assets/fonts/BarlowCondensed-SemiBold.ttf
         design/assets/fonts/BarlowCondensed-Regular.ttf

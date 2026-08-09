@@ -20,6 +20,7 @@ public:
     KnobFilmstripComponent(GatecrasherTheme::KnobFilmstripSize size, float diameterPx);
 
     void paint(juce::Graphics&) override;
+    bool hitTest(int x, int y) override;
 
 private:
     GatecrasherTheme::KnobFilmstripSize filmstripSize;

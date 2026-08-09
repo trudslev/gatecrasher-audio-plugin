@@ -1,6 +1,6 @@
 # GATECRASHER GR-85 — GUI Implementation Spec
 
-**Revision 8.** Panel: **960 × 434 px** at 1× (fixed aspect).
+**Revision 9.** Panel: **960 × 434 px** at 1× (fixed aspect).
 All coordinates are panel-local, origin = top-left of the 960 × 434 panel.
 
 This revision is a **re-export of what changed**, not a new package. Read §0 first — it changes
@@ -150,6 +150,11 @@ to match.
 have to be painted over to change — the technique §0.4 withdrew. The build now draws it every
 frame; bare fascia sits at the caption slot. Geometry in §6.2.
 
+**Both knob filmstrips were re-rendered this revision** — new files, new frame size, same 128 frames
+and same frame 0 = −135° ordering. See §1.3 for the ratio change and why. The knurled rim on the
+large strip is correct and intended; earlier dressed renders showed a smooth cap because the capture
+that produced them dropped the rim layer, not because the design changed.
+
 **When a revision drops a baked element the build also draws, expect a coordinate bug to surface.**
 A baked copy at the spec position hides a drawn copy at the wrong position — the screen looks right
 because the artwork is right, and the code's offset only appears when the artwork goes away. That
@@ -166,8 +171,6 @@ table is the contract — trust §9 over the bitmap and tell us, because it mean
 
 | File | Why it's unchanged |
 |---|---|
-| `knob_large_128px_128f.png` | Knob rendering did not change |
-| `knob_small_128px_128f.png` | ” |
 | `gatecrasher-panel-bare@2x.png` | Chassis-only plate. Superseded as a build input by `-plate`, but kept: useful for mocking new layouts |
 | `icon/gatecrasher-icon-{1024,512,256,128,64,32,16}.png` | Icon did not change |
 | `TudorVictors.ttf` | Wordmark face. **Not a runtime font** — needed only to re-bake the wordmark (§2.4) |
@@ -176,19 +179,32 @@ table is the contract — trust §9 over the bitmap and tell us, because it mean
 
 ## 1.3 Knob filmstrips
 
-`knob_large_128px_128f.png` — 128 × 16384, 128 frames, knurled skirt.
-`knob_small_128px_128f.png` — 128 × 16384, 128 frames, plain skirt.
+`knob_large_160px_128f.png` — 160 × 20480, 128 frames, knurled skirt.
+`knob_small_160px_128f.png` — 160 × 20480, 128 frames, plain skirt.
+
+**Cap-to-frame ratio: the cap is 0.75 of the frame** — 120 px of cap in a 160 px frame, cap centred.
+The build's single constant is therefore **frame box = 1.333 × Ø** (was 1.07). For the 62 px
+THRESHOLD cap the frame draws into 82.7 px centred on the same centre; §3's diameters are unchanged
+and unchanged is the point — only the transparent margin around them grew.
+
+**Why it changed.** The 128 px frames clipped their own cast shadow: alpha at the frame border was
+still 88 top / 95 bottom / 38 sides, so the shadow was ~36 % opaque where the image ended and the
+panel showed a hard-edged dark rectangle around every knob. The shadow needs .145 of the cap
+diameter below, .105 each side and .016 above; a 0.75 ratio affords .167 all round, so it now fades
+to zero (border alpha ≤ 1) inside the frame at every one of the 128 angles. **Do not re-crop these
+strips.**
 
 Frame 0 = −135°, frame 127 = +135°, linear in **rotation**, not in parameter value — the skew lives
 in the parameter→normalised mapping, not in the strip. Both strips carry a real alpha channel
-(~3 % fully transparent corners, ~28 % partially transparent along the anti-aliased rim and the
-baked drop shadow): blit over the plate with normal alpha blending and add no shadow of your own.
+(fully transparent corners, partially transparent along the anti-aliased rim and the baked drop
+shadow, which now fades to zero inside the frame): blit over the plate with normal alpha blending and add no shadow of your own.
 
 ```cpp
 const int frame = juce::jlimit (0, 127, (int) std::round (sliderPos * 127.0f));
+// bounds is the FRAME box: 1.333 x the §3 diameter, centred on the §3 centre
 g.drawImage (strip,
              bounds.getX(), bounds.getY(), bounds.getWidth(), bounds.getHeight(),
-             0, frame * 128, 128, 128);
+             0, frame * 160, 160, 160);
 ```
 
 Use `Graphics::setImageResamplingQuality (highResamplingQuality)`.
@@ -287,6 +303,9 @@ not embed it.
 # 3. Knobs
 
 Rotation range for every knob: **−135° → +135°** (270° sweep), pointer at 12 o'clock = centre.
+
+Diameters below are the **cap**, not the frame. Draw each strip into a box of 1.333 × Ø centred on
+(cx, cy) — see §1.3.
 
 | Control | cx | cy | Ø | Strip |
 |---|---|---|---|---|

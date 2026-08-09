@@ -95,7 +95,7 @@ namespace GatecrasherTheme
         inline const juce::Colour buttonDisabledLabel{0x8C8B9297}; // #8B9297 @ .55 opacity, per spec
     }
 
-    // The 128-frame knob filmstrips ship in two skirt styles (see design/CLAUDE.md's asset list) -
+    // The knob filmstrips ship in two skirt styles (see design/CLAUDE.md's asset list) -
     // which one a given knob uses is part of its identity in the section 3 coordinate table.
     enum class KnobFilmstripSize { large, small };
 
@@ -113,9 +113,27 @@ namespace GatecrasherTheme
         // LABELLED value instead (section 0.3), which on the four skewed controls is not evenly
         // spaced at all. Reintroducing a drawn ring would lay even ticks over uneven printed ones.
 
-        // Filmstrip frames are square with transparent margin for the baked cast shadow - draw
-        // into the full bounding box (diameter + ~7% bleed), not just the knob circle.
-        constexpr float knobBoundingBoxBleed = 1.07f;
+        // Filmstrip frames are square with transparent margin for the baked cast shadow - draw into
+        // the full FRAME box, not just the knob circle. Section 1.3 states the ratio as a contract:
+        // the cap is 0.75 of the frame (120px of cap in a 160px frame), so the box is 1.333 x the
+        // section-3 diameter, centred on the section-3 centre.
+        //
+        // This was 1.07 while the strips were 128px frames around the same 120px cap, and at that
+        // ratio the frames clipped their own cast shadow - border alpha was still 88 top / 95 bottom
+        // / 38 sides, so every knob sat inside a hard-edged dark rectangle instead of a soft shadow.
+        // Rev 9 re-rendered both strips at 160px for exactly this. The cap diameters in section 3 did
+        // not change and must not be adjusted to compensate; only the transparent margin grew.
+        constexpr float knobBoundingBoxBleed = 1.3333333f;
+
+        /** Side of one filmstrip frame, in the strip's own pixels (section 1.3). */
+        constexpr int knobFilmstripFramePx = 160;
+        constexpr int knobFilmstripFrameCount = 128;
+
+        /** How far past the cap's edge a click still counts as the knob's. The frame box reaches
+            .167 of the diameter beyond the cap now, which on THRESHOLD is 10px of transparent
+            margin lying over printed scale numerals - so the hit area is taken from the CAP, not
+            from the component's bounds. */
+        constexpr float knobClickMargin = 3.0f;
 
         /** A knob's identity: which parameter, where its DIAL CENTRE sits, how big, and which
             filmstrip. Spec section 3.
@@ -634,14 +652,14 @@ namespace GatecrasherTheme
     inline const juce::Image& knobLargeFilmstrip()
     {
         static const juce::Image image = juce::ImageFileFormat::loadFrom(
-            BinaryData::knob_large_128px_128f_png, (size_t) BinaryData::knob_large_128px_128f_pngSize);
+            BinaryData::knob_large_160px_128f_png, (size_t) BinaryData::knob_large_160px_128f_pngSize);
         return image;
     }
 
     inline const juce::Image& knobSmallFilmstrip()
     {
         static const juce::Image image = juce::ImageFileFormat::loadFrom(
-            BinaryData::knob_small_128px_128f_png, (size_t) BinaryData::knob_small_128px_128f_pngSize);
+            BinaryData::knob_small_160px_128f_png, (size_t) BinaryData::knob_small_160px_128f_pngSize);
         return image;
     }
 

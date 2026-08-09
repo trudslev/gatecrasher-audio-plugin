@@ -1,6 +1,6 @@
 # Gatecrasher GR-85 — GUI handoff
 
-**Rev 8.** You are building the JUCE plugin GUI for **Gatecrasher**, an 80s gated-reverb
+**Rev 9.** You are building the JUCE plugin GUI for **Gatecrasher**, an 80s gated-reverb
 processor. The visual design is approved and final — implement it, don't redesign it.
 
 Read `GATECRASHER-GUI-SPEC.md` first, and read **§0 before anything else**. It decides the shape of
@@ -30,8 +30,9 @@ un-drawn.
 
 **Build inputs**
 - `assets/gatecrasher-panel-plate@1x.png` / `@2x.png` — the background. Blit at 0,0.
-- `assets/knob_large_128px_128f.png` — 128 frames, knurled, −135°→+135°
-- `assets/knob_small_128px_128f.png` — 128 frames, plain skirt
+- `assets/knob_large_160px_128f.png` — 128 frames, knurled, −135°→+135°
+- `assets/knob_small_160px_128f.png` — 128 frames, plain skirt
+- Knob frame box is **1.333 × the §3 diameter**, centred — the extra margin is the cast shadow
 - `assets/icon/` — plugin icon, 1024 down to 16 px
 
 **QA targets** — composite your own output and diff against these

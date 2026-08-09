@@ -48,11 +48,11 @@ GatecrasherEditorContent::GatecrasherEditorContent(GatecrasherAudioProcessor& p)
         auto knob = std::make_unique<KnobFilmstripComponent>(spec.size, spec.diameter);
         knob->setName(spec.paramID);
 
-        // Bounding box is the filmstrip's own footprint - the knob plus the ~7% bleed its baked
-        // cast shadow occupies - with a 3px click margin. It used to reach the code-drawn tick
-        // ring's outer radius; those ticks are baked into the plate now (spec section 0.3), and a
-        // hit area still stretching to them would swallow clicks on bare fascia.
-        const float half = spec.diameter * Layout::knobBoundingBoxBleed * 0.5f + 3.0f;
+        // Bounds are the filmstrip's FRAME box - 1.333 x the cap, section 1.3 - because the whole
+        // frame has to be blitted for the baked shadow to fade out inside it. The hit area is NOT
+        // this: KnobFilmstripComponent::hitTest narrows it to the cap, so the transparent margin
+        // lying over the plate's printed numerals does not swallow clicks meant for bare fascia.
+        const float half = spec.diameter * Layout::knobBoundingBoxBleed * 0.5f;
         knob->setBounds((int) std::round(spec.cx - half), (int) std::round(spec.cy - half),
                          (int) std::round(half * 2.0f), (int) std::round(half * 2.0f));
 

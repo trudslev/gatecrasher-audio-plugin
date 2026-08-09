@@ -126,7 +126,7 @@ Only nine things are drawn at runtime, and spec section 0.1 lists them in draw o
 
 1. Switch shoes (`ToggleSwitchComponent`)
 2. The eight state-dependent labels (`StateLabels`)
-3. Knob filmstrip frames (`KnobFilmstripComponent`)
+3. Knob filmstrip frames (`KnobFilmstripComponent`) - the whole 160 px frame, not just the cap
 4. Input meter **lit segments only** (`InputMeter`) - the well and unlit ledger are baked
 5. The gate-envelope scope's contents (`GateScope`)
 6. The GATE OPEN lamp (`GateLamp`)
@@ -150,6 +150,19 @@ changed pair; that cannot work, because baked pixels cannot be un-drawn. Rev 7 r
 plate, so bare fascia sits where they go and `StateLabels` paints all eight every frame. Their
 dimming is 5.52:1 against a 7:1 bar and is documented as deliberate in section 2.1 - **do not
 "fix" it.**
+
+**Knob frame box vs cap.** Section 1.3 states the cap-to-frame ratio as a contract: the cap is 0.75
+of the frame (120 px of cap in a 160 px frame), so `knobBoundingBoxBleed` is **1.333** and each strip
+is blitted into a box that size, centred on section 3's centre. Section 3's diameters are the **cap**
+and must never be adjusted to compensate for the margin. Rev 8 and earlier shipped 128 px frames
+around the same 120 px cap, a ratio of 1.07, and at that ratio the frames clipped their own cast
+shadow - border alpha was still 88 top / 95 bottom / 38 sides, so every knob sat inside a hard-edged
+dark rectangle. Rev 9 re-rendered both strips at 160 px purely to give the shadow room; the fix was
+in the asset, and there is nothing to compensate for in code.
+
+Because that box now reaches .167 of the diameter past the cap - 10 px of transparent margin lying
+over printed scale numerals on THRESHOLD - `KnobFilmstripComponent::hitTest` claims the **cap**
+rather than the component's bounds. Without it, clicking the printed `-60` would grab the knob.
 
 `GatecrasherTheme::eraseToBackground` re-blits the plate to clear a live element's previous frame.
 Against the printed plate that is a genuine clear, and it is what `InputMeter`, `GateLamp`,
@@ -248,12 +261,13 @@ recovered from git.
   over the plate was accounted for against section 0.1's list (no double-draws, nothing straying onto
   baked furniture). The wordmark is baked now, so the old live-drawn `WordmarkComponent` deviation is
   closed, and Rev 8 un-baked the LCD caption so the section-6.4 caption swap works.
-- **One asset defect is open**, written up as PROMPT #4: both knob filmstrips clip their own cast
-  shadow at the frame border - alpha is still 88/95/38 (top/bottom/sides) where the image ends - so
-  every knob sits inside a hard-edged dark rectangle instead of a soft shadow. The bounding box is
-  correct (62 x 1.07 = 66, and 66 x 120/128 = 61.9, so the cap lands at its spec'd 62 px); the
-  shadow simply is not in the PNG. Do not try to compensate in code. The same prompt still carries
-  the fluted-versus-smooth cap question.
+  Rev 9 closed both items PROMPT #4 raised: the filmstrips were re-rendered at 160 px so the shadow
+  fades to zero (border alpha now <= 1 at every frame) instead of being clipped, and the knurled rim
+  is confirmed intended.
+- **The dressed renders are known-stale in one respect.** `gatecrasher-panel@2x.png` and its
+  gate-open counterpart show a *smooth* large knob because the capture that produced them dropped the
+  rim layer; the shipping filmstrip's knurled skirt is correct (section 1.2). Do not chase that
+  difference when diffing a composite against them.
 - **Not yet verified**: the gate-open composite (`gatecrasher-panel-gate-open@2x.png`) needs the gate
   actually open, which means audio through the Standalone - it has not been diffed. Everything else
   in the spec's QA list has.
