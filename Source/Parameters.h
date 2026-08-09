@@ -94,10 +94,40 @@ inline juce::AudioProcessorValueTreeState::ParameterLayout createGatecrasherPara
 {
     std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;
 
-    auto dbAttrs = juce::AudioParameterFloatAttributes().withLabel("dB");
-    auto msAttrs = juce::AudioParameterFloatAttributes().withLabel("ms");
-    auto hzAttrs = juce::AudioParameterFloatAttributes().withLabel("Hz");
-    auto percentAttrs = juce::AudioParameterFloatAttributes().withLabel("%");
+    // withLabel() only feeds getLabel(); it does NOT change getText(), and an AudioParameterFloat
+    // with no stringFromValue of its own renders through juce::String(float) at full precision. Left
+    // at the default, section 6.3's "THRESHOLD: -18.5 dB" came out as "THRESHOLD: -16.3999977 dB" -
+    // in the LCD, in the host's automation lane and in any generic editor. So every float parameter
+    // gets an explicit formatter, and both the LCD and the host read the same string.
+    //
+    // The unit itself stays in the label rather than the text: the LCD joins the two with a space
+    // (section 6.3) and JUCE's own generic UI appends the label the same way, so baking it into the
+    // text would double it up.
+    auto fixed = [] (int decimals)
+    {
+        return [decimals] (float v, int) { return juce::String(v, decimals); };
+    };
+
+    auto dbAttrs = juce::AudioParameterFloatAttributes().withLabel("dB")
+                       .withStringFromValueFunction(fixed(1));
+    auto msAttrs = juce::AudioParameterFloatAttributes().withLabel("ms")
+                       .withStringFromValueFunction(fixed(1));
+    auto percentAttrs = juce::AudioParameterFloatAttributes().withLabel("%")
+                            .withStringFromValueFunction(fixed(0));
+
+    // Frequencies switch to kHz at 1000, matching both the printed scales ("1k", "5k", "20k") and
+    // section 6.3's own "TRIG LP: 6.3 kHz" example. The label has to move into the text here because
+    // the unit is value-dependent, so hzAttrs carries no label of its own.
+    auto hzAttrs = juce::AudioParameterFloatAttributes()
+                       .withStringFromValueFunction([] (float v, int)
+                       {
+                           return v >= 1000.0f ? juce::String(v / 1000.0f, 1) + " kHz"
+                                                : juce::String(v, 0) + " Hz";
+                       });
+
+    // Size / Decay / Density / Damping are bare 0-1 normals with no unit of their own; the panel
+    // prints their scales as 0-1.0, so they read the same way here.
+    auto normAttrs = juce::AudioParameterFloatAttributes().withStringFromValueFunction(fixed(2));
 
     // Gate section
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
@@ -146,7 +176,7 @@ inline juce::AudioProcessorValueTreeState::ParameterLayout createGatecrasherPara
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         juce::ParameterID{ParamIDs::size, 1}, "Size",
-        juce::NormalisableRange<float>(0.0f, 1.0f), 0.72f));
+        juce::NormalisableRange<float>(0.0f, 1.0f), 0.72f, normAttrs));
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         juce::ParameterID{ParamIDs::preDelay, 1}, "Pre-Delay",
@@ -158,20 +188,20 @@ inline juce::AudioProcessorValueTreeState::ParameterLayout createGatecrasherPara
     // rather than a single shared time constant.
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         juce::ParameterID{ParamIDs::decay, 1}, "Decay",
-        juce::NormalisableRange<float>(0.0f, 1.0f), 0.6f));
+        juce::NormalisableRange<float>(0.0f, 1.0f), 0.6f, normAttrs));
 
     // Density: no panel control by design - automation-only (GATECRASHER-GUI-SPEC.md §9).
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         juce::ParameterID{ParamIDs::density, 1}, "Density",
-        juce::NormalisableRange<float>(0.0f, 1.0f), 0.6f));
+        juce::NormalisableRange<float>(0.0f, 1.0f), 0.6f, normAttrs));
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         juce::ParameterID{ParamIDs::dampHF, 1}, "Damping HF",
-        juce::NormalisableRange<float>(0.0f, 1.0f), 0.55f));
+        juce::NormalisableRange<float>(0.0f, 1.0f), 0.55f, normAttrs));
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         juce::ParameterID{ParamIDs::dampLF, 1}, "Damping LF",
-        juce::NormalisableRange<float>(0.0f, 1.0f), 0.35f));
+        juce::NormalisableRange<float>(0.0f, 1.0f), 0.35f, normAttrs));
 
     // Output section
     params.push_back(std::make_unique<juce::AudioParameterFloat>(

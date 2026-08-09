@@ -26,7 +26,15 @@ ProgramHeader::ProgramHeader(GatecrasherAudioProcessor& processor) : processorRe
 
     saveButtonRect = {Layout::saveButtonX, Layout::saveButtonY, Layout::saveButtonW, Layout::saveButtonH};
     deleteButtonRect = {Layout::deleteButtonX, Layout::deleteButtonY, Layout::deleteButtonW, Layout::deleteButtonH};
-    headerClusterRect = {Layout::headerCropX, Layout::headerCropY, Layout::headerCropW, Layout::headerCropH};
+    // The cluster is what hitTest claims: the program window plus both buttons plus the two meter
+    // windows, taken from section 6's own coordinates rather than from a crop of the render.
+    programWindowRect = {Layout::programWindowX, Layout::programWindowY,
+                          Layout::programWindowW, Layout::programWindowH};
+    headerClusterRect = programWindowRect
+                            .getUnion({Layout::saveButtonX, Layout::saveButtonY,
+                                        Layout::saveButtonW, Layout::saveButtonH})
+                            .getUnion({Layout::deleteButtonX, Layout::deleteButtonY,
+                                        Layout::deleteButtonW, Layout::deleteButtonH});
     tagCellRect = {Layout::programTagCellX, Layout::programTagCellY, Layout::programTagCellW, Layout::programTagCellH};
     nameCellRect = {Layout::programNameCellX, Layout::programNameCellY, Layout::programNameCellW, Layout::programNameCellH};
     inWindowRect = {Layout::inWindowX, Layout::inWindowY, Layout::inWindowW, Layout::inWindowH};
@@ -55,6 +63,14 @@ bool ProgramHeader::hitTest(int x, int y)
 
 void ProgramHeader::timerCallback()
 {
+    // Live-value takeover reverts on its own clock rather than a second timer.
+    if (revertAtMs != 0 && juce::Time::getMillisecondCounter() >= revertAtMs)
+    {
+        revertAtMs = 0;
+        editingParamID.clear();
+        repaint(nameCellRect.getSmallestIntegerContainer());
+    }
+
     refreshDisplayFromProcessor();
     refreshMeterReadoutsFromProcessor();
     if (namingMode)
@@ -77,6 +93,59 @@ void ProgramHeader::refreshMeterReadoutsFromProcessor()
     // repaint() would redraw the whole header cluster several times a second for two digits.
     repaint(inWindowRect.getSmallestIntegerContainer()
                 .getUnion(outWindowRect.getSmallestIntegerContainer()));
+}
+
+void ProgramHeader::showParameter(const juce::String& paramID)
+{
+    if (namingMode)
+        return;    // the glass belongs to the name field until it commits or cancels
+
+    editingParamID = paramID;
+    revertAtMs = 0;
+    repaint(nameCellRect.getSmallestIntegerContainer());
+}
+
+void ProgramHeader::releaseParameter()
+{
+    if (editingParamID.isNotEmpty())
+        revertAtMs = juce::Time::getMillisecondCounter()
+                         + (juce::uint32) GatecrasherTheme::Layout::lcdRevertMs;
+}
+
+juce::String ProgramHeader::numberedProgramName() const
+{
+    // Section 6.1 sizes the cell around "14 ROOM REINFORCEMENT" and "the two-digit index and space"
+    // on top of the 24-character name cap - so the index is part of what the cell shows, 1-based and
+    // zero-padded to two digits. Uppercase throughout: the entry path already uppercases what is
+    // typed (section 6.4), and the factory names are stored in title case, so without this the two
+    // banks would read in different cases through the same window.
+    return juce::String(displayedProgramIndex + 1).paddedLeft('0', 2)
+           + " " + displayedProgramName.toUpperCase();
+}
+
+juce::String ProgramHeader::liveValueText() const
+{
+    auto* param = processorRef.apvts.getParameter(editingParamID);
+    if (param == nullptr)
+        return {};
+
+    // Straight through the parameter's own getText, so the number and its unit match what the host
+    // shows for the same control - there is no second formatting convention to keep in step. The
+    // four skewed knobs need no special handling: their printed ticks were placed from the same
+    // power-law curve the parameter uses (section 4.2), so the value always agrees with the mark
+    // the pointer is sitting on.
+    const auto name = param->getName(24).toUpperCase();
+    const auto unit = param->getLabel();
+    auto value = param->getText(param->getValue(), 0);
+
+    // Section 6.3's examples set the case: "THRESHOLD: -18.5 dB" and "TRIG LP: 6.3 kHz" keep their
+    // units as written, while "ALGORITHM: PLATE" is capitalised. The difference is a unit - the
+    // float parameters all carry one (or bake it into the text, as the two frequencies do), the
+    // choice parameters do not - so a unitless value is a word and gets the name's treatment.
+    if (unit.isEmpty() && ! value.containsAnyOf("0123456789"))
+        value = value.toUpperCase();
+
+    return name + ": " + value + (unit.isEmpty() ? juce::String() : " " + unit);
 }
 
 void ProgramHeader::refreshDisplayFromProcessor()
@@ -130,11 +199,14 @@ bool ProgramHeader::isButtonEnabled(HeaderButton button) const
     return false;
 }
 
-// The name cell is only a menu trigger while idle - during name entry it's the text field being
-// typed into, so clicking it must not replace the half-typed name with a program list.
+// Section 6.2: "clicking anywhere in the window opens the program list" - the whole recessed LCD,
+// not just the name cell. The baked chevron marks it as a selector but is not a button of its own.
+//
+// Only while idle: during name entry the cell is the text field being typed into, so a click must
+// not replace a half-typed name with a program list.
 bool ProgramHeader::isProgramMenuAvailableAt(juce::Point<float> position) const
 {
-    return !namingMode && nameCellRect.contains(position);
+    return !namingMode && programWindowRect.contains(position);
 }
 
 void ProgramHeader::showProgramMenu()
@@ -144,6 +216,7 @@ void ProgramHeader::showProgramMenu()
 
     // Item IDs are index + 1 because PopupMenu reserves 0 for "dismissed without choosing".
     juce::PopupMenu menu;
+    menu.setLookAndFeel(&menuLookAndFeel);
     bool hasUserPrograms = false;
 
     menu.addSectionHeader("Factory");
@@ -167,9 +240,15 @@ void ProgramHeader::showProgramMenu()
                 menu.addItem(i + 1, processorRef.getProgramName(i), true, i == currentIndex);
     }
 
+    // Anchored to, and at least as wide as, the whole program window rather than the name cell -
+    // section 6.2 makes the entire window the affordance, so the list should drop from its full
+    // width. localAreaToGlobal keeps this right on a scaled or moved editor.
+    const auto glassOnScreen = localAreaToGlobal(programWindowRect.getSmallestIntegerContainer());
+
     menu.showMenuAsync(juce::PopupMenu::Options()
                            .withTargetComponent(this)
-                           .withTargetScreenArea(localAreaToGlobal(nameCellRect.getSmallestIntegerContainer())),
+                           .withTargetScreenArea(glassOnScreen)
+                           .withMinimumWidth(glassOnScreen.getWidth()),
                        [safeThis = juce::Component::SafePointer<ProgramHeader>(this)](int result)
                        {
                            if (safeThis == nullptr || result == 0)
@@ -312,50 +391,46 @@ void ProgramHeader::paint(juce::Graphics& g)
 {
     using namespace GatecrasherTheme;
 
-    // Clear the baked LCD tag/name text (the static panel background always shows one fixed
-    // example program) before drawing the live values on top - inset by 1px so the surrounding
-    // LED-window border/divider drawn by the background itself stays intact. The LED window's own
-    // background is a flat, untextured colour (section 1: #07090A), so a plain fill is correct
-    // here without needing GatecrasherTheme::eraseToBackground's bitmap-sampling approach.
+    // Clear the two cells before drawing. The plate leaves the LCD windows empty (section 0.2:
+    // the tag, name and live value are all R), so this is clearing the PREVIOUS FRAME, not baked
+    // artwork. Inset 1px to leave the window's own baked border and divider intact. The glass is a
+    // flat untextured #07090A, so a plain fill is right here - no bitmap sampling needed.
     g.setColour(Colour::ledWindowBg);
     g.fillRect(tagCellRect.reduced(1.0f));
     g.fillRect(nameCellRect.reduced(1.0f));
 
-    const bool showUserTag = namingMode || !displayedIsFactory;
-    g.setColour(showUserTag ? Colour::tagUser : Colour::tagFactory);
-    g.setFont(monoFont(9.0f));
-    g.drawText(showUserTag ? "USER" : "FACT", tagCellRect, juce::Justification::centred, false);
+    // Section 6.2: the tag is "same face, size and colour as the name" - one 13px Share Tech Mono
+    // in #F0E0B0, not the two greys Rev 5 used to distinguish FACT from USER. The word itself
+    // carries the distinction.
+    // Section 6.1 puts both cells at Share Tech Mono 13px with 1.3px (.10em) letter-spacing, and it
+    // is that tracking the 8.32px-per-character budget is built on - drawn without it the name sits
+    // visibly tighter than the plate's own printed type and the budget stops meaning anything.
+    const auto lcdFont = monoFont(monoFontHeightForCssPx(13.0f));
+    const float lcdTracking = trackingPxForEm(0.10f, 13.0f);
 
-    g.setColour(Colour::headerName);
-    g.setFont(monoFont(13.0f));
+    const bool showUserTag = namingMode || !displayedIsFactory;
+    drawTrackedText(g, showUserTag ? "USER" : "FACT", lcdFont, lcdTracking, tagCellRect,
+                     juce::Justification::centred, Colour::ledText);
+
     if (namingMode)
     {
         // Left-aligned, cleared, with a blinking block caret (1s period, 50% duty - section 6).
         const bool caretOn = (juce::Time::getMillisecondCounter() % 1000) < 500;
         const juce::String text = typedName + (caretOn ? juce::String(juce::CharPointer_UTF8("\xe2\x96\x88"))
                                                          : juce::String());
-        g.drawText(text, nameCellRect.reduced(6.0f, 0.0f), juce::Justification::centredLeft, false);
+        drawTrackedText(g, text, lcdFont, lcdTracking, nameCellRect.reduced(6.0f, 0.0f),
+                         juce::Justification::left, Colour::ledText);
     }
     else
     {
-        g.drawText(displayedProgramName, nameCellRect, juce::Justification::centred, false);
-
-        // Small chevron marking the cell as a menu trigger (see this class's header comment on why
-        // that control exists at all). Dimmed and tucked into the right edge so it reads as an
-        // affordance rather than competing with the program name. The name stays centred in the full
-        // cell, matching the artwork, rather than being squeezed left to make room: the widest
-        // possible name (maxProgramNameLength at this font size) still ends well clear of here.
-        const float chevronW = 7.0f, chevronH = 4.0f;
-        const float chevronRight = nameCellRect.getRight() - 7.0f;
-        const float chevronTop = nameCellRect.getCentreY() - chevronH * 0.5f;
-
-        juce::Path chevron;
-        chevron.startNewSubPath(chevronRight - chevronW, chevronTop);
-        chevron.lineTo(chevronRight - chevronW * 0.5f, chevronTop + chevronH);
-        chevron.lineTo(chevronRight, chevronTop);
-
-        g.setColour(Colour::headerName.withAlpha(0.55f));
-        g.strokePath(chevron, juce::PathStrokeType(1.0f));
+        // Section 6.4: a modified program gains a trailing " *", cleared on store, on delete and
+        // on loading another program - all three of which reset displayedIsModified via
+        // refreshDisplayFromProcessor, so nothing extra is needed to clear it here.
+        const auto shown = editingParamID.isNotEmpty()
+                               ? liveValueText()
+                               : numberedProgramName() + (displayedIsModified ? " *" : "");
+        drawTrackedText(g, shown, lcdFont, lcdTracking, nameCellRect,
+                         juce::Justification::centred, Colour::ledText);
     }
 
     // IN / OUT level windows. Same erase-then-draw as the tag/name cells above (and the same flat
@@ -395,7 +470,11 @@ void ProgramHeader::paint(juce::Graphics& g)
         g.setColour(enabled ? Colour::buttonEnabledBorder : Colour::buttonDisabledBorder);
         g.drawRect(rect, 1.0f);
 
-        drawTrackedText(g, label, labelFont(8.5f), 1.0f, rect, juce::Justification::centred,
+        // Section 6.4: Barlow Condensed 600 at 10 CSS px, .10em. Through the CSS-px converter rather
+        // than the pre-converted number that used to sit here, so a recalibration of the ratio moves
+        // this with every other label instead of leaving it behind.
+        drawTrackedText(g, label, labelFont(labelFontHeightForCssPx(10.0f)),
+                         trackingPxForEm(0.10f, 10.0f), rect, juce::Justification::centred,
                          enabled ? Colour::buttonEnabledLabel : Colour::buttonDisabledLabel);
     };
 

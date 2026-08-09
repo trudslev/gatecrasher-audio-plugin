@@ -71,7 +71,6 @@ namespace GatecrasherTheme
         inline const juce::Colour lampOpenEdge{0xFF6D0B06};
 
         // Input meter, section 7.
-        inline const juce::Colour meterUnlitSegment{0xFF20262A};
         inline const juce::Colour meterLitSegment{0xFFF4F8FA};
         inline const juce::Colour meterBloom{0x8CE6F2F8}; // rgba(230,242,248,.55)
         inline const juce::Colour meterThresholdMarker{0x80FFFFFF};
@@ -109,15 +108,10 @@ namespace GatecrasherTheme
         constexpr float knobArcStartDegrees = -135.0f;
         constexpr float knobArcEndDegrees = 135.0f;
 
-        // Regular knobs' decorative tick ring spacing target (section 3: "every 15 for large
-        // knobs / 20-22 for small ones"). The actual per-knob spacing is derived from this so the
-        // ring always lands exactly on both arc endpoints (see tickCountForSpacing below).
-        constexpr float largeKnobTickSpacingDegrees = 15.0f;
-        constexpr float smallKnobTickSpacingDegrees = 21.0f;
-
-        // Tick ring sits just outside the knob's own radius (section 3: "from r+2 to r+7").
-        constexpr float tickInnerOffset = 2.0f;
-        constexpr float tickOuterOffset = 7.0f;
+        // No tick-ring constants here on purpose. Rev 5 drew the rings itself at even angular
+        // spacing (15 degrees large / 21 small); Rev 6 bakes every tick into the plate at its
+        // LABELLED value instead (section 0.3), which on the four skewed controls is not evenly
+        // spaced at all. Reintroducing a drawn ring would lay even ticks over uneven printed ones.
 
         // Filmstrip frames are square with transparent margin for the baked cast shadow - draw
         // into the full bounding box (diameter + ~7% bleed), not just the knob circle.
@@ -232,8 +226,12 @@ namespace GatecrasherTheme
         constexpr float stateLabelCssPx = 10.0f;
         constexpr float stateLabelTrackingEm = 0.10f;
 
-        // Input meter, section 7.
-        constexpr float meterX = 147.0f, meterY = 133.0f, meterW = 14.0f, meterH = 76.0f;
+        // Input meter, section 8: x 165, y 139, 14 x 76. This read (147, 133) through Rev 5, whose
+        // header layout put the meter 18px further left; drawn there against the Rev 7 plate it
+        // painted a second column of segments straight over the printed "-15" scale numeral while
+        // the real baked well sat empty beside it. Measured back off the plate to confirm: the well
+        // spans x 165.0-180.5, y 139.0-214.5 including its 1px border.
+        constexpr float meterX = 165.0f, meterY = 139.0f, meterW = 14.0f, meterH = 76.0f;
         constexpr float meterSegmentH = 4.0f, meterSegmentPitch = 6.0f;
         // Meter/marker dB range: matches the Threshold parameter's own -60..0dB range (section 9)
         // so the threshold marker is meaningful relative to the lit segments.
@@ -313,26 +311,6 @@ namespace GatecrasherTheme
         // caption-row model assumed and which sits ~4px too low.
         constexpr float switchCaptionCentreAboveTrack = 11.75f;
 
-        // Program header (section 6). The three header-state bitmaps are full-width renders of the
-        // whole header band (wordmark included, confirmed by inspecting the assets) - ProgramHeader
-        // only ever blits the "program cluster" sub-rect below (PROGRAM caption through the IN/OUT
-        // windows), leaving the wordmark to WordmarkComponent so the two never double-paint the
-        // same pixels. This crop rect is a generous, carefully-derived bounding box around section
-        // 6's coordinate table (which itself only covers x>=480), not a pixel-measured exact crop -
-        // safe because the surrounding fascia is pixel-identical to the static panel background in
-        // every direction, so a slightly loose crop still blends seamlessly.
-        constexpr float headerAssetSrcScale = 3.0f; // the bitmaps are shipped @3x
-        // Verified directly against the source bitmap (design/assets/header-factory-program@3x.png):
-        // the original headerCropX=460 started mid-glyph through "PROGRAM"'s P, chopping it to
-        // "ROGRAM" and - since destRect/srcRect share this same wrong offset - throwing every
-        // erase-rect below (tag/name cell, SAVE, DELETE, all independently correct per the spec's
-        // own coordinates) out of alignment with where their content actually lands once drawn,
-        // which is what produced the "FACT FACT" double-tag and the SAVE button being partly
-        // covered by the name cell. 433 was found by cropping the bitmap directly until "PROGRAM"
-        // reads cleanly with a few px of left padding; width increased to keep the right edge
-        // (which was never reported as clipped) at the same x=906 it was already correctly at.
-        constexpr float headerCropX = 433.0f, headerCropY = 14.0f, headerCropW = 473.0f, headerCropH = 54.0f;
-
         // Spec section 6, taken directly. The header was rearranged in Rev 6: the strapline and
         // model line moved from beside the wordmark to underneath it, which freed 74px that went
         // into the program window - the name cell grew 197 -> 252 and everything right of it moved.
@@ -390,8 +368,6 @@ namespace GatecrasherTheme
         constexpr float versionCentreY = 406.0f;
 
         // The meter's recessed window frame; InputMeter fills and draws segments inside it.
-        constexpr float meterFrameX = 146.0f, meterFrameY = 132.0f, meterFrameW = 16.0f, meterFrameH = 78.0f;
-        constexpr float meterCaptionCentreY = 220.0f;
 
         // "ENVELOPE   50 ms / DIV", right-aligned to the scope's right edge.
         constexpr float envelopeAnnotationRight = 562.0f;
@@ -404,9 +380,12 @@ namespace GatecrasherTheme
         constexpr float algoLabelLeftX = 627.0f, algoLabelRightX = 746.0f;
         constexpr float algoLabelTopCentreY = 133.0f, algoLabelBottomCentreY = 198.5f;
 
-        constexpr int maxProgramNameLength = 22; // mirrors ProgramManager::maxProgramNameLength
+        constexpr int maxProgramNameLength = 24; // mirrors ProgramManager::maxProgramNameLength
 
-        // Wordmark, section 8 - owned separately from ProgramHeader (see headerCrop comment above).
+        // Section 6.3: the live value reverts to the program name "~800 ms after the gesture ends".
+        constexpr int lcdRevertMs = 800;
+
+        // Wordmark, section 8. Baked into the plate as of Rev 6; nothing draws it.
         constexpr float wordmarkX = 38.0f, wordmarkY = 20.0f, wordmarkW = 232.0f, wordmarkH = 40.0f;
         constexpr float wordmarkHeight = 36.0f; // the mockup's font-size for the stencil
 
@@ -441,14 +420,6 @@ namespace GatecrasherTheme
         return centre + directionForAngleDegrees(angleDegrees) * radius;
     }
 
-    // Number of ticks (inclusive of both arc endpoints) whose even spacing across the full 270
-    // sweep comes closest to targetSpacingDegrees, landing exactly on -135 and +135.
-    inline int tickCountForSpacing(float targetSpacingDegrees) noexcept
-    {
-        const float sweep = Layout::knobArcEndDegrees - Layout::knobArcStartDegrees;
-        const int intervals = juce::jmax(1, (int) std::round(sweep / targetSpacingDegrees));
-        return intervals + 1;
-    }
 
     inline float trackedTextWidth(const juce::String& text, const juce::Font& font, float trackingPx)
     {

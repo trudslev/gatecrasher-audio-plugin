@@ -92,5 +92,7 @@ private:
     // path), so it needs no synchronisation of its own.
     std::vector<float> cleanSnapshot;
 
-    static constexpr int maxProgramNameLength = 22;
+    // Section 6.1: the 252px name cell fits 27 characters at Share Tech Mono 13px/.10em, and a
+    // two-digit index plus a space takes three of them - so names cap at 24, exactly the budget.
+    static constexpr int maxProgramNameLength = 24;
 };

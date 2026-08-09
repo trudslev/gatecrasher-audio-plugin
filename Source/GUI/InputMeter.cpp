@@ -32,31 +32,24 @@ void InputMeter::paint(juce::Graphics& g)
     const int segmentCount = (int) (Layout::meterH / Layout::meterSegmentPitch);
     const int litCount = (int) std::round(levelNorm * (float) segmentCount);
 
-    // The static panel background bakes this meter in showing the reference mockup's own signal
-    // level - several lit segments near the bottom. The unlit ledger drawn below only covers the 4px
-    // segments themselves, not the 2px gaps between them on the 6px pitch, so those baked lit
-    // segments kept showing through the gaps as stray bright lines that never tracked the real input
-    // level. Filling the whole window dark first means only live segments are ever visible. Flat
-    // (rather than GatecrasherTheme::eraseToBackground) for the same reason the switch labels are:
-    // erasing here would just restore the baked lit segments, which is the thing being fixed.
-    g.setColour(Colour::ledWindowBg);
-    g.fillRect(rect);
+    // Section 8: "Well and unlit ledger baked; lit segments runtime." So this draws ONLY the lit
+    // segments, and erasing to the plate is a genuine clear of the previous frame - the plate has an
+    // unlit ledger and no lit segments at all. Under Rev 5's dressed background this same erase
+    // restored a baked signal level and the code filled the window flat dark instead to defeat it;
+    // that fill would now paint out the printed ledger, so it is gone with the background it was
+    // fighting. Expanded by the bloom radius so the previous frame's glow is cleared too.
+    eraseToBackground(g, rect.expanded(2.0f), getPosition());
 
     // Segments are 4px tall on a 6px pitch, anchored to the bottom edge, stacking upward.
-    for (int i = 0; i < segmentCount; ++i)
+    for (int i = 0; i < litCount && i < segmentCount; ++i)
     {
         const float segBottom = rect.getBottom() - (float) i * Layout::meterSegmentPitch;
         const juce::Rectangle<float> seg(rect.getX(), segBottom - Layout::meterSegmentH,
                                           rect.getWidth(), Layout::meterSegmentH);
-        const bool lit = i < litCount;
 
-        if (lit)
-        {
-            g.setColour(Colour::meterBloom);
-            g.fillRect(seg.expanded(1.5f, 1.5f));
-        }
-
-        g.setColour(lit ? Colour::meterLitSegment : Colour::meterUnlitSegment);
+        g.setColour(Colour::meterBloom);
+        g.fillRect(seg.expanded(1.5f, 1.5f));
+        g.setColour(Colour::meterLitSegment);
         g.fillRect(seg);
     }
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../PluginProcessor.h"
+#include "GatecrasherMenuLookAndFeel.h"
 #include <juce_gui_basics/juce_gui_basics.h>
 
 // The program section (GATECRASHER-GUI-SPEC.md section 6). The static panel background already
@@ -50,6 +51,17 @@ public:
     ~ProgramHeader() override;
 
     void paint(juce::Graphics&) override;
+
+    /** Section 6.3: while a control is being moved the name cell shows `NAME: value unit`,
+        reverting to the program name ~800ms after the gesture ends. This is the only place a live
+        number appears on the panel.
+
+        Call showParameter on drag start / value change and releaseParameter on drag end. The CALLER
+        guards on the control's own drag state - a SliderAttachment also fires when a program is
+        applied and on every host automation step, and without that guard the display latches onto
+        whichever parameter was written last and flickers for the length of a song. */
+    void showParameter(const juce::String& paramID);
+    void releaseParameter();
     bool hitTest(int x, int y) override;
     void mouseDown(const juce::MouseEvent&) override;
     void mouseUp(const juce::MouseEvent&) override;
@@ -57,10 +69,16 @@ public:
     bool keyPressed(const juce::KeyPress&) override;
 
 private:
+    // Dresses the dropdown as an extension of the PROGRAM glass (section 6.2). Owned here so it
+    // outlives every menu this component opens.
+    GatecrasherMenuLookAndFeel menuLookAndFeel;
+
     enum class HeaderButton { none, save, deleteOrCancel };
 
     void timerCallback() override;
     void refreshDisplayFromProcessor();
+    juce::String numberedProgramName() const;
+    juce::String liveValueText() const;
     void enterNamingMode();
     void commitStore();
     void cancelNaming();
@@ -75,6 +93,10 @@ private:
     // Mirrors whatever program was loaded before SAVE was pressed - CANCEL reverts the display to
     // this without ever touching APVTS (the user's tweaked-but-unsaved knob values must survive a
     // Cancel, per section 6). Never written to while namingMode is true.
+    // Live-value takeover (section 6.3). editingParamID empty = showing the program name.
+    juce::String editingParamID;
+    juce::uint32 revertAtMs = 0;
+
     int displayedProgramIndex = -1;
     juce::String displayedProgramName;
     bool displayedIsFactory = true;
@@ -99,6 +121,6 @@ private:
     bool pressedNameCell = false;
 
     juce::Rectangle<float> saveButtonRect, deleteButtonRect, headerClusterRect;
-    juce::Rectangle<float> tagCellRect, nameCellRect;
+    juce::Rectangle<float> programWindowRect, tagCellRect, nameCellRect;
     juce::Rectangle<float> inWindowRect, outWindowRect;
 };

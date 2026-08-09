@@ -24,25 +24,6 @@ namespace
         if (paramID == ParamIDs::trim)      return "Output level trim, applied after the dry/wet mix.";
         return nullptr;
     }
-
-    // Knob drag-value popup text. Mirrors TapeRotEditorContent's own formatKnobPopupText:
-    // AudioParameterFloatAttributes::withLabel() only feeds getLabel(), not getText(), so a
-    // continuous float parameter's default getText() would otherwise render unlabelled,
-    // many-decimal-place values while dragging. algorithm (the only choice param with a knob) has
-    // no label and formats fine through getText() already, so it's left alone.
-    juce::String formatKnobPopupText(const juce::RangedAudioParameter& param, double value)
-    {
-        const auto label = param.getLabel();
-        if (label.isEmpty())
-            return param.getText(param.convertTo0to1((float) value), 0);
-
-        int decimalPlaces = 1;
-        if (label == "Hz")
-            decimalPlaces = 0;
-
-        const juce::String text(value, decimalPlaces);
-        return label == "%" ? text + label : text + " " + label;
-    }
 }
 
 GatecrasherEditorContent::GatecrasherEditorContent(GatecrasherAudioProcessor& p)
@@ -81,9 +62,21 @@ GatecrasherEditorContent::GatecrasherEditorContent(GatecrasherAudioProcessor& p)
         knobAttachments[i] = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
             processorRef.apvts, spec.paramID, *knob);
 
-        // No drag popup. Spec section 6.3 puts the live value in the PROGRAM LCD instead, and
-        // section 0.2 is explicit that no number appears anywhere on the fascia outside the two LCD
-        // windows and the printed scales.
+        // Section 6.3 puts the live value in the PROGRAM LCD rather than a drag popup, and section
+        // 0.2 is explicit that no number appears on the fascia outside the two LCD windows and the
+        // printed scales.
+        //
+        // Guarded on the control's OWN drag state. A SliderAttachment also fires when a program is
+        // applied and on every host automation step; without the guard the LCD latches onto
+        // whichever parameter was written last and flickers for the length of a song.
+        auto* rawKnob = knob.get();
+        const juce::String paramID(spec.paramID);
+        knob->onValueChange = [this, rawKnob, paramID]
+        {
+            if (rawKnob->isMouseButtonDown())
+                programHeader.showParameter(paramID);
+        };
+        knob->onDragEnd = [this] { programHeader.releaseParameter(); };
 
         addAndMakeVisible(*knob);
         knobs[i] = std::move(knob);

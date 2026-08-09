@@ -116,50 +116,82 @@ deferred through `ProgramManager`'s own `AsyncUpdater`.
 
 **Deliberate divergence from TapeRot**: TapeRot's GUI is fully vector/code-drawn (`SectionPanel`,
 `TapeRotLookAndFeel`, etc. - see `../taperot/CLAUDE.md`'s GUI section). Gatecrasher's is
-asset-based for its *sculpted* elements - the chassis and the knobs - because pre-rendered bitmap
-sculpting reads as more authentically "real 80s hardware" than modern vector rendering for this
-particular fascia. Everything flat is drawn in code.
+asset-based, because pre-rendered bitmap sculpting reads as more authentically "real 80s hardware"
+than modern vector rendering for this particular fascia.
 
-The background is `design/assets/gatecrasher-panel-bare@2x.png`: a **bare chassis** - fascia
-gradient/grain, rack ears, screws, the header band, and the three section dividers, and nothing
-else. No controls, labels, nameplate or window frames. Layered on top, in order:
+Since Rev 6 the background is `design/assets/gatecrasher-panel-plate@2x.png`: a **fully printed
+plate** carrying every static element - fascia, grain, rails, screws, header band, dividers,
+wordmark, every label, every printed scale, numeral and tick, all recessed wells, and the footer.
+Only nine things are drawn at runtime, and spec section 0.1 lists them in draw order:
 
-- `PanelChrome` - the static engraved layer: section headings, group labels, every knob label, the
-  switch captions, the nameplate subtitle, the PROGRAM/IN/OUT captions, the recessed LED window
-  frames, the input meter's frame, the scope's timebase annotation, the version stamp.
-- `PanelReadouts` - the live numeric value under each knob, plus the algorithm selector's four
-  corner labels (whose lit one follows the Algorithm parameter).
-- The controls themselves: 15 knobs (bitmap filmstrips, `KnobFilmstripComponent`, with code-drawn
-  tick rings since those don't rotate with the knob), the gate-envelope scope, the GATE OPEN lamp,
-  the input meter's segments, the Key Source/Shape switches, `WordmarkComponent`, and
-  `ProgramHeader`'s dynamic text and buttons.
+1. Switch shoes (`ToggleSwitchComponent`)
+2. The eight state-dependent labels (`StateLabels`)
+3. Knob filmstrip frames (`KnobFilmstripComponent`)
+4. Input meter **lit segments only** (`InputMeter`) - the well and unlit ledger are baked
+5. The gate-envelope scope's contents (`GateScope`)
+6. The GATE OPEN lamp (`GateLamp`)
+7. LCD text: tag, name/live value, IN, OUT (`ProgramHeader`)
+8. SAVE / DELETE (`ProgramHeader`)
 
-This replaced an earlier arrangement that used the **fully dressed** render
-(`gatecrasher-panel@2x.png`) as the background, so every live element sat on top of a baked copy of
-itself. That produced a whole family of bugs - a frozen second needle behind every knob, ghosted
-switch labels, baked meter segments showing through the gaps between the live ones, IN/OUT windows
-stuck on a reading that never moved - each needing its own erase-or-cover workaround, several of
-which could only mask the symptom (re-blitting the background over a region whose baked content is
-exactly what you are about to redraw is a no-op, not an erase). With a bare chassis none of that is
-needed: `GatecrasherTheme::eraseToBackground` is a genuine clear again, used only to wipe a live
-element's *previous frame*. The dressed renders remain in `design/assets/` as pixel-matching
-acceptance targets but are no longer shipped in BinaryData.
+**Do not reintroduce a drawing layer for anything else.** Rev 5 drew 20+ static strings, all 14 knob
+labels and its own tick rings; that code is deleted, not adapted, and the spec is explicit that
+running both paths double-draws every label at a one-pixel offset. The tick rings in particular were
+*wrong*, not merely redundant: they were spaced at even angles (15 deg / 21 deg), and Rev 6 bakes
+every tick at its **labelled value**, which on the four skewed controls is not evenly spaced.
 
-Type sizes are quoted by the spec and the reference mockup as CSS px, which is **not** the same
-number as a `juce::Font` height (that is ascent+descent, a typeface-specific multiple of the em
-size). `GatecrasherTheme::labelFontHeightForCssPx` / `monoFontHeightForCssPx` convert, calibrating
-the ratio off a reference string whose rendered width was measured directly from the dressed
-artwork - so one real measurement scales every size on the panel. Passing a spec px value straight
-to `labelFont()` renders visibly small.
+The one exception is section 0.4's eight state-dependent labels - `INTERNAL`/`SIDECHAIN`,
+`HARD`/`SOFT` and the four algorithm corners - which are drawn because their weight and colour
+follow a control. Rev 6 tried baking them at their defaults and asking the build to redraw only the
+changed pair; that cannot work, because baked pixels cannot be un-drawn. Rev 7 removed them from the
+plate, so bare fascia sits where they go and `StateLabels` paints all eight every frame. Their
+dimming is 5.52:1 against a 7:1 bar and is documented as deliberate in section 2.1 - **do not
+"fix" it.**
+
+`GatecrasherTheme::eraseToBackground` re-blits the plate to clear a live element's previous frame.
+Against the printed plate that is a genuine clear, and it is what `InputMeter`, `GateLamp`,
+`ToggleSwitchComponent` and `ProgramHeader`'s buttons use. It was NOT one under Rev 5's briefly-used
+*dressed* background, where re-blitting restored a baked copy of the very thing being redrawn - if
+you find a comment or a flat-fill workaround that assumes that, it predates Rev 6.
+
+Type sizes are quoted by the spec as CSS px, which is **not** the same number as a `juce::Font`
+height (that is ascent+descent, a typeface-specific multiple of the em size).
+`GatecrasherTheme::labelFontHeightForCssPx` / `monoFontHeightForCssPx` convert, calibrating the ratio
+off a reference string whose rendered width was measured from the artwork. Pass a spec px value
+straight to `labelFont()` and it renders visibly small. Letter-spacing is likewise absolute pixels
+that `juce::Font` has no setting for - `drawTrackedText` draws glyph-by-glyph to reproduce it, and
+the LCD's own 8.32px-per-character budget (section 6.1) only holds with the .10em tracking applied.
 
 Fixed reference canvas is 960x434 (not TapeRot's 960x400) - within `../BRAND.md`'s allowance for a
 denser control set to scale proportionally rather than match the reference ratio exactly.
 
-`design/GATECRASHER-GUI-SPEC.md` is the authoritative pixel spec (palette, every control coordinate,
-the filmstrip frame-mapping formula, the scope's exact draw rules including the Shape-driven
-release-curve behavior, the program header's state machine) - read it before touching any GUI code.
-`design/CLAUDE.md` is Claude Design's handoff note summarizing the same. Both were written before
-implementation began and are meant to be implemented as-is, not redesigned.
+**Program header.** `ProgramHeader` spans the whole canvas and narrows its `hitTest` to the program
+window plus SAVE/DELETE; a canvas-sized component that intercepted everything would swallow the
+knobs' clicks. Clicking anywhere in the program *window* - not just the name cell - opens the
+dropdown (section 6.2: the baked chevron is an affordance, not a button). The menu is dressed by
+`GatecrasherMenuLookAndFeel` as an extension of the LCD glass and opens at the window's own width.
+The name cell shows `NN NAME` with a 1-based two-digit index, uppercased, plus a trailing ` *` while
+the program is dirty.
+
+While a control is being dragged the same cell shows `NAME: value unit` instead, reverting ~800 ms
+after the gesture (section 6.3) - there is no drag popup and no standing readout anywhere on the
+fascia. `GatecrasherEditorContent` guards those calls on the knob's **own** drag state:
+a `SliderAttachment` also fires when a program is applied and on every host automation step, and
+without the guard the display latches onto whichever parameter was written last and flickers for the
+length of a song.
+
+That live text comes straight from each parameter's `getText`, so the LCD and the host always agree.
+It only reads properly because `Parameters.h` gives every float parameter an explicit
+`withStringFromValueFunction`: `withLabel()` feeds `getLabel()` alone, and a parameter left at
+JUCE's default renders `-16.3999977` rather than `-16.4`. Add a float parameter without a formatter
+and it will show up seven decimals wide in the LCD, in the automation lane and in any generic editor.
+
+`design/GATECRASHER-GUI-SPEC.md` is the authoritative pixel spec and is meant to be implemented
+as-is, not redesigned; `design/CLAUDE.md` is Claude Design's handoff note summarising it. When a
+coordinate here and a coordinate there disagree, the spec wins - and measure the artwork to confirm
+before assuming either. Two long-lived bugs came from not doing that: the lamp sat at (224, 95)
+instead of section 5.5's (216, 104), masked for months by a baked bulb at the correct spot, and the
+input meter kept Rev 5's (147, 133) instead of section 8's (165, 139), painting a second column of
+segments straight over the printed scale numeral while the real well sat empty beside it.
 
 ### Build system
 
@@ -180,14 +212,19 @@ Gatecrasher declares an optional stereo sidechain input bus (for `Trigger Source
 addition to the required stereo main input/output - `isBusesLayoutSupported` also accepts the
 sidechain bus disabled or mono. This is the one structural difference from TapeRot's bus setup.
 
-`juce_add_binary_data(GatecrasherBinaryData SOURCES ...)` embeds the bare panel chassis, the two
-knob filmstrips, and the four fonts (Barlow Condensed SemiBold/Bold, Share Tech Mono, TudorVictors).
+`juce_add_binary_data(GatecrasherBinaryData SOURCES ...)` embeds the printed plate, the two knob
+filmstrips, and four fonts: **all three** Barlow Condensed weights and Share Tech Mono. The three
+weights are one more than `design/assets/fonts/README.md` implies - it offers SemiBold (600) only for
+a group caption, but section 6.4 also puts the SAVE/DELETE labels at 600 and those are drawn live.
+Bold (700) and Regular (400) are the selected/unselected halves of the section-0.4 labels.
+
 It deliberately excludes every *dressed* render - `gatecrasher-panel@2x.png`, its gate-open
 counterpart, the three header-state bitmaps, and the two SHAPE-switch scope references
 (`scope-hard/soft-release@3x.png`). Those are pixel-matching acceptance targets to check the live
 rendering against, not runtime assets; the header-state bitmaps in particular were briefly used at
 runtime and turned out to be uncalibrated against the panel's own coordinate frame (see
-`ProgramHeader.h`).
+`ProgramHeader.h`). `gatecrasher-panel-bare@2x.png` is likewise no longer a build input, and
+`TudorVictors.ttf` ships only so the wordmark can be re-baked - it is not a runtime face.
 
 Note for asset drops: `design/assets/` is **added to, not replaced**. A wholesale replacement has
 already once deleted all 19 tracked font files (breaking the build outright, since BinaryData
@@ -196,19 +233,23 @@ recovered from git.
 
 ## Status
 
-- **DSP**: every stage has real, functioning processing - no stubs. The reverb tanks' comb/allpass
+- **DSP**: every stage has real, functioning processing - no stubs. `auval` and `pluginval
+  --strictness-level 8` both pass on AU and VST3. The reverb tanks' comb/allpass
   delay-length tables and feedback ranges, and the 17 factory programs' parameter values, are a
   structurally-plausible first pass rather than a tuned one (see `BUILDING.md`'s DSP tuning note
   and `CombAllpassNetwork.h`'s class comment) - the same status TapeRot's own factory presets had
   before their by-ear pass. Build, load, listen, adjust.
-- **GUI**: implemented against the approved spec using the bare-chassis approach above. Barlow
-  Condensed and Share Tech Mono are embedded and in use throughout. One interim deviation remains:
-  section 8 calls for the wordmark to be a pre-baked sprayed-stencil PNG, and no such PNG exists in
-  `design/assets/`, so `WordmarkComponent` draws it live from the embedded TudorVictors typeface -
-  reproducing the mockup's per-letter rotation/drift/opacity and its spatter flecks, and
-  approximating the two-stage overspray halo with stacked offset copies, but *not* the per-glyph
-  speckle mask (that needs an offscreen render per letter and reads as noise at 36px). Swapping in a
-  real PNG when one arrives is a small change, tracked in `prompts/PROMPTS.md`.
+- **GUI**: conformant to Rev 7 of the spec and verified against it - the composite was captured from
+  the Standalone and diffed against `gatecrasher-panel@2x.png`, and every region the build paints
+  over the plate was accounted for against section 0.1's list (no double-draws, nothing straying onto
+  baked furniture). The wordmark is baked now, so the old live-drawn `WordmarkComponent` deviation is
+  closed. Two open items belong to the designers, not the build, and are written up in
+  `prompts/PROMPTS.md`: section 6.4 asks the `PROGRAM` caption to become `NAME PROGRAM` during name
+  entry, but section 0.2 bakes that caption into the plate, so the build cannot change it; and the
+  knob filmstrips have a fluted cap while the dressed reference render shows a smooth one.
+- **Not yet verified**: the gate-open composite (`gatecrasher-panel-gate-open@2x.png`) needs the gate
+  actually open, which means audio through the Standalone - it has not been diffed. Everything else
+  in the spec's QA list has.
 - **Decay and Density** are intentionally automation-only parameters with no panel control - this
   is a settled design decision (Density always was; a gap around Shape having no control was
   separately resolved by adding the SHAPE switch, not by adding one for Decay), not an outstanding
