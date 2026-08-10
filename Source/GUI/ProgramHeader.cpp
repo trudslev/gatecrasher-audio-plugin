@@ -244,11 +244,37 @@ void ProgramHeader::showProgramMenu()
     // section 6.2 makes the entire window the affordance, so the list should drop from its full
     // width. localAreaToGlobal keeps this right on a scaled or moved editor.
     const auto glassOnScreen = localAreaToGlobal(programWindowRect.getSmallestIntegerContainer());
+    const auto window = programWindowRect.getSmallestIntegerContainer();
 
-    menu.showMenuAsync(juce::PopupMenu::Options()
-                           .withTargetComponent(this)
-                           .withTargetScreenArea(glassOnScreen)
-                           .withMinimumWidth(glassOnScreen.getWidth()),
+    auto options = juce::PopupMenu::Options()
+                       .withTargetComponent(this)
+                       .withTargetScreenArea(glassOnScreen)
+                       .withMaximumNumColumns(1);
+
+    if (menuParent != nullptr)
+    {
+        // The list is laid out INSIDE menuHost rather than as its own desktop window. JUCE fits a
+        // menu to its parent area, so an area running from the window's bottom edge to the panel's
+        // gives both guarantees at once: the top cannot move and the height cannot exceed the
+        // panel. A bank too long to fit scrolls. See ../../CLAUDE.md, "The Program dropdown".
+        //
+        // Anchor to a 1px strip on the window's bottom EDGE, not the window. With a parent, JUCE
+        // first does constrainedWithin(parentArea), which slides the whole 25px window down into
+        // the host before measuring and opens the list 25px too low. 1px and not zero: a
+        // zero-height rectangle is isEmpty(), which drops the list out of align-to-rectangle into
+        // the sideways placement meant for submenus.
+        const juce::Rectangle<int> anchor { window.getX(), menuAnchorY() - 1, window.getWidth(), 1 };
+
+        options = options.withTargetScreenArea(localAreaToGlobal(anchor))
+                         .withParentComponent(menuParent)
+                         .withMinimumWidth(window.getWidth());
+    }
+    else
+    {
+        options = options.withMinimumWidth(glassOnScreen.getWidth());
+    }
+
+    menu.showMenuAsync(options,
                        [safeThis = juce::Component::SafePointer<ProgramHeader>(this)](int result)
                        {
                            if (safeThis == nullptr || result == 0)
