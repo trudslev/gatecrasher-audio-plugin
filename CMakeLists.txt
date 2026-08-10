@@ -89,6 +89,17 @@ juce_add_plugin(Gatecrasher
     ICON_BIG "${CMAKE_CURRENT_SOURCE_DIR}/design/assets/icon/gatecrasher-icon-1024.png"
     ICON_SMALL "${CMAKE_CURRENT_SOURCE_DIR}/design/assets/icon/gatecrasher-icon-256.png"
     BUNDLE_ID "com.neonfoundry.gatecrasher"
+    # Without this the Standalone cannot get audio INPUT on macOS, and fails silently doing it.
+    # An app with no NSMicrophoneUsageDescription is never granted capture access - the OS does not
+    # prompt and does not error, the input stream simply delivers zeros. On an effect that reads as
+    # dead metering: IN sits at -INF and OUT follows, because there is nothing to process. The
+    # meters are wired correctly; they have nothing to show.
+    #
+    # It bites this casting twice over: the sidechain KEY SOURCE has nothing to listen to either, so
+    # a gate fed from an external key reads as permanently closed. Plugin formats are unaffected -
+    # the host owns the input there.
+    MICROPHONE_PERMISSION_ENABLED TRUE
+    MICROPHONE_PERMISSION_TEXT "Gatecrasher needs audio input so the Standalone can process what you play into it."
     PLUGIN_MANUFACTURER_CODE Nfdy
     PLUGIN_CODE Gr85
     FORMATS ${GATECRASHER_FORMATS}
