@@ -42,8 +42,8 @@ struct FactoryProgram
 
 inline constexpr std::array<FactoryProgram, 17> kFactoryPrograms{ {
     // name,                algo, size, preDelay, decay, density, dampHF, dampLF, thresh, attack, hold,  release, shape, keySrc, trigHP, trigLP, slam, width, mix, trim
-    { "Intruder",           1,    0.55f, 5.0f,    0.50f, 0.55f,  0.45f,  0.30f,  -24.0f, 0.3f,   90.0f,  3.0f,   0, 0,     100.0f, 8000.0f, 2.0f,  110.0f, 70.0f, 0.0f },
     { "Air Tomorrow",       1,    0.68f, 8.0f,    0.62f, 0.60f,  0.50f,  0.32f,  -26.0f, 0.3f,   220.0f, 5.0f,   0, 0,     90.0f,  8000.0f, 6.5f,  120.0f, 78.0f, 0.0f },
+    { "Intruder",           1,    0.55f, 5.0f,    0.50f, 0.55f,  0.45f,  0.30f,  -24.0f, 0.3f,   90.0f,  3.0f,   0, 0,     100.0f, 8000.0f, 2.0f,  110.0f, 70.0f, 0.0f },
     { "Cannon",             1,    0.95f, 10.0f,   0.85f, 0.70f,  0.35f,  0.20f,  -30.0f, 0.2f,   260.0f, 8.0f,   0, 0,     60.0f,  10000.0f, 9.0f,  140.0f, 85.0f, -1.0f },
     { "Tom Thunder",        1,    0.70f, 6.0f,    0.65f, 0.55f,  0.50f,  0.25f,  -28.0f, 0.5f,   150.0f, 6.0f,   0, 0,     45.0f,  900.0f,  5.0f,  115.0f, 75.0f, 0.0f },
     { "Kick Chuff",         0,    0.30f, 0.0f,    0.30f, 0.40f,  0.70f,  0.10f,  -22.0f, 0.2f,   40.0f,  15.0f,  1, 0,     30.0f,  500.0f,  3.0f,  100.0f, 35.0f, 0.0f },
@@ -66,4 +66,10 @@ inline constexpr int kNumFactoryPrograms = (int) kFactoryPrograms.size();
 // Loaded on first launch / when no saved session state exists yet - "Air Tomorrow" is the fuller,
 // more immediately impressive version of the plugin's namesake sound, same reasoning as TapeRot
 // defaulting to "Warm Cassette" rather than a more extreme preset.
-inline constexpr int defaultFactoryProgramIndex = 1;
+//
+// It sits FIRST in the bank so that the default is also Program 01. It used to be second, which
+// meant every fresh instance opened reading "02" with nothing having selected it - the LCD implied
+// the user had scrolled somewhere, and the obvious "go back to the start" gesture landed on a
+// different sound. Which Program is the default and which is first are separable, but there is no
+// reason for them to differ, and one of the two orderings makes the panel explain itself.
+inline constexpr int defaultFactoryProgramIndex = 0;

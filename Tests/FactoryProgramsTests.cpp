@@ -66,10 +66,15 @@ public:
                 expect(names[i] != names[i - 1], names[i]);
         }
 
-        beginTest("defaultFactoryProgramIndex names \"Air Tomorrow\"");
+        beginTest("defaultFactoryProgramIndex names \"Air Tomorrow\", and it is Program 01");
         {
             expectEquals(juce::String(kFactoryPrograms[(size_t) defaultFactoryProgramIndex].name),
                          juce::String("Air Tomorrow"));
+
+            // The default has to be FIRST, not merely present. With it second, a fresh instance
+            // opened reading "02" with nothing having selected it, and the obvious "back to the
+            // start" gesture landed on a different sound.
+            expectEquals(defaultFactoryProgramIndex, 0);
         }
     }
 };
