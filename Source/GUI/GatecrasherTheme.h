@@ -67,7 +67,13 @@ namespace GatecrasherTheme
         inline const juce::Colour scopeGrid{0x1A96B4BE};       // rgba(150,180,190,.10)
         inline const juce::Colour scopeBaseline{0x3896B4BE};   // rgba(150,180,190,.22)
         inline const juce::Colour scopeInputWaveform{0x4DB2BEC5}; // rgba(178,190,197,.30)
-        inline const juce::Colour scopeAnnotation{0x8CA0B2BA};    // rgba(160,178,186,.55)
+        // **Opaque, and that alone was the fix.** This draws GATE ENV, 0 dB and -60 dB - printed
+        // scales, which BRAND.md names as functional text. At rgba(160,178,186,.55) it read
+        // 3.40:1; the same colour opaque reads 8.78, so nothing here was ever a colour choice,
+        // only a blend. CHORUS-60 deleted this exact rgba value and recorded the measurement that
+        // condemned it; the fix never crossed over.
+        // contrast: 8.78-9.20:1 vs scopeBgTop,scopeBgBottom [functional]
+        inline const juce::Colour scopeAnnotation{0xFFA0B2BA};
         inline const juce::Colour scopeFillTop{0x4DFF2B1C};    // rgba(255,43,28,.30)
         inline const juce::Colour scopeFillBottom{0x05FF2B1C}; // rgba(255,43,28,.02)
 
