@@ -151,7 +151,7 @@ explicitly **not** covered here — see the "DSP tuning" note below.
   `FactoryProgramsTests.cpp` and `CombAllpassNetwork.h`'s class comment). Build, load, listen,
   adjust.
 - **GUI asset placeholders**: the wordmark is drawn from the embedded TudorVictors typeface rather
-  than the pre-baked sprayed-stencil PNG `GATECRASHER-GUI-SPEC.md` section 8 calls for, and labels/
+  than the pre-baked sprayed-stencil PNG `GUI-SPEC.md` section 8 calls for, and labels/
   numeric readouts use JUCE's default fonts rather than Barlow Condensed / Share Tech Mono — none of
   those assets exist in `design/assets/` yet. See `prompts/PROMPTS.md` for the follow-up.
 - Gatecrasher declares an optional stereo sidechain input bus (`Trigger Source: Sidechain`) in

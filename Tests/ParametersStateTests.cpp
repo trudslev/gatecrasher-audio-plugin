@@ -36,7 +36,7 @@ public:
 
     void runTest() override
     {
-        beginTest("Defaults match GATECRASHER-GUI-SPEC.md section 9");
+        beginTest("Defaults match GUI-SPEC.md section 9");
         {
             DummyProcessor proc;
             juce::AudioProcessorValueTreeState apvts(proc, nullptr, "PARAMETERS", createGatecrasherParameterLayout());
