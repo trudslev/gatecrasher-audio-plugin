@@ -61,7 +61,7 @@ Source/
     WordmarkComponent                Baked nameplate (interim placeholder pending the real asset)
     GatecrasherEditorContent         Assembles and positions all of the above
 Tests/                   JUCE-UnitTest DSP unit tests (see BUILDING.md to run)
-design/                  GUI spec, approved reference renders, bitmap/font assets (see design/CLAUDE.md)
+design/                  GUI spec, approved reference renders, bitmap/font assets (see design/GUI-SPEC.md)
 prompts/                 Numbered work-package prompts (gitignored, local-only)
 ```
 

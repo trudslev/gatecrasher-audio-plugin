@@ -34,7 +34,7 @@ private:
     StateLabels stateLabels;
 
     // density/decay are deliberately automation-only APVTS parameters with no panel control
-    // (GATECRASHER-GUI-SPEC.md section 9) - every other parameter gets a knob here, one per entry
+    // (GUI-SPEC.md section 9) - every other parameter gets a knob here, one per entry
     // in GatecrasherTheme::Layout::knobs (which itself omits those two).
     std::array<std::unique_ptr<KnobFilmstripComponent>, GatecrasherTheme::Layout::knobs.size()> knobs;
     std::array<std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>,

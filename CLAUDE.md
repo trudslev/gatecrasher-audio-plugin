@@ -7,9 +7,11 @@ sibling casting under the shared [Neon Foundry](../BRAND.md) umbrella, read here
 structural reference (JUCE/CMake setup, APVTS conventions, DSP folder organization, Tests/
 approach, BUILDING.md shape). Read `../BRAND.md` first for the cross-plugin design system (naming,
 "Program" not "Preset", the one-accent-color-per-plugin rule, component grammar), then this file
-for Gatecrasher's own conventions and status. `design/GATECRASHER-GUI-SPEC.md` and `design/CLAUDE.md`
-remain the authoritative source for exact GUI pixel/asset detail - this file summarizes and points
-at them rather than duplicating their content.
+for Gatecrasher's own conventions and status. `design/GUI-SPEC.md` remains the authoritative source
+for exact GUI pixel/asset detail - this file summarizes and points at it rather than duplicating its
+content. It is one document now: the bundle used to carry a second `design/CLAUDE.md` summarising
+it, and that has been dropped, because a bundled copy of a repo-owned filename reads as authority
+while being a snapshot of whatever the designers held when they cut the zip.
 
 ## Commands
 
@@ -79,7 +81,7 @@ scroll-columns for Hard vs. ~16 for Soft at the same Release setting).
 `Decay` and `Density` are real APVTS parameters with no panel control - deliberately automation-only
 by design, not an oversight. (An earlier version of the approved GUI spec was also missing a
 control for `Shape`; that gap has since been resolved with a dedicated SHAPE switch, reusing the
-Key Source switch's component verbatim - see `design/GATECRASHER-GUI-SPEC.md` section 5.)
+Key Source switch's component verbatim - see `design/GUI-SPEC.md` section 5.)
 
 ### Parameters
 
@@ -202,9 +204,8 @@ It only reads properly because `Parameters.h` gives every float parameter an exp
 JUCE's default renders `-16.3999977` rather than `-16.4`. Add a float parameter without a formatter
 and it will show up seven decimals wide in the LCD, in the automation lane and in any generic editor.
 
-`design/GATECRASHER-GUI-SPEC.md` is the authoritative pixel spec and is meant to be implemented
-as-is, not redesigned; `design/CLAUDE.md` is Claude Design's handoff note summarising it. When a
-coordinate here and a coordinate there disagree, the spec wins - and measure the artwork to confirm
+`design/GUI-SPEC.md` is the authoritative pixel spec and is meant to be implemented
+as-is, not redesigned. When a coordinate here and a coordinate there disagree, the spec wins - and measure the artwork to confirm
 before assuming either. Two long-lived bugs came from not doing that: the lamp sat at (224, 95)
 instead of section 5.5's (216, 104), masked for months by a baked bulb at the correct spot, and the
 input meter kept Rev 5's (147, 133) instead of section 8's (165, 139), painting a second column of
@@ -245,8 +246,11 @@ runtime and turned out to be uncalibrated against the panel's own coordinate fra
 
 Note for asset drops: `design/assets/` is **added to, not replaced**. A wholesale replacement has
 already once deleted all 19 tracked font files (breaking the build outright, since BinaryData
-couldn't resolve them) and overwritten this file with a copy of `design/CLAUDE.md`; both were
-recovered from git.
+couldn't resolve them) and overwritten this file with a copy of the `design/CLAUDE.md` the bundles
+carried at the time; both were recovered from git. Bundles no longer ship that file — the second
+half of that failure cannot recur — but the font half still can, and did again on 2026-08-11:
+**four of the six bundles now ship no font binaries at all**, so extracting one *as* `design/`
+deletes the build's type without a word.
 
 ## Status
 

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  body { margin: 0; background: #16191c; }
+  a { color: #16191c; }
+  a:hover { color: #ff2b1c; }
+</style>
+</helmet>
+<div style="width:900px;box-sizing:border-box;padding:22px 24px 26px;font-family:'Barlow Condensed',Helvetica,Arial,sans-serif;color:#16191c;background:linear-gradient(180deg,#c6ccd0,#b0b7bb 35%,#a0a7ab)">
+  <div style="display:flex;flex-direction:column;gap:3px;margin-bottom:18px">
+    <div style="font-size:12px;font-weight:700;letter-spacing:.24em">PROGRAM BUTTONS &#183; LEGEND STATES</div>
+    <div style="font-size:10px;letter-spacing:.14em;color:#34383c">GATECRASHER GR&#8209;85 &#183; 34px HEADER ROW &#183; BACKLIT LEGENDS ON DARK CAPS</div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:14px">
+    <sc-for list="{{ cases }}" as="c" hint-placeholder-count="5">
+      <div style="display:flex;flex-direction:column;gap:9px">
+        <div style="display:flex;gap:5px">
+          <div style="display:flex;flex-direction:column;justify-content:center;gap:2px;padding:0 7px;height:34px;box-sizing:border-box;background:linear-gradient(180deg,#23282c,#14181b);border:1px solid #43494e;box-shadow:inset 0 1px 0 rgba(255,255,255,.10),inset 0 -2px 5px rgba(0,0,0,.55),0 1px 2px rgba(0,0,0,.45)">
+            <div style="font-size:10px;line-height:10px;font-weight:600;letter-spacing:.1em;text-indent:.1em;text-align:center;color:{{ c.save.ink }};text-shadow:{{ c.save.glow }}">SAVE</div>
+            <div style="font-size:10px;line-height:10px;font-weight:600;letter-spacing:.1em;text-indent:.1em;text-align:center;color:{{ c.store.ink }};text-shadow:{{ c.store.glow }}">STORE</div>
+          </div>
+          <div style="display:flex;flex-direction:column;justify-content:center;gap:2px;padding:0 7px;height:34px;box-sizing:border-box;background:linear-gradient(180deg,#23282c,#14181b);border:1px solid #43494e;box-shadow:inset 0 1px 0 rgba(255,255,255,.10),inset 0 -2px 5px rgba(0,0,0,.55),0 1px 2px rgba(0,0,0,.45)">
+            <div style="font-size:10px;line-height:10px;font-weight:600;letter-spacing:.1em;text-indent:.1em;text-align:center;color:{{ c.del.ink }};text-shadow:{{ c.del.glow }}">DELETE</div>
+            <div style="font-size:10px;line-height:10px;font-weight:600;letter-spacing:.1em;text-indent:.1em;text-align:center;color:{{ c.cancel.ink }};text-shadow:{{ c.cancel.glow }}">CANCEL</div>
+          </div>
+        </div>
+        <div style="font-size:10px;font-weight:700;letter-spacing:.13em;line-height:1.25;text-wrap:pretty">{{ c.title }}</div>
+        <div style="font-size:10px;letter-spacing:.05em;line-height:1.4;color:#34383c;text-wrap:pretty">{{ c.note }}</div>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="margin-top:22px;padding-top:14px;border-top:1px solid rgba(0,0,0,.28);box-shadow:0 -1px 0 rgba(255,255,255,.5);display:flex;flex-direction:column;gap:5px">
+    <div style="font-size:10px;letter-spacing:.05em;line-height:1.5;max-width:770px;text-wrap:pretty"><b>The legend itself lights.</b> Lit <b>#F4F8FA</b> with a 7px bloom; unlit <b>#9AA1A6</b>, no bloom. Both legends are permanently printed at 10px&#8202;/&#8202;600&#8202;/&#8202;.10em and neither moves, changes weight or changes size &#8212; the backlight is the only variable.</div>
+    <div style="font-size:10px;letter-spacing:.05em;line-height:1.5;max-width:770px;color:#34383c;text-wrap:pretty"><b>These two caps are dark because of it.</b> On the pale fascia a bright legend has nowhere brighter to go, so the cap drops to <b>#23282C&#8202;&#8594;&#8202;#14181B</b> and the legend reads as illuminated against it. Lit measures 15.9:1 on the cap, unlit 5.2:1 &#8212; well clear of the 3:1 state floor, so both dark reads as &#8220;nothing to do here&#8221;, never as a blank button. No disabled face: cap, border and inner highlight are identical in all five states.</div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:900,&quot;height&quot;:260}}">
+const LIT = { ink: "#f4f8fa", glow: "0 0 7px rgba(244,248,250,.55)" };
+const OUT = { ink: "#9aa1a6", glow: "none" };
+
+class Component extends DCLogic {
+  renderVals() {
+    const c = (save, store, del, cancel, title, note) => ({
+      save: save ? LIT : OUT, store: store ? LIT : OUT,
+      del: del ? LIT : OUT, cancel: cancel ? LIT : OUT, title, note,
+    });
+    return {
+      cases: [
+        c(0, 0, 0, 0, "FACTORY, UNMODIFIED",
+          "Nothing to save, nothing to delete. All four legends dark \u2014 still printed and readable, just unlit."),
+        c(1, 0, 0, 0, "FACTORY, EDITED",
+          "SAVE lit. Reads the same dirty flag as the LCD\u2019s trailing marker, so the two can never disagree."),
+        c(0, 0, 1, 0, "USER, UNMODIFIED",
+          "DELETE lit. SAVE stays dark until an edit exists; DELETE never lights on a Factory Program."),
+        c(1, 0, 1, 0, "USER, EDITED",
+          "Both resting functions live. SAVE still creates a new Program rather than overwriting this one."),
+        c(0, 1, 0, 1, "NAMING",
+          "The shifted pair lights and the resting pair goes dark. LCD tag reads NAME; caption reads NAME PROGRAM."),
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

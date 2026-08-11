@@ -62,28 +62,34 @@
       <div style="flex:1;min-width:0;display:flex;align-items:center;justify-content:flex-end;gap:9px">
         <div style="flex:none;display:flex;flex-direction:column;gap:4px;align-items:stretch">
           <div ref="{{ progCaptionRef }}" style="font-size:10px;font-weight:600;letter-spacing:.22em;color:#16191c">PROGRAM</div>
-          <div style="display:flex;align-items:stretch;width:330px;background:#07090a;border:1px solid #363c41;box-shadow:inset 0 2px 6px rgba(0,0,0,.9)">
+          <div style="display:flex;align-items:stretch;width:330px;height:34px;box-sizing:border-box;background:#07090a;border:1px solid #363c41;box-shadow:inset 0 2px 6px rgba(0,0,0,.9)">
             <div ref="{{ kindTagRef }}" style="flex:none;display:flex;align-items:center;padding:0 7px;border-right:1px solid #2a3035;font-family:'Share Tech Mono',monospace;font-size:13px;letter-spacing:.1em;color:#f0e0b0;text-shadow:0 0 7px rgba(240,216,150,.35)">FACT</div>
-            <div ref="{{ progTextRef }}" style="flex:1;min-width:0;overflow:hidden;padding:4px 10px;white-space:nowrap;text-align:center;font-family:'Share Tech Mono',monospace;font-size:13px;letter-spacing:.1em;color:#f0e0b0;text-shadow:0 0 7px rgba(240,216,150,.35)">14 ROOM REINFORCEMENT<span ref="{{ caretRef }}" style="display:none;margin-left:1px;color:#f0e0b0;animation:gcCaret 1s steps(1) infinite">&#9608;</span></div>
-            <div style="flex:none;display:flex;align-items:center;justify-content:center;width:30px">
+            <div ref="{{ progTextRef }}" style="flex:1;min-width:0;overflow:hidden;padding:0 6px;line-height:32px;white-space:nowrap;text-align:center;font-family:'Share Tech Mono',monospace;font-size:13px;letter-spacing:.1em;color:#f0e0b0;text-shadow:0 0 7px rgba(240,216,150,.35)">14 ROOM REINFORCEMENT<span ref="{{ caretRef }}" style="display:none;margin-left:1px;color:#f0e0b0;animation:gcCaret 1s steps(1) infinite">&#9608;</span></div>
+            <div style="flex:none;display:flex;align-items:center;justify-content:center;width:26px">
               <div style="width:6px;height:6px;margin-top:-3px;border-right:1.5px solid #f0e0b0;border-bottom:1.5px solid #f0e0b0;transform:rotate(45deg);filter:drop-shadow(0 0 5px rgba(240,216,150,.45))"></div>
             </div>
           </div>
         </div>
 
         <div style="align-self:flex-end;margin-left:-3px;display:grid;grid-template-columns:1fr 1fr;align-items:stretch;gap:5px">
-          <div ref="{{ btnARef }}" onClick="{{ onPrimary }}" style="cursor:pointer;user-select:none;display:flex;align-items:center;justify-content:center;padding:0 7px;height:24.5px;box-sizing:border-box;text-align:center;text-indent:.12em;font-size:10px;font-weight:600;letter-spacing:.1em;color:#16191c;background:linear-gradient(180deg,#dbe0e3,#aab1b6);border:1px solid #6d7478;box-shadow:inset 0 1px 0 rgba(255,255,255,.75),0 1px 2px rgba(0,0,0,.35)" style-active="box-shadow:inset 0 2px 4px rgba(0,0,0,.45);background:linear-gradient(180deg,#a9b0b5,#c9d0d4)">SAVE</div>
-          <div ref="{{ btnBRef }}" onClick="{{ onSecondary }}" style="cursor:default;user-select:none;display:flex;align-items:center;justify-content:center;padding:0 7px;height:24.5px;box-sizing:border-box;text-align:center;text-indent:.12em;font-size:10px;font-weight:600;letter-spacing:.1em;color:#262b2f;background:linear-gradient(180deg,#b4bbbf,#a3aaae);border:1px solid #8d9498;box-shadow:inset 0 2px 3px rgba(0,0,0,.28)">DELETE</div>
+          <div ref="{{ btnARef }}" onClick="{{ onPrimary }}" style="cursor:pointer;user-select:none;display:flex;flex-direction:column;justify-content:center;gap:2px;padding:0 7px;height:34px;box-sizing:border-box;background:linear-gradient(180deg,#23282c,#14181b);border:1px solid #43494e;box-shadow:inset 0 1px 0 rgba(255,255,255,.10),inset 0 -2px 5px rgba(0,0,0,.55),0 1px 2px rgba(0,0,0,.45)" style-active="box-shadow:inset 0 2px 5px rgba(0,0,0,.7);background:linear-gradient(180deg,#12161a,#20252a)">
+            <div ref="{{ legSaveRef }}" style="font-size:10px;line-height:10px;font-weight:600;letter-spacing:.1em;text-indent:.1em;text-align:center;color:#9aa1a6">SAVE</div>
+            <div ref="{{ legStoreRef }}" style="font-size:10px;line-height:10px;font-weight:600;letter-spacing:.1em;text-indent:.1em;text-align:center;color:#9aa1a6">STORE</div>
+          </div>
+          <div ref="{{ btnBRef }}" onClick="{{ onSecondary }}" style="cursor:pointer;user-select:none;display:flex;flex-direction:column;justify-content:center;gap:2px;padding:0 7px;height:34px;box-sizing:border-box;background:linear-gradient(180deg,#23282c,#14181b);border:1px solid #43494e;box-shadow:inset 0 1px 0 rgba(255,255,255,.10),inset 0 -2px 5px rgba(0,0,0,.55),0 1px 2px rgba(0,0,0,.45)" style-active="box-shadow:inset 0 2px 5px rgba(0,0,0,.7);background:linear-gradient(180deg,#12161a,#20252a)">
+            <div ref="{{ legDeleteRef }}" style="font-size:10px;line-height:10px;font-weight:600;letter-spacing:.1em;text-indent:.1em;text-align:center;color:#9aa1a6">DELETE</div>
+            <div ref="{{ legCancelRef }}" style="font-size:10px;line-height:10px;font-weight:600;letter-spacing:.1em;text-indent:.1em;text-align:center;color:#9aa1a6">CANCEL</div>
+          </div>
         </div>
 
         <div style="display:flex;gap:6px">
           <div style="display:flex;flex-direction:column;gap:4px;align-items:center">
             <div style="font-size:10px;font-weight:600;letter-spacing:.18em;color:#16191c">IN</div>
-            <div style="padding:4px 8px;background:#07090a;border:1px solid #363c41;box-shadow:inset 0 2px 6px rgba(0,0,0,.9);font-family:'Share Tech Mono',monospace;font-size:12px;color:#f0e0b0;text-shadow:0 0 6px rgba(240,216,150,.3)">-6.2</div>
+            <div style="display:flex;align-items:center;justify-content:center;padding:0 8px;height:34px;box-sizing:border-box;background:#07090a;border:1px solid #363c41;box-shadow:inset 0 2px 6px rgba(0,0,0,.9);font-family:'Share Tech Mono',monospace;font-size:12px;color:#f0e0b0;text-shadow:0 0 6px rgba(240,216,150,.3)">-6.2</div>
           </div>
           <div style="display:flex;flex-direction:column;gap:4px;align-items:center">
             <div style="font-size:10px;font-weight:600;letter-spacing:.18em;color:#16191c">OUT</div>
-            <div style="padding:4px 8px;background:#07090a;border:1px solid #363c41;box-shadow:inset 0 2px 6px rgba(0,0,0,.9);font-family:'Share Tech Mono',monospace;font-size:12px;color:#f0e0b0;text-shadow:0 0 6px rgba(240,216,150,.3)">-1.4</div>
+            <div style="display:flex;align-items:center;justify-content:center;padding:0 8px;height:34px;box-sizing:border-box;background:#07090a;border:1px solid #363c41;box-shadow:inset 0 2px 6px rgba(0,0,0,.9);font-family:'Share Tech Mono',monospace;font-size:12px;color:#f0e0b0;text-shadow:0 0 6px rgba(240,216,150,.3)">-1.4</div>
           </div>
         </div>
       </div>
@@ -339,6 +345,10 @@ class Component extends DCLogic {
     this.caretRef = React.createRef();
     this.btnARef = React.createRef();
     this.btnBRef = React.createRef();
+    this.legSaveRef = React.createRef();
+    this.legStoreRef = React.createRef();
+    this.legDeleteRef = React.createRef();
+    this.legCancelRef = React.createRef();
     this.shapeShoeRef = React.createRef();
     this.hardRef = React.createRef();
     this.softRef = React.createRef();
@@ -513,22 +523,32 @@ class Component extends DCLogic {
   }
 
   FACTORY = "01 PLATE GATE 250";
-  NAME_MAX = 24;   // + "NN " prefix = 27, the name cell's budget
+  // Name cell is 241.7px of glyph room at 13px Share Tech Mono + .1em tracking
+  // (8.32px/char): budget 29 characters, up from 27. The 34px row freed the
+  // cell's vertical padding and the caret cell narrowed 30 -> 26px.
+  // User Programs carry no index, so the cap is the budget less the " *" dirty
+  // marker: 27, up from 25. A cap may grow, never shrink.
+  NAME_MAX = 27;
 
   get kind() { return this.state.kind ?? this.props.programKind ?? "factory"; }
   get progName() { return this.state.name ?? this.FACTORY; }
 
-  btnStyle(el, enabled) {
+  // The legend itself lights, which is why these two caps are dark: on the pale
+  // fascia a bright legend has nowhere brighter to go. Lit is a neutral bright,
+  // never #ff2b1c — the accent belongs to the gate. Unlit is the same legend,
+  // dark but still printed and readable, at 5.2:1 on the cap.
+  legend(ref, lit) {
+    const el = ref.current;
     if (!el) return;
-    el.style.cursor = enabled ? "pointer" : "default";
-    el.style.color = enabled ? "#16191c" : "#262b2f";
-    el.style.background = enabled
-      ? "linear-gradient(180deg,#dbe0e3,#aab1b6)"
-      : "linear-gradient(180deg,#b4bbbf,#a3aaae)";
-    el.style.border = "1px solid " + (enabled ? "#6d7478" : "#8d9498");
-    el.style.boxShadow = enabled
-      ? "inset 0 1px 0 rgba(255,255,255,.75),0 1px 2px rgba(0,0,0,.35)"
-      : "inset 0 2px 3px rgba(0,0,0,.28)";
+    el.style.color = lit ? "#f4f8fa" : "#9aa1a6";
+    el.style.textShadow = lit ? "0 0 7px rgba(244,248,250,.55)" : "none";
+  }
+
+  // No disabled face: the cap never changes. Both legends dark reads as
+  // "nothing to do here", never as a blank button.
+  btnFace(el, live) {
+    if (!el) return;
+    el.style.cursor = live ? "pointer" : "default";
   }
 
   syncHeader() {
@@ -537,7 +557,9 @@ class Component extends DCLogic {
     const txt = this.progTextRef.current, caret = this.caretRef.current;
     if (cap) cap.textContent = naming ? "NAME PROGRAM" : "PROGRAM";
     if (tag) {
-      tag.textContent = naming || user ? "USER" : "FACT";
+      // NAME while typing: the Program isn't in the user bank until the name is
+      // committed, so USER would claim a thing that doesn't exist yet.
+      tag.textContent = naming ? "NAME" : user ? "USER" : "FACT";
       tag.style.color = "#f0e0b0";
     }
     if (txt) {
@@ -551,11 +573,15 @@ class Component extends DCLogic {
       txt.style.textAlign = naming ? "left" : "center";
     }
     if (caret) caret.style.display = naming ? "inline" : "none";
-    const a = this.btnARef.current, b = this.btnBRef.current;
-    if (a) a.textContent = naming ? "STORE" : "SAVE";
-    if (b) b.textContent = naming ? "CANCEL" : "DELETE";
-    this.btnStyle(a, naming || this.state.dirty);
-    this.btnStyle(b, naming || user);
+    // Both buttons print both legends permanently; only the backlight moves.
+    const saveLive = !naming && this.state.dirty;
+    const deleteLive = !naming && user;
+    this.legend(this.legSaveRef, saveLive);
+    this.legend(this.legStoreRef, naming);
+    this.legend(this.legDeleteRef, deleteLive);
+    this.legend(this.legCancelRef, naming);
+    this.btnFace(this.btnARef.current, naming || saveLive);
+    this.btnFace(this.btnBRef.current, naming || deleteLive);
     // an edited program shows a trailing asterisk, the way hardware marks an unsaved edit
     if (txt && !naming && !this.state.live) {
       txt.firstChild.nodeValue += this.state.dirty ? " *" : "";
@@ -602,6 +628,10 @@ class Component extends DCLogic {
       caretRef: this.caretRef,
       btnARef: this.btnARef,
       btnBRef: this.btnBRef,
+      legSaveRef: this.legSaveRef,
+      legStoreRef: this.legStoreRef,
+      legDeleteRef: this.legDeleteRef,
+      legCancelRef: this.legCancelRef,
       onPrimary: this.onPrimary,
       onToggleShape: this.onToggleShape,
       onToggleKey: this.onToggleKey,

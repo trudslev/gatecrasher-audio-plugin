@@ -3,7 +3,7 @@
 #include "../PluginProcessor.h"
 #include <juce_gui_basics/juce_gui_basics.h>
 
-// The GATE OPEN lamp + its label (GATECRASHER-GUI-SPEC.md section 5) - the plugin's one dedicated
+// The GATE OPEN lamp + its label (GUI-SPEC.md section 5) - the plugin's one dedicated
 // live-state LED per BRAND.md's component grammar. Polls processor.isGateOpen() on a ~60fps Timer
 // rather than reading it once, since it's not an APVTS parameter.
 //

@@ -7,7 +7,7 @@
 
 #include <vector>
 
-// The program section (GATECRASHER-GUI-SPEC.md section 6). The static panel background already
+// The program section (GUI-SPEC.md section 6). The static panel background already
 // bakes in the LED window frame and the PROGRAM caption at their correct panel-local position, so
 // this component only needs to redraw the parts that are genuinely dynamic: the FACT/USER tag, the
 // program name (or the in-progress typed name + blinking caret), the SAVE/DELETE (STORE/CANCEL)
@@ -31,7 +31,7 @@
 // getCurrentProgram()/getProgramName()/isFactoryProgram() on a timer to stay in sync with
 // host-driven program changes, same pattern as TapeRot's PresetStrip.
 //
-// DELIBERATE ADDITION beyond GATECRASHER-GUI-SPEC.md section 6: clicking the program name cell opens
+// DELIBERATE ADDITION beyond GUI-SPEC.md section 6: clicking the program name cell opens
 // a menu of all programs (factory and user, current one ticked). The spec's section 6 defines the
 // name cell as a pure readout and its Behaviour subsection covers only idle / SAVE / name-entry /
 // DELETE - it specifies no program-browsing control anywhere on the panel, and the reference mockup

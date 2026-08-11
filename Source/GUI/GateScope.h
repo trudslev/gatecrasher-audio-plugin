@@ -4,7 +4,7 @@
 #include <juce_gui_basics/juce_gui_basics.h>
 #include <array>
 
-// The gate envelope oscilloscope - the product's centrepiece (GATECRASHER-GUI-SPEC.md section 5,
+// The gate envelope oscilloscope - the product's centrepiece (GUI-SPEC.md section 5,
 // "10. What matters most" #1). Fully code-drawn: polls processor.getGateEnvelope()/getTriggerLevel()
 // on a ~60fps Timer and accumulates its own local scrolling-history ring buffer, since
 // PluginProcessor deliberately doesn't maintain a shared one (see the comment on those getters in

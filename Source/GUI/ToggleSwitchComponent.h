@@ -3,7 +3,7 @@
 #include <juce_gui_basics/juce_gui_basics.h>
 
 // Generic 2-position slide switch, reused for both KEY SOURCE (Internal/Sidechain) and SHAPE
-// (Hard/Soft) per GATECRASHER-GUI-SPEC.md section 5's "reuses the KEY SOURCE switch verbatim".
+// (Hard/Soft) per GUI-SPEC.md section 5's "reuses the KEY SOURCE switch verbatim".
 // Visually a simple 2-position slide like TapeRot's ToggleSwitch; electrically it binds like
 // TapeRot's NoiseCharacterSwitch - both keySource and shape are AudioParameterChoice (2 choices),
 // not bool, so this subclasses juce::Slider (range 0..1, step 1) rather than juce::Button, for

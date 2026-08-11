@@ -251,7 +251,7 @@ inline juce::AudioProcessorValueTreeState::ParameterLayout createGatecrasherPara
         juce::ParameterID{ParamIDs::decay, 1}, "Decay",
         juce::NormalisableRange<float>(0.0f, 1.0f), 0.6f, normAttrs));
 
-    // Density: no panel control by design - automation-only (GATECRASHER-GUI-SPEC.md §9).
+    // Density: no panel control by design - automation-only (GUI-SPEC.md §9).
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         juce::ParameterID{ParamIDs::density, 1}, "Density",
         juce::NormalisableRange<float>(0.0f, 1.0f), 0.6f, normAttrs));

@@ -6,7 +6,7 @@ namespace
 {
     // SOFT's pow(1 - t, 2.2) release curve is specced to visually read as roughly 5x longer than
     // HARD's linear cliff at the same nominal Release setting (~16 scope columns vs ~3, see
-    // GATECRASHER-GUI-SPEC.md section 5) - so Soft scales the effective release duration as well
+    // GUI-SPEC.md section 5) - so Soft scales the effective release duration as well
     // as curving it, rather than just curving the same duration.
     constexpr float softReleaseDurationMultiplier = 5.0f;
     constexpr float softReleaseCurveExponent = 2.2f;

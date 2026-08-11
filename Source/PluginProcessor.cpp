@@ -161,7 +161,7 @@ void GatecrasherAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, j
     outputMixStage.process(mainIO, dryBuffer, mixParam->load(), trimParam->load());
 
     // Input meter ballistics: fast attack, slow release (~0.12 release coefficient, per
-    // GATECRASHER-GUI-SPEC.md section 7), tracked off the dry input - deliberately independent of
+    // GUI-SPEC.md section 7), tracked off the dry input - deliberately independent of
     // TriggerDetector's own much faster ballistics, which exist to make accurate gate decisions,
     // not to look good on a meter.
     float peak = 0.0f;

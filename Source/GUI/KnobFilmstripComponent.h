@@ -5,7 +5,7 @@
 
 // A knob rendered from a 128-frame bitmap filmstrip (design/assets/knob_large_128px_128f.png /
 // knob_small_128px_128f.png) rather than code-drawn - the deliberate GUI divergence from TapeRot's
-// SmallKnob, see design/CLAUDE.md. Subclasses juce::Slider purely for its click/drag-to-value
+// SmallKnob, see design/GUI-SPEC.md. Subclasses juce::Slider purely for its click/drag-to-value
 // mapping and SliderAttachment compatibility, but paint() fully replaces the default look -
 // LookAndFeel::drawRotarySlider is never invoked.
 //

@@ -5,7 +5,7 @@
 #include <array>
 #include <cmath>
 
-// Centralises every pixel constant from design/GATECRASHER-GUI-SPEC.md (palette, coordinates,
+// Centralises every pixel constant from design/GUI-SPEC.md (palette, coordinates,
 // filmstrip contract) in one place, mirroring TapeRotTheme.h's role for TapeRot - components pull
 // from GatecrasherTheme::Colour/Layout rather than hardcoding numbers. Unlike TapeRotTheme, most of
 // the fascia here is a static bitmap (see GatecrasherPanelBackground) rather than code-drawn, so
@@ -114,7 +114,7 @@ namespace GatecrasherTheme
         inline const juce::Colour buttonDisabledLabel{0xFF55595C};
     }
 
-    // The knob filmstrips ship in two skirt styles (see design/CLAUDE.md's asset list) -
+    // The knob filmstrips ship in two skirt styles (see design/GUI-SPEC.md's asset list) -
     // which one a given knob uses is part of its identity in the section 3 coordinate table.
     enum class KnobFilmstripSize { large, small };
 
@@ -507,7 +507,7 @@ namespace GatecrasherTheme
     }
 
     // Barlow Condensed SemiBold (600, labels) / Bold (700, lamp/group-title text) and Share Tech
-    // Mono Regular (numeric/LED readouts), per GATECRASHER-GUI-SPEC.md section 2. Loaded once per
+    // Mono Regular (numeric/LED readouts), per GUI-SPEC.md section 2. Loaded once per
     // process via function-local statics, same caching pattern as tudorVictorsTypeface() below.
     inline juce::Typeface::Ptr barlowSemiBoldTypeface()
     {
