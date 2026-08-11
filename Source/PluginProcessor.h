@@ -35,10 +35,36 @@ public:
     // that use it for freeze/bounce trailing-silence purposes, not a literal measured RT60.
     double getTailLengthSeconds() const override { return 10.0; }
 
+    //==============================================================================
+    /** **The host adapter - the ONLY place a Program is addressed by position.**
+
+        Everything else identifies a Program by ProgramId; these four exist because the JUCE API is
+        positional, and they translate at the boundary.
+
+        **The list is the Factory bank and nothing else** - not INIT, not User Programs. That is a
+        conformance requirement: juce_AudioProcessor.h documents getNumPrograms as "The value
+        returned must be valid as soon as this object is created, and must not change over its
+        lifetime", and a count including User Programs changed the moment one was saved.
+
+        Before anyone makes the count dynamic again: JUCE's VST3 wrapper builds the automatable
+        Program parameter ONCE in its constructor from this value, so a Program saved afterwards was
+        unreachable from the host and a deleted one left the range overrunning the list. That was
+        the API keeping its documented promise, not a bug to work around.
+
+        Excluding INIT too means host index n IS Factory Program n+1.
+
+        **Accepted divergence.** getCurrentProgram must answer with SOME factory position while a
+        User Program is loaded, and answers 0 - so a host's menu shows a Factory name while the
+        panel shows the user's Program. Sound and panel are both correct; only the host's own menu
+        is wrong, and that is the format's limitation. */
     int getNumPrograms() override { return programManager.getNumPrograms(); }
-    int getCurrentProgram() override { return programManager.getCurrentProgram(); }
-    void setCurrentProgram(int index) override { programManager.requestProgramChange(index); }
+    int getCurrentProgram() override { return programManager.getCurrentFactoryPosition(); }
+    void setCurrentProgram(int index) override;
     const juce::String getProgramName(int index) override { return programManager.getProgramName(index); }
+    /** Deliberately a no-op, and this comment is the point of it: with Factory-only exposure there
+        is nothing on the host's list that can be renamed - Factory names are fixed and User
+        Programs are not exposed. Implementing it would be a back door into the Factory bank, which
+        is what the permanent slugs exist to prevent. */
     void changeProgramName(int, const juce::String&) override {}
 
     void getStateInformation(juce::MemoryBlock& destData) override;
@@ -48,14 +74,15 @@ public:
     // entries in kFactoryPrograms; user programs (indices [kNumFactoryPrograms, getNumPrograms()))
     // are files in ProgramManager's program directory. "Save" is never in-place for a factory
     // program, and never overwrites an existing user program either - it always creates a new one.
-    bool isFactoryProgram(int index) const noexcept { return programManager.isFactoryProgram(index); }
+    /** The Program model. The panel talks to this directly, in ProgramIds - the four positional
+        overrides above are the host's boundary and nothing else crosses it. */
+    ProgramManager& getProgramManager() noexcept { return programManager; }
 
-    /** The numbered form the LCD and the dropdown show. getProgramName above stays raw because it
-        is the AudioProcessor override the HOST reads, and a host renders its own numbering. */
-    juce::String getProgramDisplayName(int index) const { return programManager.getProgramDisplayName(index); }
+    /** Clears the stale-replay guard. Called from the editor when a change is USER-originated. */
+    void noteUserEdit() noexcept { justRestoredState.store(false, std::memory_order_relaxed); }
     bool isCurrentProgramModified() const { return programManager.isModifiedFromLoadedProgram(); }
     void saveNewUserProgram(const juce::String& name) { programManager.saveNewUserProgram(name); }
-    void deleteUserProgram(int index) { programManager.deleteUserProgram(index); }
+    void deleteUserProgram(const ProgramId& id) { programManager.deleteUserProgram(id); }
 
     juce::AudioProcessorValueTreeState apvts;
 
@@ -70,6 +97,16 @@ public:
     float getTriggerLevel() const noexcept { return triggerLevelDisplay.load(std::memory_order_relaxed); }
 
 private:
+    /** **Guards a host replaying a stale program index over a just-restored session.** Hosts have
+        been observed calling setCurrentProgram AFTER setStateInformation, echoing back the
+        presetNumber they remembered - which would apply a Factory Program over what was restored.
+
+        Armed by setStateInformation, disarmed by the first setCurrentProgram (itself ignored only
+        when it matches what getCurrentProgram already reports - the shape of a replay) or by the
+        first USER-originated edit via noteUserEdit. **Automation must not disarm it**: a host may
+        write automation on load before replaying, and that would reopen the hole. */
+    std::atomic<bool> justRestoredState { false };
+
     ProgramManager programManager;
 
     std::atomic<float>* thresholdParam = nullptr;

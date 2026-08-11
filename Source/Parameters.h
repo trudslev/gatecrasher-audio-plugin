@@ -1,5 +1,7 @@
 #pragma once
 
+#include "DSP/FactoryPrograms.h"
+
 #include <juce_audio_processors/juce_audio_processors.h>
 
 namespace ParamIDs
@@ -54,7 +56,43 @@ namespace LegacyMigration
     // Written into getStateInformation's XML root; setStateInformation checks it and remaps legacy
     // values before restoring.
     constexpr auto stateSchemaVersionAttribute = "gatecrasherStateSchemaVersion";
-    constexpr int currentStateSchemaVersion = 2;
+    constexpr int currentStateSchemaVersion = 3;
+
+    /** The schema at which the session stopped storing a positional index and started storing bank
+        + identifier. Sessions at or above this carry the three attributes below; older ones carry
+        "gatecrasherCurrentProgramIndex" and are mapped through the current bank on restore. */
+    constexpr int identitySchemaVersion = 3;
+
+    /** **The identity attributes, and they are a contract.** Rename one and the session still
+        parses while the Program silently reverts, with no error anywhere.
+
+        `...ProgramName` is DISPLAY ONLY - it exists so an unresolved identifier can still be named
+        on the panel, since a factory slug is not presentable. It never resolves anything. */
+    constexpr auto programBankAttribute = "gatecrasherProgramBank";
+    constexpr auto programIdAttribute   = "gatecrasherProgramId";
+    constexpr auto programNameAttribute = "gatecrasherProgramName";
+
+    inline juce::String bankAttributeValue (ProgramBank bank)
+    {
+        switch (bank)
+        {
+            case ProgramBank::init:       return "init";
+            case ProgramBank::factory:    return "factory";
+            case ProgramBank::user:       return "user";
+            case ProgramBank::unresolved: return "unresolved";
+        }
+
+        return "factory";
+    }
+
+    inline ProgramBank bankFromAttribute (const juce::String& value)
+    {
+        if (value == "init")       return ProgramBank::init;
+        if (value == "user")       return ProgramBank::user;
+        if (value == "unresolved") return ProgramBank::unresolved;
+
+        return ProgramBank::factory;
+    }
 
     // v1 -> v2: the Algorithm choice list was reordered to match the panel. It used to be declared
     // Room, Plate, Chamber, Ambience, which put all four labels on the wrong detent and rendered
@@ -71,9 +109,18 @@ namespace LegacyMigration
     /** Free function rather than a processor method so it is unit-testable against a synthetic
         XmlElement, without needing the plugin target's JucePlugin_* macros - the same shape as
         TapeRot's remapLegacyModelIndexIfNeeded. */
+    /** **Gated on the version this migration belongs to, NOT on the current one.**
+
+        It read `>= currentStateSchemaVersion` and worked only for as long as the schema stayed at
+        2. Bumping it to 3 for the identity change immediately re-armed this hop for schema-2
+        sessions, rotating the algorithm a second time on every load - a session saved on Plate
+        reopening on Chamber, silently. The v1->v2 remap applies to v1 sessions and to nothing else,
+        and now says so. */
     inline void remapLegacyAlgorithmIfNeeded(juce::XmlElement& xml)
     {
-        if (xml.getIntAttribute(stateSchemaVersionAttribute, 1) >= currentStateSchemaVersion)
+        constexpr int algorithmRemapAppliesBelow = 2;
+
+        if (xml.getIntAttribute(stateSchemaVersionAttribute, 1) >= algorithmRemapAppliesBelow)
             return;
 
         for (int i = 0; i < xml.getNumChildElements(); ++i)

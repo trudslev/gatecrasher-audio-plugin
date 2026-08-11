@@ -196,6 +196,20 @@ juce::AudioProcessorEditor* GatecrasherAudioProcessor::createEditor()
     return new GatecrasherAudioProcessorEditor(*this);
 }
 
+void GatecrasherAudioProcessor::setCurrentProgram(int index)
+{
+    if (! juce::isPositiveAndBelow(index, programManager.getNumPrograms()))
+        return;
+
+    // The stale-replay guard, disarmed by this call whether or not it is honoured. A replay carries
+    // the position we last reported, so a matching index right after a restore is ignored; anything
+    // else, and every later call, applies normally.
+    if (justRestoredState.exchange(false, std::memory_order_relaxed) && index == getCurrentProgram())
+        return;
+
+    programManager.requestProgramChange(ProgramManager::factoryIdAt(index));
+}
+
 void GatecrasherAudioProcessor::getStateInformation(juce::MemoryBlock& destData)
 {
     auto state = apvts.copyState();
@@ -204,7 +218,13 @@ void GatecrasherAudioProcessor::getStateInformation(juce::MemoryBlock& destData)
     // Sticky display metadata only - restored clamped/defaulted below, never re-validated against
     // the session's actual knob values (a session saved after tweaking a loaded program still
     // remembers which program it was tweaked from, even though it was never itself Saved).
-    xml->setAttribute("gatecrasherCurrentProgramIndex", programManager.getCurrentProgram());
+    // **The bank, the identifier, and the full parameter state.** The values are what makes the
+    // session sound right; the identity only decides what the panel CALLS them - so whatever
+    // happens to the bank between versions, a session restores its sound and at worst loses a name.
+    const auto id = programManager.getCurrentProgramId();
+    xml->setAttribute(LegacyMigration::programBankAttribute, LegacyMigration::bankAttributeValue(id.bank));
+    xml->setAttribute(LegacyMigration::programIdAttribute, id.id);
+    xml->setAttribute(LegacyMigration::programNameAttribute, id.displayName);
     copyXmlToBinary(*xml, destData);
 }
 
@@ -221,21 +241,38 @@ void GatecrasherAudioProcessor::setStateInformation(const void* data, int sizeIn
 
             apvts.replaceState(juce::ValueTree::fromXml(*xml));
 
-            const int savedProgramIndex =
-                xml->getIntAttribute("gatecrasherCurrentProgramIndex", defaultFactoryProgramIndex);
+            const int savedSchema =
+                xml->getIntAttribute(LegacyMigration::stateSchemaVersionAttribute, 1);
+            ProgramId restored;
 
-            // INIT is a valid remembered Program and is NOT isPositiveAndBelow, so it is admitted
-            // explicitly rather than by widening the check - which would also admit every other
-            // negative index. **No migration is needed here**: INIT was ADDED at -1 rather than
-            // inserted at 0, so not one existing Factory index moved and every session saved before
-            // today still names the sound it was saved with. That is the whole point of putting it
-            // outside the bank - see TapeRot, where Init had to be lifted OUT of the numbered bank
-            // and needed a schema hop to remap every index by one.
-            const bool valid = ProgramManager::isInitProgram(savedProgramIndex)
-                               || juce::isPositiveAndBelow(savedProgramIndex, programManager.getNumPrograms());
+            if (savedSchema >= LegacyMigration::identitySchemaVersion)
+            {
+                restored = programManager.resolve(
+                    LegacyMigration::bankFromAttribute(
+                        xml->getStringAttribute(LegacyMigration::programBankAttribute)),
+                    xml->getStringAttribute(LegacyMigration::programIdAttribute),
+                    xml->getStringAttribute(LegacyMigration::programNameAttribute));
+            }
+            else
+            {
+                // Older sessions stored a position. Map it through the CURRENT bank - correct here
+                // because nothing has shipped and the bank has not moved.
+                const int savedIndex =
+                    xml->getIntAttribute("gatecrasherCurrentProgramIndex", defaultFactoryProgramIndex);
 
-            programManager.setCurrentProgramIndexWithoutApplying(
-                valid ? savedProgramIndex : defaultFactoryProgramIndex);
+                if (savedIndex == -1)
+                    restored = ProgramManager::initId();
+                else if (juce::isPositiveAndBelow(savedIndex, kNumFactoryPrograms))
+                    restored = ProgramManager::factoryIdAt(savedIndex);
+                else
+                    restored = ProgramManager::factoryIdAt(defaultFactoryProgramIndex);
+            }
+
+            programManager.setCurrentProgramWithoutApplying(restored);
+
+            // **Armed AFTER replaceState**, or the restore's own parameter writes would look like
+            // activity and disarm it immediately.
+            justRestoredState.store(true, std::memory_order_relaxed);
         }
 }
 

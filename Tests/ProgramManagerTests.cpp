@@ -1,4 +1,6 @@
 #include "TestUtils.h"
+
+#include <set>
 #include "../Source/DSP/ProgramManager.h"
 #include "../Source/Parameters.h"
 #include <juce_audio_processors/juce_audio_processors.h>
@@ -41,50 +43,97 @@ public:
 
     void runTest() override
     {
-        beginTest("isFactoryProgram is true for [0, kNumFactoryPrograms) and false outside it");
+        beginTest("Factory slugs are unique, non-empty and pinned as literals");
         {
-            DummyProcessor proc;
-            juce::AudioProcessorValueTreeState apvts(proc, nullptr, "PARAMETERS", createGatecrasherParameterLayout());
-            ProgramManager manager(apvts);
+            std::set<juce::String> slugs;
 
-            expect(! manager.isFactoryProgram(-1));
-            expect(manager.isFactoryProgram(0));
-            expect(manager.isFactoryProgram(kNumFactoryPrograms - 1));
-            expect(! manager.isFactoryProgram(kNumFactoryPrograms));
+            for (const auto& fp : kFactoryPrograms)
+            {
+                const juce::String slug { fp.slug };
+                expect(slug.isNotEmpty(), juce::String(fp.name) + " has no slug");
+                expect(slugs.insert(slug).second, "duplicate slug: " + slug);
+                expect(! slug.containsChar(' '), "slug must be filename- and XML-safe: " + slug);
+            }
+
+            expectEquals((int) slugs.size(), (int) kFactoryPrograms.size());
+
+            // **Literals on purpose.** The display name above a slug may be revised freely; the slug
+            // may not, because it is what a saved session stores. Asserted through the struct this
+            // would follow a rename silently and prove nothing.
+            expect(juce::String(kFactoryPrograms[0].slug) == "air-tomorrow");
+            expect(juce::String(kInitProgram.slug) == "init");
         }
 
-        beginTest("getProgramName returns the factory table's names before any user programs exist");
+        beginTest("Every factory position round-trips through identity");
         {
             DummyProcessor proc;
             juce::AudioProcessorValueTreeState apvts(proc, nullptr, "PARAMETERS", createGatecrasherParameterLayout());
             ProgramManager manager(apvts);
 
             for (int i = 0; i < kNumFactoryPrograms; ++i)
+            {
+                const auto id = ProgramManager::factoryIdAt(i);
+                expectEquals(ProgramManager::factoryPositionOf(id.id), i);
                 expectEquals(manager.getProgramName(i), juce::String(kFactoryPrograms[(size_t) i].name));
 
-            expectEquals(manager.getNumPrograms(), kNumFactoryPrograms);
+                // Host index n IS Factory Program n+1 - the alignment excluding INIT buys.
+                expect(manager.displayLabelFor(id).startsWith(juce::String(i + 1).paddedLeft('0', 2)));
+            }
         }
 
-        beginTest("getCurrentProgram() defaults to defaultFactoryProgramIndex before initialise()");
+        beginTest("The host list is the Factory bank, and INIT is not on it");
         {
             DummyProcessor proc;
             juce::AudioProcessorValueTreeState apvts(proc, nullptr, "PARAMETERS", createGatecrasherParameterLayout());
             ProgramManager manager(apvts);
 
-            expectEquals(manager.getCurrentProgram(), defaultFactoryProgramIndex);
+            expectEquals(manager.getNumPrograms(), kNumFactoryPrograms);
+
+            // juce_AudioProcessor.h: the value "must not change over its lifetime". The bank is a
+            // compile-time array, so the only thing that could have changed it was counting user
+            // files - which this no longer does.
+            expect(manager.getProgramName(kNumFactoryPrograms).isEmpty(),
+                   "nothing beyond the Factory bank may be addressable by position");
         }
 
-        beginTest("setCurrentProgramIndexWithoutApplying updates getCurrentProgram() without touching APVTS");
+        beginTest("The current Program defaults to the default Factory Program");
+        {
+            DummyProcessor proc;
+            juce::AudioProcessorValueTreeState apvts(proc, nullptr, "PARAMETERS", createGatecrasherParameterLayout());
+            ProgramManager manager(apvts);
+
+            expect(manager.getCurrentProgramId() == ProgramManager::factoryIdAt(defaultFactoryProgramIndex));
+            expectEquals(manager.getCurrentFactoryPosition(), defaultFactoryProgramIndex);
+        }
+
+        beginTest("setCurrentProgramWithoutApplying moves the identity without touching the APVTS");
         {
             DummyProcessor proc;
             juce::AudioProcessorValueTreeState apvts(proc, nullptr, "PARAMETERS", createGatecrasherParameterLayout());
             ProgramManager manager(apvts);
 
             const float thresholdBefore = *apvts.getRawParameterValue(ParamIDs::threshold);
-            manager.setCurrentProgramIndexWithoutApplying(5);
+            manager.setCurrentProgramWithoutApplying(ProgramManager::factoryIdAt(5));
 
-            expectEquals(manager.getCurrentProgram(), 5);
+            expect(manager.getCurrentProgramId() == ProgramManager::factoryIdAt(5));
             expectWithinAbsoluteError((float) *apvts.getRawParameterValue(ParamIDs::threshold), thresholdBefore, 1.0e-6f);
+        }
+
+        beginTest("An unresolved identifier keeps its name for display and resolves to nothing");
+        {
+            DummyProcessor proc;
+            juce::AudioProcessorValueTreeState apvts(proc, nullptr, "PARAMETERS", createGatecrasherParameterLayout());
+            ProgramManager manager(apvts);
+
+            const auto id = manager.resolve(ProgramBank::factory, "a-program-from-the-future",
+                                             "SOME FUTURE SOUND");
+
+            expect(id.bank == ProgramBank::unresolved);
+            expect(id.displayName == "SOME FUTURE SOUND",
+                   "the panel needs a presentable name - a slug would read as a rendering fault");
+
+            // And the label must not acquire a number: it is in no bank, so it has no position.
+            expect(manager.displayLabelFor(id) == "SOME FUTURE SOUND");
         }
     }
 };

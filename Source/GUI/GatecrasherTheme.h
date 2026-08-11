@@ -407,7 +407,7 @@ namespace GatecrasherTheme
         constexpr float algoLabelLeftX = 627.0f, algoLabelRightX = 746.0f;
         constexpr float algoLabelTopCentreY = 133.0f, algoLabelBottomCentreY = 198.5f;
 
-        constexpr int maxProgramNameLength = 24; // mirrors ProgramManager::maxProgramNameLength
+        constexpr int maxProgramNameLength = 25; // mirrors ProgramManager::maxProgramNameLength
 
         // Section 6.3: the live value reverts to the program name "~800 ms after the gesture ends".
         constexpr int lcdRevertMs = 800;

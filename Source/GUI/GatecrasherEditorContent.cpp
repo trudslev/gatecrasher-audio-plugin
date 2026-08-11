@@ -71,10 +71,17 @@ GatecrasherEditorContent::GatecrasherEditorContent(GatecrasherAudioProcessor& p)
         // whichever parameter was written last and flickers for the length of a song.
         auto* rawKnob = knob.get();
         const juce::String paramID(spec.paramID);
+        // The same guard disarms the processor's stale-replay flag, because this is the only place
+        // that knows a change came from a PERSON. It deliberately does not fire for automation: a
+        // host may write automation on session load before replaying its remembered program index,
+        // and disarming there would let that replay land on the restored state.
         knob->onValueChange = [this, rawKnob, paramID]
         {
             if (rawKnob->isMouseButtonDown())
+            {
+                processorRef.noteUserEdit();
                 programHeader.showParameter(paramID);
+            }
         };
         knob->onDragEnd = [this] { programHeader.releaseParameter(); };
 

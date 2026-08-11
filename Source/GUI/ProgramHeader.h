@@ -5,6 +5,8 @@
 #include "GatecrasherTheme.h"
 #include <juce_gui_basics/juce_gui_basics.h>
 
+#include <vector>
+
 // The program section (GATECRASHER-GUI-SPEC.md section 6). The static panel background already
 // bakes in the LED window frame and the PROGRAM caption at their correct panel-local position, so
 // this component only needs to redraw the parts that are genuinely dynamic: the FACT/USER tag, the
@@ -130,11 +132,14 @@ private:
     juce::String editingParamID;
     juce::uint32 revertAtMs = 0;
 
-    // -2, not -1: -1 is INIT's index now, so it can no longer double as "nothing cached yet".
-    int displayedProgramIndex = -2;
-    juce::String displayedProgramName;
-    bool displayedIsFactory = true;
-    bool displayedIsInit = false;
+    /** The Program the panel is currently showing, mirrored so the 20 Hz poll only repaints when
+        something actually changed. An identity, not a position - so a bank that changed underneath
+        cannot make this name the wrong sound. */
+    ProgramId displayedId;
+
+    /** The Programs the open menu was built from, in row order. The callback indexes this rather
+        than reconstructing a Program from a number. */
+    std::vector<ProgramId> menuRows;
 
     // Polled alongside the program index rather than queried straight from the processor inside
     // paint()/isButtonEnabled(): it changes on any parameter move, from the GUI or from host

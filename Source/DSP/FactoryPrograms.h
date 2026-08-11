@@ -1,5 +1,7 @@
 #pragma once
 
+#include <juce_core/juce_core.h>
+
 #include <array>
 
 // Flat POD table of the 17 factory programs, one field per APVTS parameter. Plain int indices
@@ -10,8 +12,47 @@
 // Values here are a first, structurally-plausible pass matching each program's intended function
 // (see the plan / prompts/PROMPTS.md) - not yet tuned by ear against the real DSP. Same status as
 // TapeRot's factory presets before their own by-ear pass: audition each, adjust, done.
+/** Which list a Program belongs to. INIT is its own bank rather than a magic index, because it is
+    in neither of the other two. `unresolved` is a stored identifier that no longer names anything -
+    a Factory Program dropped in a later version, or a deleted user file. */
+enum class ProgramBank
+{
+    init,
+    factory,
+    user,
+    unresolved
+};
+
+/** **How a Program is identified everywhere except the host adapter.**
+
+    Not a position. Positions change when the bank is reordered or extended, so a stored position is
+    a name that stops meaning the same thing.
+
+    - `factory`    - `id` is the entry's permanent `FactoryProgram::slug`.
+    - `user`       - `id` is the file's stem, which is also its displayed name.
+    - `init`       - `id` is `"init"`.
+    - `unresolved` - `id` is what failed to resolve; `displayName` is what the panel paints.
+
+    `displayName` is carried because a factory slug is not presentable - "air-tomorrow?" in the LCD
+    would read as a rendering fault. It is display only and never resolves anything. */
+struct ProgramId
+{
+    ProgramBank bank = ProgramBank::factory;
+    juce::String id;
+    juce::String displayName;
+
+    bool operator== (const ProgramId& o) const noexcept { return bank == o.bank && id == o.id; }
+    bool operator!= (const ProgramId& o) const noexcept { return ! operator== (o); }
+};
+
 struct FactoryProgram
 {
+    /** **The permanent identity, fixed at creation and never changed again.** `name` is a label the
+        designers may revise; `slug` may not be, because it is what a saved session stores and what
+        resolves back to this entry. Renaming the Program is free; renaming the slug orphans every
+        session that referenced it. */
+    const char* slug;
+
     const char* name;
 
     // Reverb section
@@ -42,23 +83,23 @@ struct FactoryProgram
 
 inline constexpr std::array<FactoryProgram, 17> kFactoryPrograms{ {
     // name,                algo, size, preDelay, decay, density, dampHF, dampLF, thresh, attack, hold,  release, shape, keySrc, trigHP, trigLP, slam, width, mix, trim
-    { "Air Tomorrow",       1,    0.68f, 8.0f,    0.62f, 0.60f,  0.50f,  0.32f,  -26.0f, 0.3f,   220.0f, 5.0f,   0, 0,     90.0f,  8000.0f, 6.5f,  120.0f, 78.0f, 0.0f },
-    { "Intruder",           1,    0.55f, 5.0f,    0.50f, 0.55f,  0.45f,  0.30f,  -24.0f, 0.3f,   90.0f,  3.0f,   0, 0,     100.0f, 8000.0f, 2.0f,  110.0f, 70.0f, 0.0f },
-    { "Cannon",             1,    0.95f, 10.0f,   0.85f, 0.70f,  0.35f,  0.20f,  -30.0f, 0.2f,   260.0f, 8.0f,   0, 0,     60.0f,  10000.0f, 9.0f,  140.0f, 85.0f, -1.0f },
-    { "Tom Thunder",        1,    0.70f, 6.0f,    0.65f, 0.55f,  0.50f,  0.25f,  -28.0f, 0.5f,   150.0f, 6.0f,   0, 0,     45.0f,  900.0f,  5.0f,  115.0f, 75.0f, 0.0f },
-    { "Kick Chuff",         0,    0.30f, 0.0f,    0.30f, 0.40f,  0.70f,  0.10f,  -22.0f, 0.2f,   40.0f,  15.0f,  1, 0,     30.0f,  500.0f,  3.0f,  100.0f, 35.0f, 0.0f },
-    { "Drum Bus Gate",      1,    0.75f, 4.0f,    0.60f, 0.60f,  0.45f,  0.30f,  -20.0f, 0.3f,   180.0f, 10.0f,  0, 1,     80.0f,  12000.0f, 4.0f,  120.0f, 80.0f, 0.0f },
-    { "Vocal Chop",         2,    0.50f, 3.0f,    0.50f, 0.65f,  0.40f,  0.35f,  -26.0f, 0.15f,  60.0f,  4.0f,   0, 0,     150.0f, 6000.0f, 3.0f,  110.0f, 60.0f, 0.0f },
-    { "Radio Announcer",    0,    0.25f, 0.0f,    0.30f, 0.40f,  0.55f,  0.40f,  -32.0f, 0.4f,   100.0f, 20.0f,  1, 0,     120.0f, 5000.0f, 1.0f,  100.0f, 30.0f, 0.0f },
-    { "Synth Stab",         2,    0.55f, 2.0f,    0.55f, 0.92f,  0.40f,  0.30f,  -24.0f, 0.1f,   80.0f,  5.0f,   0, 0,     100.0f, 9000.0f, 5.0f,  130.0f, 65.0f, 0.0f },
-    { "Arp Gate",           3,    0.40f, 0.0f,    0.40f, 0.50f,  0.50f,  0.35f,  -18.0f, 0.1f,   15.0f,  2.0f,   0, 0,     200.0f, 6000.0f, 2.0f,  120.0f, 55.0f, 0.0f },
-    { "Neon Pad Swell",     3,    0.80f, 90.0f,   0.70f, 0.65f,  0.45f,  0.30f,  -28.0f, 2.0f,   300.0f, 60.0f,  1, 0,     100.0f, 6000.0f, 3.0f,  150.0f, 70.0f, 0.0f },
-    { "Power Chord Gate",   1,    0.50f, 2.0f,    0.45f, 0.50f,  0.50f,  0.35f,  -22.0f, 0.2f,   70.0f,  8.0f,   0, 1,     150.0f, 4000.0f, 4.0f,  110.0f, 55.0f, 0.0f },
-    { "Solo Ambience",      3,    0.60f, 15.0f,   0.55f, 0.55f,  0.50f,  0.30f,  -30.0f, 0.6f,   130.0f, 25.0f,  1, 0,     90.0f,  7000.0f, 1.5f,  125.0f, 45.0f, 0.0f },
-    { "Room Reinforcement", 1,    0.45f, 5.0f,    0.40f, 0.50f,  0.50f,  0.30f,  -34.0f, 0.5f,   400.0f, 180.0f, 1, 0,     80.0f,  8000.0f, 0.5f,  105.0f, 20.0f, 0.0f },
-    { "Wall of Sound",      1,    1.00f, 20.0f,   0.95f, 1.00f,  0.20f,  0.10f,  -18.0f, 0.1f,   450.0f, 40.0f,  0, 0,     40.0f,  15000.0f, 11.0f, 180.0f, 95.0f, -3.0f },
-    { "Stutter Gate",       2,    0.35f, 0.0f,    0.35f, 0.50f,  0.50f,  0.35f,  -16.0f, 0.1f,   10.0f,  1.0f,   0, 0,     200.0f, 5000.0f, 2.0f,  115.0f, 60.0f, 0.0f },
-    { "Detonator",          1,    1.00f, 120.0f,  1.00f, 1.00f,  1.00f,  1.00f,  -12.0f, 0.1f,   500.0f, 200.0f, 1, 0,     20.0f,  20000.0f, 12.0f, 200.0f, 100.0f, -6.0f },
+    { "air-tomorrow", "Air Tomorrow",       1,    0.68f, 8.0f,    0.62f, 0.60f,  0.50f,  0.32f,  -26.0f, 0.3f,   220.0f, 5.0f,   0, 0,     90.0f,  8000.0f, 6.5f,  120.0f, 78.0f, 0.0f },
+    { "intruder", "Intruder",           1,    0.55f, 5.0f,    0.50f, 0.55f,  0.45f,  0.30f,  -24.0f, 0.3f,   90.0f,  3.0f,   0, 0,     100.0f, 8000.0f, 2.0f,  110.0f, 70.0f, 0.0f },
+    { "cannon", "Cannon",             1,    0.95f, 10.0f,   0.85f, 0.70f,  0.35f,  0.20f,  -30.0f, 0.2f,   260.0f, 8.0f,   0, 0,     60.0f,  10000.0f, 9.0f,  140.0f, 85.0f, -1.0f },
+    { "tom-thunder", "Tom Thunder",        1,    0.70f, 6.0f,    0.65f, 0.55f,  0.50f,  0.25f,  -28.0f, 0.5f,   150.0f, 6.0f,   0, 0,     45.0f,  900.0f,  5.0f,  115.0f, 75.0f, 0.0f },
+    { "kick-chuff", "Kick Chuff",         0,    0.30f, 0.0f,    0.30f, 0.40f,  0.70f,  0.10f,  -22.0f, 0.2f,   40.0f,  15.0f,  1, 0,     30.0f,  500.0f,  3.0f,  100.0f, 35.0f, 0.0f },
+    { "drum-bus-gate", "Drum Bus Gate",      1,    0.75f, 4.0f,    0.60f, 0.60f,  0.45f,  0.30f,  -20.0f, 0.3f,   180.0f, 10.0f,  0, 1,     80.0f,  12000.0f, 4.0f,  120.0f, 80.0f, 0.0f },
+    { "vocal-chop", "Vocal Chop",         2,    0.50f, 3.0f,    0.50f, 0.65f,  0.40f,  0.35f,  -26.0f, 0.15f,  60.0f,  4.0f,   0, 0,     150.0f, 6000.0f, 3.0f,  110.0f, 60.0f, 0.0f },
+    { "radio-announcer", "Radio Announcer",    0,    0.25f, 0.0f,    0.30f, 0.40f,  0.55f,  0.40f,  -32.0f, 0.4f,   100.0f, 20.0f,  1, 0,     120.0f, 5000.0f, 1.0f,  100.0f, 30.0f, 0.0f },
+    { "synth-stab", "Synth Stab",         2,    0.55f, 2.0f,    0.55f, 0.92f,  0.40f,  0.30f,  -24.0f, 0.1f,   80.0f,  5.0f,   0, 0,     100.0f, 9000.0f, 5.0f,  130.0f, 65.0f, 0.0f },
+    { "arp-gate", "Arp Gate",           3,    0.40f, 0.0f,    0.40f, 0.50f,  0.50f,  0.35f,  -18.0f, 0.1f,   15.0f,  2.0f,   0, 0,     200.0f, 6000.0f, 2.0f,  120.0f, 55.0f, 0.0f },
+    { "neon-pad-swell", "Neon Pad Swell",     3,    0.80f, 90.0f,   0.70f, 0.65f,  0.45f,  0.30f,  -28.0f, 2.0f,   300.0f, 60.0f,  1, 0,     100.0f, 6000.0f, 3.0f,  150.0f, 70.0f, 0.0f },
+    { "power-chord-gate", "Power Chord Gate",   1,    0.50f, 2.0f,    0.45f, 0.50f,  0.50f,  0.35f,  -22.0f, 0.2f,   70.0f,  8.0f,   0, 1,     150.0f, 4000.0f, 4.0f,  110.0f, 55.0f, 0.0f },
+    { "solo-ambience", "Solo Ambience",      3,    0.60f, 15.0f,   0.55f, 0.55f,  0.50f,  0.30f,  -30.0f, 0.6f,   130.0f, 25.0f,  1, 0,     90.0f,  7000.0f, 1.5f,  125.0f, 45.0f, 0.0f },
+    { "room-reinforcement", "Room Reinforcement", 1,    0.45f, 5.0f,    0.40f, 0.50f,  0.50f,  0.30f,  -34.0f, 0.5f,   400.0f, 180.0f, 1, 0,     80.0f,  8000.0f, 0.5f,  105.0f, 20.0f, 0.0f },
+    { "wall-of-sound", "Wall of Sound",      1,    1.00f, 20.0f,   0.95f, 1.00f,  0.20f,  0.10f,  -18.0f, 0.1f,   450.0f, 40.0f,  0, 0,     40.0f,  15000.0f, 11.0f, 180.0f, 95.0f, -3.0f },
+    { "stutter-gate", "Stutter Gate",       2,    0.35f, 0.0f,    0.35f, 0.50f,  0.50f,  0.35f,  -16.0f, 0.1f,   10.0f,  1.0f,   0, 0,     200.0f, 5000.0f, 2.0f,  115.0f, 60.0f, 0.0f },
+    { "detonator", "Detonator",          1,    1.00f, 120.0f,  1.00f, 1.00f,  1.00f,  1.00f,  -12.0f, 0.1f,   500.0f, 200.0f, 1, 0,     20.0f,  20000.0f, 12.0f, 200.0f, 100.0f, -6.0f },
 } };
 
 inline constexpr int kNumFactoryPrograms = (int) kFactoryPrograms.size();
@@ -97,7 +138,7 @@ inline constexpr int initProgramIndex = -1;
     decided yet" where a value like 35 % would look like a judgement someone made. The two serial
     castings, TapeRot and Elmer, sit at 100 % for the opposite reason. */
 inline constexpr FactoryProgram kInitProgram
-    { "INIT",               2,    0.50f, 0.0f,    0.50f, 0.50f,  0.00f,  0.00f,  -60.0f, 0.1f,   500.0f, 200.0f, 1, 0,     20.0f,  20000.0f, 0.0f,  100.0f, 50.0f, 0.0f };
+    { "init", "INIT",               2,    0.50f, 0.0f,    0.50f, 0.50f,  0.00f,  0.00f,  -60.0f, 0.1f,   500.0f, 200.0f, 1, 0,     20.0f,  20000.0f, 0.0f,  100.0f, 50.0f, 0.0f };
 
 // Loaded on first launch / when no saved session state exists yet - "Air Tomorrow" is the fuller,
 // more immediately impressive version of the plugin's namesake sound, same reasoning as TapeRot
