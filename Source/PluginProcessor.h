@@ -49,6 +49,10 @@ public:
     // are files in ProgramManager's program directory. "Save" is never in-place for a factory
     // program, and never overwrites an existing user program either - it always creates a new one.
     bool isFactoryProgram(int index) const noexcept { return programManager.isFactoryProgram(index); }
+
+    /** The numbered form the LCD and the dropdown show. getProgramName above stays raw because it
+        is the AudioProcessor override the HOST reads, and a host renders its own numbering. */
+    juce::String getProgramDisplayName(int index) const { return programManager.getProgramDisplayName(index); }
     bool isCurrentProgramModified() const { return programManager.isModifiedFromLoadedProgram(); }
     void saveNewUserProgram(const juce::String& name) { programManager.saveNewUserProgram(name); }
     void deleteUserProgram(int index) { programManager.deleteUserProgram(index); }

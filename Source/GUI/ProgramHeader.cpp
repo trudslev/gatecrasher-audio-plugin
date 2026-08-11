@@ -43,6 +43,7 @@ ProgramHeader::ProgramHeader(GatecrasherAudioProcessor& processor) : processorRe
     displayedProgramIndex = processorRef.getCurrentProgram();
     displayedProgramName = processorRef.getProgramName(displayedProgramIndex);
     displayedIsFactory = processorRef.isFactoryProgram(displayedProgramIndex);
+    displayedIsInit = ProgramManager::isInitProgram(displayedProgramIndex);
     displayedIsModified = processorRef.isCurrentProgramModified();
     displayedInText = formatMeterReadout(processorRef.getInputMeterLevel());
     displayedOutText = formatMeterReadout(processorRef.getOutputMeterLevel());
@@ -119,6 +120,11 @@ juce::String ProgramHeader::numberedProgramName() const
     // zero-padded to two digits. Uppercase throughout: the entry path already uppercases what is
     // typed (section 6.4), and the factory names are stored in title case, so without this the two
     // banks would read in different cases through the same window.
+    // **INIT is unnumbered.** It sits outside both banks, so numbering it would place it in a
+    // running order it is not part of - and the arithmetic would print "00", since its index is -1.
+    if (displayedIsInit)
+        return displayedProgramName.toUpperCase();
+
     return juce::String(displayedProgramIndex + 1).paddedLeft('0', 2)
            + " " + displayedProgramName.toUpperCase();
 }
@@ -158,6 +164,7 @@ void ProgramHeader::refreshDisplayFromProcessor()
         displayedProgramIndex = index;
         displayedProgramName = processorRef.getProgramName(index);
         displayedIsFactory = processorRef.isFactoryProgram(index);
+        displayedIsInit = ProgramManager::isInitProgram(index);
         changed = true;
     }
 
@@ -195,7 +202,9 @@ bool ProgramHeader::isButtonEnabled(HeaderButton button) const
     if (button == HeaderButton::save)
         return displayedIsModified; // nothing changed since the program loaded = nothing to save
     if (button == HeaderButton::deleteOrCancel)
-        return !displayedIsFactory; // DELETE disabled for read-only factory programs
+        // Disabled for read-only factory programs AND for INIT - INIT is not a stored thing, so
+        // there is nothing to delete.
+        return !displayedIsFactory && !displayedIsInit;
     return false;
 }
 
@@ -219,11 +228,18 @@ void ProgramHeader::showProgramMenu()
     menu.setLookAndFeel(&menuLookAndFeel);
     bool hasUserPrograms = false;
 
+    // INIT first, unnumbered and above the Factory group, with a divider beneath it. Its item ID
+    // cannot be index + 1 like the rest - that would be 0, which PopupMenu reserves for "dismissed"
+    // - so it carries its own sentinel and is translated back on selection.
+    constexpr int initMenuId = 9999;
+    menu.addItem(initMenuId, "INIT", true, ProgramManager::isInitProgram(currentIndex));
+    menu.addSeparator();
+
     menu.addSectionHeader("Factory");
     for (int i = 0; i < numPrograms; ++i)
     {
         if (processorRef.isFactoryProgram(i))
-            menu.addItem(i + 1, processorRef.getProgramName(i), true, i == currentIndex);
+            menu.addItem(i + 1, processorRef.getProgramDisplayName(i), true, i == currentIndex);
         else
             hasUserPrograms = true;
     }
@@ -237,7 +253,7 @@ void ProgramHeader::showProgramMenu()
         menu.addSectionHeader("User");
         for (int i = 0; i < numPrograms; ++i)
             if (!processorRef.isFactoryProgram(i))
-                menu.addItem(i + 1, processorRef.getProgramName(i), true, i == currentIndex);
+                menu.addItem(i + 1, processorRef.getProgramDisplayName(i), true, i == currentIndex);
     }
 
     // Anchored to, and at least as wide as, the whole program window rather than the name cell -
@@ -283,7 +299,8 @@ void ProgramHeader::showProgramMenu()
                            // Goes through ProgramManager's async apply path (see its AsyncUpdater) -
                            // the 20Hz timerCallback picks the change up and repaints, so there's
                            // deliberately no forced refresh here.
-                           safeThis->processorRef.setCurrentProgram(result - 1);
+                           safeThis->processorRef.setCurrentProgram(
+                               result == initMenuId ? initProgramIndex : result - 1);
                        });
 }
 
@@ -450,9 +467,17 @@ void ProgramHeader::paint(juce::Graphics& g)
     const auto lcdFont = monoFont(monoFontHeightForCssPx(13.0f));
     const float lcdTracking = trackingPxForEm(0.10f, 13.0f);
 
+    // **On INIT the tag reads an em-dash at 42% ink, not FACT and not USER.** INIT sits outside
+    // both banks, so either word would name a bank it is not in - and leaving it on FACT would put
+    // INIT back in the numbered bank it is deliberately kept out of.
+    const bool onInit = displayedIsInit && !namingMode;
     const bool showUserTag = namingMode || !displayedIsFactory;
-    drawTrackedText(g, showUserTag ? "USER" : "FACT", lcdFont, lcdTracking, tagCellRect,
-                     juce::Justification::centred, Colour::ledText);
+    const auto tagText = onInit ? juce::String::charToString((juce::juce_wchar) 0x2014)
+                                : juce::String(showUserTag ? "USER" : "FACT");
+
+    drawTrackedText(g, tagText, lcdFont, lcdTracking, tagCellRect,
+                     juce::Justification::centred,
+                     onInit ? Colour::ledText.withAlpha(0.42f) : Colour::ledText);
 
     if (namingMode)
     {

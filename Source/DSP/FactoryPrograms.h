@@ -63,6 +63,42 @@ inline constexpr std::array<FactoryProgram, 17> kFactoryPrograms{ {
 
 inline constexpr int kNumFactoryPrograms = (int) kFactoryPrograms.size();
 
+/** INIT's index. **-1, deliberately outside the bank rather than position 0 within it.**
+
+    INIT is the blank canvas you start from, not an authored sound competing with the eleven, so
+    numbering it would push Air Tomorrow to 02 and imply a running order it is not part of. Keeping
+    it outside also means it never renumbers anything.
+
+    -1 is therefore a meaningful index here, so every "no index" sentinel in this casting has to be
+    something else - see ProgramManager's pendingIndex, which is -2. */
+inline constexpr int initProgramIndex = -1;
+
+/** The blank canvas: gate and reverb both present and audible in their plainest form, with
+    everything that gives Gatecrasher its character at zero.
+
+    Three rules decide every value, and they are not the same rule:
+      - **Character and amount go to zero** - Slam at 0 dB. Raise it and you immediately hear what
+        it does.
+      - **Structure goes to a usable middle, never zero** - Size, Decay and Density at 0.5. A reverb
+        at zero decay is not neutral, it is broken; there would be nothing to hear when the gate
+        opened.
+      - **Anything meaning "not acting" takes whatever value that is** - and for a GATE that is a
+        threshold too low ever to close, so **-60 dB, the bottom of the range**. The gate is
+        genuinely there and genuinely open; raising the threshold is the first thing that makes it
+        act. Trigger HP at its 20 Hz floor and LP at its 20 kHz ceiling are both wide open, so the
+        detector hears the whole signal. Width 100 % is the neutral point of a 0-200 range, not a
+        setting. Trim 0 dB.
+
+    Hold at its 500 ms maximum and Release at its 200 ms maximum are also "not acting": with the
+    threshold on the floor the gate never closes, so the two controls that govern how it closes are
+    parked where they interfere least.
+
+    **Mix is 50 %, not 100 %.** Gatecrasher is a wet/dry effect, and the midpoint reads as "nothing
+    decided yet" where a value like 35 % would look like a judgement someone made. The two serial
+    castings, TapeRot and Elmer, sit at 100 % for the opposite reason. */
+inline constexpr FactoryProgram kInitProgram
+    { "INIT",               2,    0.50f, 0.0f,    0.50f, 0.50f,  0.00f,  0.00f,  -60.0f, 0.1f,   500.0f, 200.0f, 1, 0,     20.0f,  20000.0f, 0.0f,  100.0f, 50.0f, 0.0f };
+
 // Loaded on first launch / when no saved session state exists yet - "Air Tomorrow" is the fuller,
 // more immediately impressive version of the plugin's namesake sound, same reasoning as TapeRot
 // defaulting to "Warm Cassette" rather than a more extreme preset.

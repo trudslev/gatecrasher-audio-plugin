@@ -223,10 +223,19 @@ void GatecrasherAudioProcessor::setStateInformation(const void* data, int sizeIn
 
             const int savedProgramIndex =
                 xml->getIntAttribute("gatecrasherCurrentProgramIndex", defaultFactoryProgramIndex);
+
+            // INIT is a valid remembered Program and is NOT isPositiveAndBelow, so it is admitted
+            // explicitly rather than by widening the check - which would also admit every other
+            // negative index. **No migration is needed here**: INIT was ADDED at -1 rather than
+            // inserted at 0, so not one existing Factory index moved and every session saved before
+            // today still names the sound it was saved with. That is the whole point of putting it
+            // outside the bank - see TapeRot, where Init had to be lifted OUT of the numbered bank
+            // and needed a schema hop to remap every index by one.
+            const bool valid = ProgramManager::isInitProgram(savedProgramIndex)
+                               || juce::isPositiveAndBelow(savedProgramIndex, programManager.getNumPrograms());
+
             programManager.setCurrentProgramIndexWithoutApplying(
-                juce::isPositiveAndBelow(savedProgramIndex, programManager.getNumPrograms())
-                    ? savedProgramIndex
-                    : defaultFactoryProgramIndex);
+                valid ? savedProgramIndex : defaultFactoryProgramIndex);
         }
 }
 

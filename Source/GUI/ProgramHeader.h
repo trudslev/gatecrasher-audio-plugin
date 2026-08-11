@@ -130,9 +130,11 @@ private:
     juce::String editingParamID;
     juce::uint32 revertAtMs = 0;
 
-    int displayedProgramIndex = -1;
+    // -2, not -1: -1 is INIT's index now, so it can no longer double as "nothing cached yet".
+    int displayedProgramIndex = -2;
     juce::String displayedProgramName;
     bool displayedIsFactory = true;
+    bool displayedIsInit = false;
 
     // Polled alongside the program index rather than queried straight from the processor inside
     // paint()/isButtonEnabled(): it changes on any parameter move, from the GUI or from host
