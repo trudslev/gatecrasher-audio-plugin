@@ -19,13 +19,17 @@ namespace GatecrasherTheme
         // still drawn in code is the EIGHT state-dependent labels of section 0.4 - which is why
         // this list is now two entries rather than a dozen.
         //
-        // Both values are chosen against the BOTTOM of the fascia gradient, where the background is
-        // darkest and contrast is worst; measured against the shipped plate they read 7.49:1 and
-        // 5.66:1. Rev 5's #7B8287 inactive grey (1.60:1 at the bottom) is DELETED - if it turns up
-        // again, it is a regression.
-        // contrast: 7.49-7.57:1 vs plate:keySourceLabels,plate:shapeLabels [functional]
-        inline const juce::Colour labelSelected{0xFF16191C};     // 700 weight, per section 2
-        // contrast: 5.52-5.66:1 vs plate:keySourceLabels,plate:shapeLabels [functional exempt: section 2.1 dims the inactive half deliberately - see this repo's CLAUDE.md, "do not fix it"]
+        // Both values are judged against the DARKEST point of the fascia band each label is drawn
+        // over, where contrast is worst. Rev 5's #7B8287 inactive grey (1.60:1 there) is DELETED -
+        // if it turns up again, it is a regression.
+        //
+        // The figures below are sampled off the shipped plate by tools/check_contrast.py rather
+        // than quoted from the spec. They previously read 7.49 and 5.66, which the plate did not
+        // produce - and labelSelected was the case those numbers were chosen to protect, so it had
+        // been sitting at 6.90 against its own 7:1 bar.
+        // contrast: 7.09-8.43:1 vs plate:keySourceLabels,plate:shapeLabels [functional]
+        inline const juce::Colour labelSelected{0xFF141619};     // 700 weight, per section 2
+        // contrast: 5.21-6.20:1 vs plate:keySourceLabels,plate:shapeLabels [functional exempt: section 2.1 dims the inactive half deliberately - see this repo's CLAUDE.md, "do not fix it"]
         inline const juce::Colour labelUnselected{0xFF2B3034};   // 400 weight
 
         inline const juce::Colour programCellDivider{0xFF2A3035};
@@ -94,7 +98,14 @@ namespace GatecrasherTheme
         inline const juce::Colour buttonDisabledTop{0xFFC2C8CC};
         inline const juce::Colour buttonDisabledBottom{0xFFA8AFB3};
         inline const juce::Colour buttonDisabledBorder{0xFF8D9498};
-        inline const juce::Colour buttonDisabledLabel{0x8C8B9297}; // #8B9297 @ .55 opacity, per spec
+        // **Opaque, not #8B9297 at .55.** The alpha composited the ink back toward the very button
+        // it sat on, landing at 1.21:1 - absent rather than dim, and the worst reading in the
+        // suite. It also made the constant unreadable as a value: solving the old form for the
+        // 3:1 floor wanted a raw colour 87% of the way to black, purely to survive its own
+        // blend. BRAND.md allows opacity to express state; it does not require it, and here it was
+        // doing the damage. Same value as CHORUS-60's, because the two share a button palette.
+        // contrast: 3.18-4.18:1 vs buttonDisabledTop,buttonDisabledBottom [state]
+        inline const juce::Colour buttonDisabledLabel{0xFF55595C};
     }
 
     // The knob filmstrips ship in two skirt styles (see design/CLAUDE.md's asset list) -
