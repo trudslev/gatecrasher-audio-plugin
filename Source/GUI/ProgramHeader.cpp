@@ -523,32 +523,85 @@ void ProgramHeader::paint(juce::Graphics& g)
     // Erase each button's baked default-state pixels back to the real background first (the main
     // panel background's own baked buttons are correct only for the specific factory program that
     // reference screenshot happened to be captured showing), then draw the button's actual state.
-    auto drawButton = [&] (juce::Rectangle<float> rect, const juce::String& label, bool enabled, bool pressed)
+    auto drawButton = [&] (juce::Rectangle<float> rect,
+                           const juce::String& upperLegend, const juce::String& lowerLegend,
+                           bool upperLit, bool lowerLit, bool pressed)
     {
-        eraseToBackground(g, rect, getPosition());
+        // No eraseToBackground: as of Rev 15 the plate leaves bare fascia from x 705 to 824, so
+        // there are no baked cap pixels to erase. It used to bake a pale resting cap under a live
+        // control, which is a second draw of the same thing and the class of bug section 1.1 keeps
+        // naming.
 
-        const auto top = pressed ? Colour::buttonPressedTop
-                                  : (enabled ? Colour::buttonEnabledTop : Colour::buttonDisabledTop);
-        const auto bottom = pressed ? Colour::buttonPressedBottom
-                                     : (enabled ? Colour::buttonEnabledBottom : Colour::buttonDisabledBottom);
+        // **One cap, in every state.** Nothing below branches on enablement - only the pressed
+        // face varies, and that is a gesture rather than a state.
+        const auto top = pressed ? Colour::buttonPressedTop : Colour::buttonCapTop;
+        const auto bottom = pressed ? Colour::buttonPressedBottom : Colour::buttonCapBottom;
         juce::ColourGradient fill(top, rect.getX(), rect.getY(), bottom, rect.getX(), rect.getBottom(), false);
         g.setGradientFill(fill);
         g.fillRect(rect);
 
-        g.setColour(enabled ? Colour::buttonEnabledBorder : Colour::buttonDisabledBorder);
+        g.setColour(Colour::buttonCapBorder);
         g.drawRect(rect, 1.0f);
 
-        // Section 6.4: Barlow Condensed 600 at 10 CSS px, .10em. Through the CSS-px converter rather
-        // than the pre-converted number that used to sit here, so a recalibration of the ratio moves
-        // this with every other label instead of leaving it behind.
-        drawTrackedText(g, label, labelFont(labelFontHeightForCssPx(10.0f)),
-                         trackingPxForEm(0.10f, 10.0f), rect, juce::Justification::centred,
-                         enabled ? Colour::buttonEnabledLabel : Colour::buttonDisabledLabel);
+        // inset 0 1px 0 rgba(255,255,255,.10) - the machined top edge.
+        g.setColour(juce::Colours::white.withAlpha(0.10f));
+        g.drawLine(rect.getX() + 1.0f, rect.getY() + 1.5f, rect.getRight() - 1.0f, rect.getY() + 1.5f, 1.0f);
+
+        // Section 6.4: Barlow Condensed 600 at 10 CSS px, .10em, positioned by BASELINE rather than
+        // by box, which is how the spec quotes it and what keeps the pair optically even in a 34px
+        // cap. Through the CSS-px converter rather than a pre-converted number, so a recalibration
+        // of the ratio moves these with every other label instead of leaving them behind.
+        const auto font = labelFont(labelFontHeightForCssPx(Layout::legendCssPx));
+        const float tracking = trackingPxForEm(Layout::legendTrackingEm, Layout::legendCssPx);
+
+        auto legend = [&] (const juce::String& text, float baselineY, bool lit)
+        {
+            const juce::Rectangle<float> line { rect.getX(), baselineY - Layout::legendCssPx,
+                                                rect.getWidth(), Layout::legendCssPx * 1.4f };
+
+            if (lit)
+            {
+                // `0 0 7px rgba(244,248,250,.55)`. JUCE has no text-shadow and no cheap blur for a
+                // string, so the halo is the same tracked text drawn at eight points around a
+                // circle; overlapping copies sum to what a blur of that radius would give. Alpha
+                // is tuned rather than quoted - eight copies at alpha a reach 1-(1-a)^8 where they
+                // coincide, so .55 applied per-copy would be a solid block.
+                for (int i = 0; i < 8; ++i)
+                {
+                    const float angle = juce::MathConstants<float>::twoPi * (float) i / 8.0f;
+
+                    drawTrackedText(g, text, font, tracking,
+                                    line.translated(std::cos(angle) * 3.5f, std::sin(angle) * 3.5f),
+                                    juce::Justification::centred,
+                                    Colour::legendLit.withAlpha(0.075f));
+                }
+            }
+
+            drawTrackedText(g, text, font, tracking, line, juce::Justification::centred,
+                            lit ? Colour::legendLit : Colour::legendUnlit);
+        };
+
+        const juce::Graphics::ScopedSaveState state(g);
+        g.reduceClipRegion(rect.getSmallestIntegerContainer());
+
+        legend(upperLegend, Layout::legendUpperBaselineY, upperLit);
+        legend(lowerLegend, Layout::legendLowerBaselineY, lowerLit);
     };
 
-    const juce::String saveLabel = namingMode ? "STORE" : "SAVE";
-    const juce::String deleteLabel = namingMode ? "CANCEL" : "DELETE";
-    drawButton(saveButtonRect, saveLabel, isButtonEnabled(HeaderButton::save), pressedButton == HeaderButton::save);
-    drawButton(deleteButtonRect, deleteLabel, isButtonEnabled(HeaderButton::deleteOrCancel),
+    /*  Section 6.4's legend table. Each legend has exactly one condition:
+
+          SAVE    lit when not naming, and the Program is dirty
+          STORE   lit when naming
+          DELETE  lit when not naming, and the Program is a User Program
+          CANCEL  lit when naming
+
+        Esc out of naming leaves the Program dirty, because nothing was stored - the " *" marker
+        and SAVE's backlight both come back on. Only a completed store clears the flag. */
+    drawButton(saveButtonRect, "SAVE", "STORE",
+               ! namingMode && isButtonEnabled(HeaderButton::save), namingMode,
+               pressedButton == HeaderButton::save);
+
+    drawButton(deleteButtonRect, "DELETE", "CANCEL",
+               ! namingMode && isButtonEnabled(HeaderButton::deleteOrCancel), namingMode,
                pressedButton == HeaderButton::deleteOrCancel);
 }

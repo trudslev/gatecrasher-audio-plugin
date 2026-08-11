@@ -204,6 +204,31 @@ It only reads properly because `Parameters.h` gives every float parameter an exp
 JUCE's default renders `-16.3999977` rather than `-16.4`. Add a float parameter without a formatter
 and it will show up seven decimals wide in the LCD, in the automation lane and in any generic editor.
 
+**The header band is 34px at y 29, and Gatecrasher is where that figure was hardest to reach.** The
+LCD, both Program buttons and both meter windows share one height and one baseline. This casting had
+the shallowest band in the suite at 25px, which made it the one place two 10px legends provably
+would not fit — 20px of ink before any leading or padding, inside a 25px button. The band grew
+rather than the legends shrinking, because 10px is BRAND.md's floor for functional text and both
+legends are functional.
+
+Rev 15 re-exported the plate for it: the LCD, IN and OUT wells run **y 29..63** where they used to
+run 34..57, and only the header band (y 0..77) was re-rendered, so nothing below it could have
+drifted. **A plate from before Rev 15 leaves 5px of stale dark well above the live LCD and 6px
+below** — measured and confirmed against the shipped asset, along with the button positions now
+being bare fascia.
+
+**The two Program caps are dark, and they are the only two controls on this panel that are.** It
+follows from the legend being the lamp: on a pale fascia a bright legend has nowhere brighter to go,
+so lit type could not read as lit. They read as a pair with the LCD and the meter windows — five
+dark apertures across one band.
+
+**There is no disabled face and no relabelling.** Cap, border, highlight and drop are identical in
+all five panel states; only which of the two printed legends is backlit changes. The pale enabled
+cap, the separate disabled cap and the `#55595C` disabled label are all gone — and that label had
+itself only just been rescued from `#8B9297` at .55 alpha, which measured **1.21:1**, the worst
+reading in the suite. The right answer turned out not to be a better disabled colour but no
+disabled state at all.
+
 `design/GUI-SPEC.md` is the authoritative pixel spec and is meant to be implemented
 as-is, not redesigned. When a coordinate here and a coordinate there disagree, the spec wins - and measure the artwork to confirm
 before assuming either. Two long-lived bugs came from not doing that: the lamp sat at (224, 95)

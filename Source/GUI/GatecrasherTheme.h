@@ -95,23 +95,33 @@ namespace GatecrasherTheme
         // SAVE/DELETE (STORE/CANCEL) stamped-steel utility buttons, section 6's state table. Drawn
         // live rather than via the header-state bitmaps - see ProgramHeader.cpp's class comment for
         // why the bitmap-crop approach was abandoned in favour of this.
-        inline const juce::Colour buttonEnabledTop{0xFFDBE0E3};
-        inline const juce::Colour buttonEnabledBottom{0xFFAAB1B6};
-        inline const juce::Colour buttonEnabledBorder{0xFF6D7478};
-        inline const juce::Colour buttonEnabledLabel{0xFF22272B};
-        inline const juce::Colour buttonPressedTop{0xFFA9B0B5};
-        inline const juce::Colour buttonPressedBottom{0xFFC9D0D4};
-        inline const juce::Colour buttonDisabledTop{0xFFC2C8CC};
-        inline const juce::Colour buttonDisabledBottom{0xFFA8AFB3};
-        inline const juce::Colour buttonDisabledBorder{0xFF8D9498};
-        // **Opaque, not #8B9297 at .55.** The alpha composited the ink back toward the very button
-        // it sat on, landing at 1.21:1 - absent rather than dim, and the worst reading in the
-        // suite. It also made the constant unreadable as a value: solving the old form for the
-        // 3:1 floor wanted a raw colour 87% of the way to black, purely to survive its own
-        // blend. BRAND.md allows opacity to express state; it does not require it, and here it was
-        // doing the damage. Same value as CHORUS-60's, because the two share a button palette.
-        // contrast: 3.18-4.18:1 vs buttonDisabledTop,buttonDisabledBottom [state]
-        inline const juce::Colour buttonDisabledLabel{0xFF55595C};
+        /** **These two caps are DARK, and they are the only two controls on the panel that are.**
+
+            It follows from the legend being the lamp: on a pale fascia a bright legend has nowhere
+            brighter to go, so lit type could not read as lit. They end up reading as a pair with
+            the LCD and the two meter windows rather than as an anomaly - five dark apertures
+            across one 34px band.
+
+            **There is no disabled face.** Cap, border, inner highlight and drop are identical in
+            all five panel states; only which legend is backlit changes. The pale enabled cap
+            (#DBE0E3 -> #AAB1B6) and the separate disabled cap (#C2C8CC -> #A8AFB3) are both gone,
+            along with the #55595C disabled label - which had itself just been rescued from
+            #8B9297 at .55 alpha, measuring 1.21:1, the worst reading in the suite. The right
+            answer turned out not to be a better disabled colour but no disabled state at all. */
+        inline const juce::Colour buttonCapTop{0xFF23282C};
+        inline const juce::Colour buttonCapBottom{0xFF14181B};
+        inline const juce::Colour buttonCapBorder{0xFF43494E};
+        inline const juce::Colour buttonPressedTop{0xFF12161A};
+        inline const juce::Colour buttonPressedBottom{0xFF20252A};
+
+        /** Lit is a neutral bright, never the accent #FF2B1C - that stays reserved for the gate
+            and the envelope trace.
+            // contrast: 15.90:1 vs buttonCapTop [functional] */
+        inline const juce::Colour legendLit{0xFFF4F8FA};
+        /** Unlit is printed and readable, not absent: both legends dark has to read as "nothing to
+            do here", never as a blank button.
+            // contrast: 5.20:1 vs buttonCapTop [state] */
+        inline const juce::Colour legendUnlit{0xFF9AA1A6};
     }
 
     // The knob filmstrips ship in two skirt styles (see design/GUI-SPEC.md's asset list) -
@@ -361,25 +371,55 @@ namespace GatecrasherTheme
         // Drawn from the LEFT x, never re-centred, for the same reason the section-0.4 labels are:
         // the two words are different widths (48.5px and 80.9px) and re-centring would slide the
         // caption sideways every time SAVE was pressed.
-        constexpr float programCaptionX = 374.0f, programCaptionBaselineY = 27.75f;
+        /** **The baseline moved up 6.7px with the 34px row**, and drawing at the old 27.75 lands
+            the caption inside the LCD's top border. It was right for a 25px window; the taller one
+            pushed the caption+window group's centring up the band. */
+        constexpr float programCaptionX = 374.75f, programCaptionBaselineY = 21.08f;
         constexpr float programCaptionCssPx = 10.0f, programCaptionTrackingEm = 0.22f;
 
-        constexpr float programWindowX = 374.0f, programWindowY = 34.0f, programWindowW = 332.0f, programWindowH = 25.0f;
-        constexpr float programTagCellX = 375.0f, programTagCellY = 35.0f, programTagCellW = 48.0f, programTagCellH = 23.0f;
-        constexpr float programNameCellX = 423.0f, programNameCellY = 35.0f, programNameCellW = 252.0f, programNameCellH = 23.0f;
-        constexpr float programChevronCellX = 675.0f, programChevronCellY = 35.0f, programChevronCellW = 30.0f, programChevronCellH = 23.0f;
+        /** **The header band: y 29, height 34, shared by all five parts** - the LCD, both Program
+            buttons and both meter windows. 34 is BRAND.md's suite figure rather than this panel's:
+            the castings are differently-sized units, not scales of one design.
 
-        constexpr float saveButtonX = 712.0f, saveButtonY = 34.0f, saveButtonW = 50.0f, saveButtonH = 25.0f;
-        constexpr float deleteButtonX = 767.0f, deleteButtonY = 34.0f, deleteButtonW = 50.0f, deleteButtonH = 25.0f;
+            Gatecrasher had the shallowest band in the suite at 25px, which is why its buttons were
+            the one place two 10px legends provably would not fit - 20px of ink before any leading
+            or padding, in a 25px button. The band grew rather than the legends shrinking, because
+            10px is BRAND.md's floor for functional text and both legends are functional.
 
-        constexpr float inWindowX = 825.0f, inWindowY = 34.0f, inWindowW = 44.0f, inWindowH = 24.0f;
-        constexpr float outWindowX = 875.0f, outWindowY = 34.0f, outWindowW = 44.0f, outWindowH = 24.0f;
+            Every figure here is BORDER-BOX, and the plate agrees: its LCD, IN and OUT wells all
+            measure y 29..63 and the two button positions are bare fascia. A plate from before
+            Rev 15 leaves 5px of stale dark well above the live LCD and 6px below it. */
+        constexpr float programWindowX = 374.75f, programWindowY = 29.0f, programWindowW = 330.0f, programWindowH = 34.0f;
+        constexpr float programTagCellX = 375.75f, programTagCellY = 30.0f, programTagCellW = 48.28f, programTagCellH = 32.0f;
+        constexpr float programNameCellX = 424.03f, programNameCellY = 30.0f, programNameCellW = 253.72f, programNameCellH = 32.0f;
+        constexpr float programChevronCellX = 677.75f, programChevronCellY = 30.0f, programChevronCellW = 26.0f, programChevronCellH = 32.0f;
 
-        /** Section 6.1's name-cell budget: 252px cell, 10px padding each side, 232 usable, Share
-            Tech Mono 13px at .10em = 8.32px per character = 27 characters. Program names are capped
-            at 24, which with a two-digit index and a space is exactly 27. Verified against the real
-            content: the longest factory name with its index ("14 ROOM REINFORCEMENT") is 174.7px
-            with 57px spare, and the longest live value ("THRESHOLD: -18.5 dB") 158.1px.
+        constexpr float saveButtonX = 710.75f, saveButtonY = 29.0f, saveButtonW = 50.2f, saveButtonH = 34.0f;
+        constexpr float deleteButtonX = 765.95f, deleteButtonY = 29.0f, deleteButtonW = 50.2f, deleteButtonH = 34.0f;
+
+        /** The two stacked legends, positioned by BASELINE rather than by box, because that is what
+            the spec quotes and what keeps the pair optically even inside a 34px cap. */
+        constexpr float legendUpperBaselineY = 41.08f;
+        constexpr float legendLowerBaselineY = 53.08f;
+        constexpr float legendCssPx = 10.0f;
+        constexpr float legendTrackingEm = 0.10f;
+
+        // 34 tall on y 29, like every other part of the band. These were 24 - one pixel shorter
+        // than the 25px LCD and buttons beside them, which is the drift the suite audit found.
+        constexpr float inWindowX = 825.0f, inWindowY = 29.0f, inWindowW = 44.0f, inWindowH = 34.0f;
+        constexpr float outWindowX = 875.0f, outWindowY = 29.0f, outWindowW = 44.0f, outWindowH = 34.0f;
+
+        /** Section 6.1's name-cell budget: **253.72px cell**, 10px padding each side, 233.72
+            usable, Share Tech Mono 13px at .10em = 8.32px per character = **28 characters**.
+            Program names are capped at 24, which with a two-digit index and a space is 27 - one
+            inside the budget. Verified against the real content: the longest factory name with its
+            index ("14 ROOM REINFORCEMENT") is 174.7px with 59px spare, and the longest live value
+            ("THRESHOLD: -18.5 dB") 158.1px.
+
+            **The budget grew 27 -> 28 with the 34px header row** (the cell went 252 -> 253.72) and
+            the cap stayed at 24. That direction is the rule: a budget may grow, a cap may never
+            shrink - lowering it would orphan names already saved to disk, which load and then
+            cannot be saved back under their own name.
 
             Do not narrow the window without re-checking those strings. */
         constexpr float programNameCellPadding = 10.0f;
