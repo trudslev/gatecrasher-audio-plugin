@@ -125,7 +125,11 @@ juce::String ProgramHeader::numberedProgramName() const
     // The number is a label computed from the Factory position at paint time. INIT and User
     // Programs carry none - INIT is outside the bank, and User Programs sort alphabetically so a
     // number would change whenever one was saved.
-    return processorRef.getProgramManager().displayLabelFor(displayedId).toUpperCase();
+    // No toUpperCase() here: the bank stores its display names upper-cased, so case has exactly
+    // one source. Doing it at the LCD instead made this the only site that applied it - the
+    // dropdown and the host's own Program menu both read the label raw, so the same Program showed
+    // as "01 AIR TOMORROW" on the glass and "01 Air Tomorrow" in the list beneath it.
+    return processorRef.getProgramManager().displayLabelFor(displayedId);
 }
 
 juce::String ProgramHeader::liveValueText() const
