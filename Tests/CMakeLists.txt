@@ -10,6 +10,7 @@ target_sources(GatecrasherTests PRIVATE
     StereoWidthStageTests.cpp
     OutputMixStageTests.cpp
     ParametersStateTests.cpp
+    ParameterTextTests.cpp
     ProgramManagerTests.cpp
     FactoryProgramsTests.cpp
     CPUCheckTests.cpp

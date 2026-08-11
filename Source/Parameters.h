@@ -155,12 +155,22 @@ inline juce::AudioProcessorValueTreeState::ParameterLayout createGatecrasherPara
         return [decimals] (float v, int) { return juce::String(v, decimals); };
     };
 
+    // **Whole numbers must NOT go through fixed(0).** juce::String(double, int) only sets a
+    // formatting flag when the decimal count is greater than zero (juce_String.cpp:486-492); at
+    // exactly 0 it sets nothing and falls through to std::ostream's default, which is six
+    // significant digits with trailing zeros stripped. So fixed(0) does not round - it renders
+    // 33.333332 as "33.3333" and 66.666664 as "66.6667", and only looks correct while the value
+    // happens to be integral. That is the same class of defect as leaving the formatter off
+    // entirely, which the comment above already warns about; 0 decimals reads like "no decimals"
+    // and means "no formatting".
+    auto whole = [] (float v, int) { return juce::String(juce::roundToInt(v)); };
+
     auto dbAttrs = juce::AudioParameterFloatAttributes().withLabel("dB")
                        .withStringFromValueFunction(fixed(1));
     auto msAttrs = juce::AudioParameterFloatAttributes().withLabel("ms")
                        .withStringFromValueFunction(fixed(1));
     auto percentAttrs = juce::AudioParameterFloatAttributes().withLabel("%")
-                            .withStringFromValueFunction(fixed(0));
+                            .withStringFromValueFunction(whole);
 
     // Frequencies switch to kHz at 1000, matching both the printed scales ("1k", "5k", "20k") and
     // section 6.3's own "TRIG LP: 6.3 kHz" example. The label has to move into the text here because
@@ -168,8 +178,12 @@ inline juce::AudioProcessorValueTreeState::ParameterLayout createGatecrasherPara
     auto hzAttrs = juce::AudioParameterFloatAttributes()
                        .withStringFromValueFunction([] (float v, int)
                        {
+                           // roundToInt below 1kHz for the same reason percentAttrs uses it: the
+                           // 0-decimal form is not a rounding instruction. Trigger HP sweeps
+                           // 20-2000 Hz with no interval, so it sits on a non-integral value far
+                           // more often than not, and printed "180.437 Hz".
                            return v >= 1000.0f ? juce::String(v / 1000.0f, 1) + " kHz"
-                                                : juce::String(v, 0) + " Hz";
+                                                : juce::String(juce::roundToInt(v)) + " Hz";
                        });
 
     // Size / Decay / Density / Damping are bare 0-1 normals with no unit of their own; the panel
