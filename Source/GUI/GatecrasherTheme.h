@@ -23,8 +23,10 @@ namespace GatecrasherTheme
         // darkest and contrast is worst; measured against the shipped plate they read 7.49:1 and
         // 5.66:1. Rev 5's #7B8287 inactive grey (1.60:1 at the bottom) is DELETED - if it turns up
         // again, it is a regression.
-        inline const juce::Colour labelSelected{0xFF16191C};     // 700 weight, 7.57:1 per section 2
-        inline const juce::Colour labelUnselected{0xFF2B3034};   // 400 weight, 5.52:1
+        // contrast: 7.49-7.57:1 vs plate:keySourceLabels,plate:shapeLabels [functional]
+        inline const juce::Colour labelSelected{0xFF16191C};     // 700 weight, per section 2
+        // contrast: 5.52-5.66:1 vs plate:keySourceLabels,plate:shapeLabels [functional exempt: section 2.1 dims the inactive half deliberately - see this repo's CLAUDE.md, "do not fix it"]
+        inline const juce::Colour labelUnselected{0xFF2B3034};   // 400 weight
 
         inline const juce::Colour programCellDivider{0xFF2A3035};
 
