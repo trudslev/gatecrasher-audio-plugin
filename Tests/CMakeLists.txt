@@ -2,6 +2,7 @@ juce_add_console_app(GatecrasherTests PRODUCT_NAME "GatecrasherTests")
 
 target_sources(GatecrasherTests PRIVATE
     TestMain.cpp
+    ReadoutConformanceTests.cpp
     TriggerDetectorTests.cpp
     GateEnvelopeGeneratorTests.cpp
     ReverbTankTests.cpp
@@ -39,6 +40,12 @@ target_compile_definitions(GatecrasherTests PRIVATE
 target_link_libraries(GatecrasherTests PRIVATE
     # ProgramManager.cpp is compiled into both targets and calls into core, so both link it.
     nf::core
+    # GatecrasherBinaryData, because ReadoutConformanceTests includes ProgramHeader.h to read
+    # readoutFormat() - the SHIPPING format, not a copy of it - and the header chain reaches
+    # GatecrasherTheme.h, which pulls in BinaryData.h for the embedded faces. Linking the real
+    # generated header rather than stubbing it is the point, and it is what Fifth Member's and
+    # TapeRot's test targets already do.
+    GatecrasherBinaryData
     juce::juce_dsp
     juce::juce_audio_basics
     juce::juce_audio_processors

@@ -11,6 +11,8 @@
 // the fascia here is a static bitmap (see GatecrasherPanelBackground) rather than code-drawn, so
 // this file's job is narrower: positions/sizes for the *live* pieces layered on top, plus the
 // handful of colours those live pieces need to match the baked artwork around them.
+#include <nf/ParameterReadout.h>
+
 namespace GatecrasherTheme
 {
     namespace Colour
@@ -472,8 +474,16 @@ namespace GatecrasherTheme
 
         constexpr int maxProgramNameLength = 25; // mirrors ProgramManager::maxProgramNameLength
 
-        // Section 6.3: the live value reverts to the program name "~800 ms after the gesture ends".
-        constexpr int lcdRevertMs = 800;
+        /** **The readout revert lives in core now - `nf::ReadoutFormat::revertMs`, 900 ms.**
+
+            It was 800 here. The suite ran 800 / 900 / 1100 / 1200 under three different constant
+            names and two mechanisms, and no spec anywhere justified any of them; 900 is what three
+            castings already had. `ProgramHeader::readoutFormat()` is where this panel states its
+            readout spelling, and the delay comes with it rather than being a separate number here
+            that nothing binds to the others.
+
+            Left as a comment rather than deleted silently, because a reader looking for the old
+            constant should find out where it went rather than conclude the revert was removed. */
 
         // Wordmark, section 8. Baked into the plate as of Rev 6; nothing draws it.
         constexpr float wordmarkX = 38.0f, wordmarkY = 20.0f, wordmarkW = 232.0f, wordmarkH = 40.0f;
@@ -764,4 +774,31 @@ namespace GatecrasherTheme
     // CSS letter-spacing is expressed in em, i.e. relative to the font's own size, so the absolute
     // pixel tracking drawTrackedText wants scales with the size the label is drawn at.
     inline float trackingPxForEm(float em, float cssPx) { return em * cssPx; }
+
+    /** **How this panel spells the LCD parameter readout.**
+
+        A presentation decision, so it lives with the other presentation constants rather than in
+        ProgramHeader - and that placement is load-bearing for the test: ProgramHeader.h reaches
+        PluginProcessor.h, which needs JucePlugin_* macros that only exist in the plugin target, so
+        a test that read the format from there could not link. The test must read the SHIPPING
+        format rather than a copy, or it asserts against itself.
+
+        `wordsOnly`: section 6.3's own examples set it - "THRESHOLD: -18.5 dB" and "TRIG LP: 6.3
+        kHz" keep their units as written while "ALGORITHM: PLATE" is capitalised. The discriminator
+        is a unit: the float parameters all carry one or bake it into the text, the choice
+        parameters do not, so a unitless, digit-free value is a word and gets the control name's
+        treatment. TapeRot arrived at the same rule independently.
+
+        Elmer's source argues that even a choice name should be authored in caps in Parameters.h
+        instead, so the host's automation lane agrees. Both arguments are recorded beside
+        nf::ReadoutFormat::ValueCase; this panel keeps what it has until the designers rule.
+
+        The revert is core's 900 ms, where this panel carried 800. */
+    inline nf::ReadoutFormat readoutFormat()
+    {
+        nf::ReadoutFormat f;
+        f.valueCase = nf::ReadoutFormat::ValueCase::wordsOnly;
+        f.nameCharacterBudget = 24;
+        return f;
+    }
 }

@@ -3,6 +3,8 @@
 #include "../PluginProcessor.h"
 #include "GatecrasherMenuLookAndFeel.h"
 #include "GatecrasherTheme.h"
+
+#include <nf/ParameterReadout.h>
 #include <juce_gui_basics/juce_gui_basics.h>
 
 #include <vector>
@@ -66,6 +68,7 @@ public:
     void showParameter(const juce::String& paramID);
     void releaseParameter();
 
+
     /** The component the Program list is laid out inside. Its bounds become the list's parent area,
         which is what fixes the list's top edge and caps its height - layout, not plumbing. Passing
         nullptr returns the list to being a free desktop window sized to its own content, which for
@@ -108,7 +111,6 @@ private:
     void timerCallback() override;
     void refreshDisplayFromProcessor();
     juce::String numberedProgramName() const;
-    juce::String liveValueText() const;
     void enterNamingMode();
     void commitStore();
     void cancelNaming();
@@ -129,9 +131,13 @@ private:
     // Mirrors whatever program was loaded before SAVE was pressed - CANCEL reverts the display to
     // this without ever touching APVTS (the user's tweaked-but-unsaved knob values must survive a
     // Cancel, per section 6). Never written to while namingMode is true.
-    // Live-value takeover (section 6.3). editingParamID empty = showing the program name.
-    juce::String editingParamID;
-    juce::uint32 revertAtMs = 0;
+    // Live-value takeover (section 6.3). The deadline is core's; the font, the cell and every pixel
+    // of the paint stay here.
+    nf::ReadoutTimer readout { GatecrasherTheme::readoutFormat() };
+
+    // Whether the takeover was up at the last poll, so the timer repaints on the EDGE rather than
+    // every tick. The deadline itself lives in `readout`; this is only the change detector.
+    bool readoutWasShowing = false;
 
     /** The Program the panel is currently showing, mirrored so the 20 Hz poll only repaints when
         something actually changed. An identity, not a position - so a bank that changed underneath

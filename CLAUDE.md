@@ -114,6 +114,22 @@ the one currently loaded. Program switching is async-safe the same way TapeRot's
 is: a host can call `setCurrentProgram` from a non-message thread, so the real application is
 deferred through `ProgramManager`'s own `AsyncUpdater`.
 
+**The LCD parameter takeover is `nf::describeParameter`**, reverting **900 ms** after release —
+`nf::ReadoutFormat::revertMs`, where this panel carried 800. The case rule is
+`ValueCase::wordsOnly`, which is section 6.3's own examples: `THRESHOLD: -18.5 dB` and
+`TRIG LP: 6.3 kHz` keep their units as written while `ALGORITHM: PLATE` is capitalised. The
+discriminator is a unit — the floats all carry one or bake it into the text, the choices do not.
+
+`GatecrasherTheme::readoutFormat()` holds that, **not `ProgramHeader`**, and the placement is
+load-bearing: `ProgramHeader.h` reaches `PluginProcessor.h`, which needs `JucePlugin_*` macros that
+exist only in the plugin target, so a test reading the format from there cannot link. The test must
+read the shipping format rather than a copy, or it asserts against itself.
+
+`ReadoutConformanceTests` sweeps every parameter across its range and fails the build on a value
+that would print badly. It confirms the `fixed(0)` question the suite audit left open: the
+whole-percent formatter uses `roundToInt`, and nothing in the layout prints at JUCE's seven-place
+default.
+
 **The bank on disk, the dirty flag and Program identity all come from `neon-foundry-core`**, pinned
 at `v1.0.0` and declared *after* `FetchContent_MakeAvailable(JUCE)` — core links `juce::juce_core`
 and refuses to fetch its own, and two JUCE trees in one build link two `juce_core` builds into one

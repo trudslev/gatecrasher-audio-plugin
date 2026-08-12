@@ -71,11 +71,13 @@ bool ProgramHeader::hitTest(int x, int y)
 
 void ProgramHeader::timerCallback()
 {
-    // Live-value takeover reverts on its own clock rather than a second timer.
-    if (revertAtMs != 0 && juce::Time::getMillisecondCounter() >= revertAtMs)
+    // Live-value takeover reverts on its own clock rather than a second timer. The DEADLINE is
+    // core's; polling it from a timer this component already runs is the local choice, and the two
+    // castings that use a one-shot juce::Timer instead read the same deadline.
+    if (const bool showing = readout.isShowing(juce::Time::getMillisecondCounter());
+        showing != readoutWasShowing)
     {
-        revertAtMs = 0;
-        editingParamID.clear();
+        readoutWasShowing = showing;
         repaint(nameCellRect.getSmallestIntegerContainer());
     }
 
@@ -108,16 +110,31 @@ void ProgramHeader::showParameter(const juce::String& paramID)
     if (namingMode)
         return;    // the glass belongs to the name field until it commits or cancels
 
-    editingParamID = paramID;
-    revertAtMs = 0;
-    repaint(nameCellRect.getSmallestIntegerContainer());
+    auto* param = processorRef.apvts.getParameter(paramID);
+
+    if (param == nullptr)
+        return;
+
+    // Straight through nf::describeParameter, which is straight through the parameter's own getText
+    // and getLabel - so the LCD and the host cannot disagree about what a control reads. The four
+    // skewed knobs need no special handling: their printed ticks were placed from the same
+    // power-law curve the parameter uses (section 4.2), so the value always agrees with the mark
+    // the pointer is sitting on.
+    const auto text = nf::describeParameter(*param, GatecrasherTheme::readoutFormat());
+    const auto now = juce::Time::getMillisecondCounter();
+
+    // Repaint only on a CHANGE - this fires on every value change through a drag, and this
+    // component spans the whole canvas.
+    if (text != readout.textAt(now))
+        repaint(nameCellRect.getSmallestIntegerContainer());
+
+    readout.show(text);
+    readoutWasShowing = true;
 }
 
 void ProgramHeader::releaseParameter()
 {
-    if (editingParamID.isNotEmpty())
-        revertAtMs = juce::Time::getMillisecondCounter()
-                         + (juce::uint32) GatecrasherTheme::Layout::lcdRevertMs;
+    readout.release(juce::Time::getMillisecondCounter());
 }
 
 juce::String ProgramHeader::numberedProgramName() const
@@ -140,31 +157,6 @@ juce::String ProgramHeader::numberedProgramName() const
     // dropdown and the host's own Program menu both read the label raw, so the same Program showed
     // as "01 AIR TOMORROW" on the glass and "01 Air Tomorrow" in the list beneath it.
     return processorRef.getProgramManager().displayLabelFor(displayedId);
-}
-
-juce::String ProgramHeader::liveValueText() const
-{
-    auto* param = processorRef.apvts.getParameter(editingParamID);
-    if (param == nullptr)
-        return {};
-
-    // Straight through the parameter's own getText, so the number and its unit match what the host
-    // shows for the same control - there is no second formatting convention to keep in step. The
-    // four skewed knobs need no special handling: their printed ticks were placed from the same
-    // power-law curve the parameter uses (section 4.2), so the value always agrees with the mark
-    // the pointer is sitting on.
-    const auto name = param->getName(24).toUpperCase();
-    const auto unit = param->getLabel();
-    auto value = param->getText(param->getValue(), 0);
-
-    // Section 6.3's examples set the case: "THRESHOLD: -18.5 dB" and "TRIG LP: 6.3 kHz" keep their
-    // units as written, while "ALGORITHM: PLATE" is capitalised. The difference is a unit - the
-    // float parameters all carry one (or bake it into the text, as the two frequencies do), the
-    // choice parameters do not - so a unitless value is a word and gets the name's treatment.
-    if (unit.isEmpty() && ! value.containsAnyOf("0123456789"))
-        value = value.toUpperCase();
-
-    return name + ": " + value + (unit.isEmpty() ? juce::String() : " " + unit);
 }
 
 void ProgramHeader::refreshDisplayFromProcessor()
@@ -518,8 +510,9 @@ void ProgramHeader::paint(juce::Graphics& g)
         // Section 6.4: a modified program gains a trailing " *", cleared on store, on delete and
         // on loading another program - all three of which reset displayedIsModified via
         // refreshDisplayFromProcessor, so nothing extra is needed to clear it here.
-        const auto shown = editingParamID.isNotEmpty()
-                               ? liveValueText()
+        const auto takeover = readout.textAt(juce::Time::getMillisecondCounter());
+        const auto shown = takeover.isNotEmpty()
+                               ? takeover
                                : numberedProgramName() + (displayedIsModified ? " *" : "");
         drawTrackedText(g, shown, lcdFont, lcdTracking, nameCellRect,
                          juce::Justification::centred, Colour::ledText);
