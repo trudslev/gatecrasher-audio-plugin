@@ -26,6 +26,26 @@ public:
     juce::AudioProcessorEditor* createEditor() override;
     bool hasEditor() const override { return true; }
 
+    /** **Gatecrasher has no bypass, and that is a decision rather than an omission.**
+
+
+        BRAND.md makes a disengaged state optional; the suite audit found four castings saying
+
+        which they had chosen and two - this one and TapeRot - saying nothing either way, which
+
+        leaves a reader unable to tell a decision from an oversight.
+
+
+        The decision: this is a gate, and its whole subject is a signal being let through or not.
+
+        A panel-level bypass would be a second, quieter answer to the question the GATE OPEN lamp
+
+        already answers, and the host bypasses the plugin itself. Reflect-84 is the reference if
+
+        that is ever reversed - a real AudioParameterBool behind getBypassParameter(), a 0.50
+
+        multiply over the whole canvas, no caption, no control on the panel. */
+
     const juce::String getName() const override { return JucePlugin_Name; }
     bool acceptsMidi() const override { return false; }
     bool producesMidi() const override { return false; }

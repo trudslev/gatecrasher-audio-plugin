@@ -20,6 +20,8 @@ public:
     KnobFilmstripComponent(GatecrasherTheme::KnobFilmstripSize size, float diameterPx);
 
     void paint(juce::Graphics&) override;
+
+    void mouseDown (const juce::MouseEvent& e) override;   // Shift = 4x fine drag
     bool hitTest(int x, int y) override;
 
 private:

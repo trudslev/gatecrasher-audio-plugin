@@ -32,7 +32,6 @@ namespace GatecrasherTheme
         // contrast: 5.21-6.20:1 vs plate:keySourceLabels,plate:shapeLabels [functional exempt: section 2.1 dims the inactive half deliberately - see this repo's CLAUDE.md, "do not fix it"]
         inline const juce::Colour labelUnselected{0xFF2B3034};   // 400 weight
 
-        inline const juce::Colour programCellDivider{0xFF2A3035};
 
         inline const juce::Colour ledWindowBg{0xFF07090A};
         inline const juce::Colour ledWindowBorder{0xFF363C41};
@@ -46,7 +45,6 @@ namespace GatecrasherTheme
         inline const juce::Colour gateAccent{0xFFFF2B1C};
         inline const juce::Colour lampUnlit{0xFF3A1512};
 
-        inline const juce::Colour tickMark{0xFF3F454A};
 
         // Switch (KEY SOURCE / SHAPE) - recessed track + sliding metal shoe, section 5/7.
         inline const juce::Colour switchTrackBg{0xFF07090A};
@@ -87,10 +85,10 @@ namespace GatecrasherTheme
         inline const juce::Colour meterBloom{0x8CE6F2F8}; // rgba(230,242,248,.55)
         inline const juce::Colour meterThresholdMarker{0x80FFFFFF};
 
-        // Program header LED tag/name text, section 6.
-        inline const juce::Colour tagFactory{0xFF6F797F};
-        inline const juce::Colour tagUser{0xFFCFD7DC};
-        inline const juce::Colour headerName{0xFFDFE6EA};
+        // Program header LED tag/name text: tagFactory, tagUser and headerName are GONE, along
+        // with tickMark and programCellDivider. All five were dead. A dead colour is not inert - it
+        // reads as a sanctioned choice, so the next person wanting "the header's grey" finds one
+        // already named and blessed and reintroduces a value nothing has drawn in months.
 
         // SAVE/DELETE (STORE/CANCEL) stamped-steel utility buttons, section 6's state table. Drawn
         // live rather than via the header-state bitmaps - see ProgramHeader.cpp's class comment for
@@ -134,6 +132,12 @@ namespace GatecrasherTheme
         constexpr float canvasHeight = 434.0f;
 
         // Rotation range for every knob: pointer at 12 o'clock = centre (section 3).
+        /** 190px of vertical drag spans the full range, 760 while Shift is held. Suite figures: six
+            castings had six drag feels - this one was on JUCE's untouched 250 AND was the only one
+            responding to horizontal drag - so the same hand got a different response from each. */
+        constexpr int knobDragPixels = 190;
+        constexpr int knobFineDragPixels = 760;
+
         constexpr float knobArcStartDegrees = -135.0f;
         constexpr float knobArcEndDegrees = 135.0f;
 

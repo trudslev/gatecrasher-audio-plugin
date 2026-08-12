@@ -92,6 +92,7 @@ public:
         the room actually below the anchor is the window's own height less than that. */
     static int menuHostTop() noexcept { return menuAnchorY() - 8; }
     bool hitTest(int x, int y) override;
+    void focusLost (FocusChangeType) override;
     void mouseDown(const juce::MouseEvent&) override;
     void mouseUp(const juce::MouseEvent&) override;
     void mouseMove(const juce::MouseEvent&) override;

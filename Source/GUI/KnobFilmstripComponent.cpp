@@ -1,11 +1,28 @@
 #include "KnobFilmstripComponent.h"
 
 KnobFilmstripComponent::KnobFilmstripComponent(GatecrasherTheme::KnobFilmstripSize size, float diameterPx)
-    : juce::Slider(juce::Slider::RotaryHorizontalVerticalDrag, juce::Slider::NoTextBox),
+    // **RotaryVerticalDrag, like the other five.** This was the one casting responding to
+    // horizontal drag as well, which is a different feel under the same hand and nothing about
+    // Gatecrasher's identity argued for it.
+    : juce::Slider(juce::Slider::RotaryVerticalDrag, juce::Slider::NoTextBox),
       filmstripSize(size), diameter(diameterPx)
 {
     setRotaryParameters(juce::degreesToRadians(GatecrasherTheme::Layout::knobArcStartDegrees),
                          juce::degreesToRadians(GatecrasherTheme::Layout::knobArcEndDegrees), true);
+
+    setMouseDragSensitivity(GatecrasherTheme::Layout::knobDragPixels);
+    setVelocityBasedMode(false);
+}
+
+void KnobFilmstripComponent::mouseDown(const juce::MouseEvent& e)
+{
+    // Sensitivity has to be settled BEFORE Slider::mouseDown records its drag anchor: JUCE measures
+    // from that anchor and scales by the current sensitivity, so changing it mid-drag rescales the
+    // distance already travelled and the value jumps.
+    setMouseDragSensitivity(e.mods.isShiftDown() ? GatecrasherTheme::Layout::knobFineDragPixels
+                                                 : GatecrasherTheme::Layout::knobDragPixels);
+
+    juce::Slider::mouseDown(e);
 }
 
 void KnobFilmstripComponent::paint(juce::Graphics& g)

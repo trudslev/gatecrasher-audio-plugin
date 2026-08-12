@@ -102,13 +102,37 @@ GatecrasherEditorContent::GatecrasherEditorContent(GatecrasherAudioProcessor& p)
                      (int) std::round(Layout::switchAssemblyH + 2.0f * Layout::switchVerticalSafetyPad));
     };
 
+    /*  **Both switches report to the LCD, like every knob.** BRAND.md's rule is that every control
+        changing a parameter announces itself there, switches included - a rule about which controls
+        are "self-explanatory" is harder to apply consistently than no rule at all, and a switch is
+        often the LEAST obvious thing on a panel: turning a knob shows you its own printed scale,
+        while flipping a switch shows you nothing.
+
+        Guarded on isMouseButtonDown for exactly the reason the knobs are, and calling noteUserEdit
+        for exactly the same one: a SliderAttachment fires on Program recall and on every automation
+        step, and this is the only place that knows a change came from a person. */
+    const auto reportSwitch = [this] (ToggleSwitchComponent& sw, juce::String paramID)
+    {
+        sw.onValueChange = [this, &sw, paramID]
+        {
+            if (sw.isMouseButtonDown())
+            {
+                processorRef.noteUserEdit();
+                programHeader.showParameter(paramID);
+                programHeader.releaseParameter();
+            }
+        };
+    };
+
     placeSwitch(keySourceSwitch, Layout::keySourceTrackX, Layout::keySourceTrackY);
+    reportSwitch(keySourceSwitch, ParamIDs::keySource);
     keySourceSwitch.setTooltip("Trigger detector source: Internal (main input) or Sidechain.");
     keySourceAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
         processorRef.apvts, ParamIDs::keySource, keySourceSwitch);
     addAndMakeVisible(keySourceSwitch);
 
     placeSwitch(shapeSwitch, Layout::shapeTrackX, Layout::shapeTrackY);
+    reportSwitch(shapeSwitch, ParamIDs::shape);
     shapeSwitch.setTooltip("Release curve character: Hard is a linear cliff, Soft curves and extends it.");
     shapeAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
         processorRef.apvts, ParamIDs::shape, shapeSwitch);

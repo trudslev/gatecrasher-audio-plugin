@@ -54,6 +54,16 @@ ProgramHeader::~ProgramHeader()
     stopTimer();
 }
 
+void ProgramHeader::focusLost(FocusChangeType)
+{
+    // **Losing focus cancels naming.** A half-typed name must not survive a click elsewhere on the
+    // panel - the field would stay open over a Program the user has moved on from, and the next
+    // keystroke would edit a name for the wrong one. Cancel touches no parameter, so anything
+    // tweaked before SAVE survives; leaving the mode is the whole of it.
+    if (namingMode)
+        cancelNaming();
+}
+
 bool ProgramHeader::hitTest(int x, int y)
 {
     return headerClusterRect.contains((float) x, (float) y);
@@ -113,7 +123,7 @@ void ProgramHeader::releaseParameter()
 juce::String ProgramHeader::numberedProgramName() const
 {
     // Section 6.1 sizes the cell around "14 ROOM REINFORCEMENT" and "the two-digit index and space"
-    // on top of the 24-character name cap - so the index is part of what the cell shows, 1-based and
+    // on top of the name cap (see maxProgramNameLength - the number is deliberately not repeated here) - so the index is part of what the cell shows, 1-based and
     // zero-padded to two digits. Uppercase throughout: the entry path already uppercases what is
     // typed (section 6.4), and the factory names are stored in title case, so without this the two
     // banks would read in different cases through the same window.
@@ -252,6 +262,18 @@ void ProgramHeader::showProgramMenu()
         }
 
         menu.addItem((int) i + 1, manager.displayLabelFor(id), true, id == current);
+    }
+
+    // **The USER section is always shown, with a placeholder when the bank is empty.** An absent
+    // section is ambiguous between "nothing saved yet" and "this plugin does not do that", and the
+    // player cannot tell which without saving something to find out. Reflect-84 had it first.
+    if (! userHeaderDone)
+    {
+        menu.addSeparator();
+        menu.addSectionHeader("User");
+        menu.addItem(-1, juce::String::charToString((juce::juce_wchar) 0x2014)
+                          + " none saved "
+                          + juce::String::charToString((juce::juce_wchar) 0x2014), false, false);
     }
 
     // Anchored to, and at least as wide as, the whole program window rather than the name cell -
@@ -472,9 +494,11 @@ void ProgramHeader::paint(juce::Graphics& g)
     // Printing FACT or USER there would name a bank the Program is not in.
     const bool onInit = !namingMode && (displayedId.bank == ProgramBank::init
                                          || displayedId.bank == ProgramBank::unresolved);
-    const bool showUserTag = namingMode || displayedId.bank == ProgramBank::user;
-    const auto tagText = onInit ? juce::String::charToString((juce::juce_wchar) 0x2014)
-                                : juce::String(showUserTag ? "USER" : "FACT");
+    // **NAME while typing, not USER.** The Program is not in the user bank until STORE commits it,
+    // and if the user cancels it never will be. §6.4's own table says NAME; Elmer had it first.
+    const auto tagText = namingMode ? juce::String("NAME")
+                       : onInit     ? juce::String::charToString((juce::juce_wchar) 0x2014)
+                       : juce::String(displayedId.bank == ProgramBank::user ? "USER" : "FACT");
 
     drawTrackedText(g, tagText, lcdFont, lcdTracking, tagCellRect,
                      juce::Justification::centred,
