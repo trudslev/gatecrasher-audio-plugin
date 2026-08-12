@@ -114,6 +114,25 @@ the one currently loaded. Program switching is async-safe the same way TapeRot's
 is: a host can call `setCurrentProgram` from a non-message thread, so the real application is
 deferred through `ProgramManager`'s own `AsyncUpdater`.
 
+**The bank on disk, the dirty flag and Program identity all come from `neon-foundry-core`**, pinned
+at `v1.0.0` and declared *after* `FetchContent_MakeAvailable(JUCE)` — core links `juce::juce_core`
+and refuses to fetch its own, and two JUCE trees in one build link two `juce_core` builds into one
+binary. It is linked into both `Gatecrasher` and `GatecrasherTests`, because `ProgramManager.cpp` is
+compiled into both.
+
+`nf::UserProgramStore` owns scanning, sort-by-stem, naming, the collision check, save and delete;
+`nf::ParameterSnapshot` owns the dirty baseline; `nf::ProgramId` owns identity. **What a Program
+*contains* stays here** — the whole APVTS state plus the schema version. Core owns files and names;
+this repo owns meaning.
+
+Two things changed with the move. The empty-name fallback is **`TAKE n`**, not `NEW PROGRAM` — six
+castings had five different fallbacks, and consecutive empty saves now give `TAKE 3`, `TAKE 4`
+rather than leaning on `getNonexistentSibling` for `NEW PROGRAM (2)`. And the dirty baseline is
+**keyed by parameter ID and guarded by a `SpinLock`**, where it was a positional
+`std::vector<float>` with neither. The old comment claimed every writer ran on the message thread;
+`setStateInformation` carries no such guarantee from JUCE, and the GUI polls the flag while it runs.
+TapeRot and Elmer had both spotted that and guarded their own copies — this casting had not.
+
 ### GUI (`Source/GUI/`)
 
 **Deliberate divergence from TapeRot**: TapeRot's GUI is fully vector/code-drawn (`SectionPanel`,

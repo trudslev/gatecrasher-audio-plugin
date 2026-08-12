@@ -2,6 +2,8 @@
 
 #include <juce_core/juce_core.h>
 
+#include <nf/ProgramId.h>
+
 #include <array>
 
 // Flat POD table of the 17 factory programs, one field per APVTS parameter. Plain int indices
@@ -12,38 +14,18 @@
 // Values here are a first, structurally-plausible pass matching each program's intended function
 // (see the plan / prompts/PROMPTS.md) - not yet tuned by ear against the real DSP. Same status as
 // TapeRot's factory presets before their own by-ear pass: audition each, adjust, done.
-/** Which list a Program belongs to. INIT is its own bank rather than a magic index, because it is
-    in neither of the other two. `unresolved` is a stored identifier that no longer names anything -
-    a Factory Program dropped in a later version, or a deleted user file. */
-enum class ProgramBank
-{
-    init,
-    factory,
-    user,
-    unresolved
-};
+/** **Program identity comes from core, and these aliases are the whole of the local surface.**
 
-/** **How a Program is identified everywhere except the host adapter.**
+    `nf::ProgramBank` and `nf::ProgramId` say what six identical copies used to say separately:
+    INIT is its own bank rather than a magic index, identity is a permanent slug for a Factory
+    Program and the filename stem for a User one, and `displayName` is carried for presentation
+    only - a factory slug is not presentable in the LCD - and is deliberately outside `operator==`,
+    so a corrected typo in the bank cannot make a Program stop equalling itself.
 
-    Not a position. Positions change when the bank is reordered or extended, so a stored position is
-    a name that stops meaning the same thing.
-
-    - `factory`    - `id` is the entry's permanent `FactoryProgram::slug`.
-    - `user`       - `id` is the file's stem, which is also its displayed name.
-    - `init`       - `id` is `"init"`.
-    - `unresolved` - `id` is what failed to resolve; `displayName` is what the panel paints.
-
-    `displayName` is carried because a factory slug is not presentable - "air-tomorrow?" in the LCD
-    would read as a rendering fault. It is display only and never resolves anything. */
-struct ProgramId
-{
-    ProgramBank bank = ProgramBank::factory;
-    juce::String id;
-    juce::String displayName;
-
-    bool operator== (const ProgramId& o) const noexcept { return bank == o.bank && id == o.id; }
-    bool operator!= (const ProgramId& o) const noexcept { return ! operator== (o); }
-};
+    Aliased rather than used qualified at every call site, because the unqualified names are what
+    the panel, the header and the tests already read. */
+using ProgramBank = nf::ProgramBank;
+using ProgramId   = nf::ProgramId;
 
 struct FactoryProgram
 {

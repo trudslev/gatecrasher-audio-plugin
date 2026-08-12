@@ -37,6 +37,8 @@ target_compile_definitions(GatecrasherTests PRIVATE
     NF_PRODUCT_NAME="${GATECRASHER_PRODUCT_NAME}")
 
 target_link_libraries(GatecrasherTests PRIVATE
+    # ProgramManager.cpp is compiled into both targets and calls into core, so both link it.
+    nf::core
     juce::juce_dsp
     juce::juce_audio_basics
     juce::juce_audio_processors
