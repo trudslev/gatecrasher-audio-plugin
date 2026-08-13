@@ -316,6 +316,23 @@ half of that failure cannot recur — but the font half still can, and did again
 **four of the six bundles now ship no font binaries at all**, so extracting one *as* `design/`
 deletes the build's type without a word.
 
+### The Program list's group caption
+
+**Sized from its own type plus padding, never derived from the row height.** The construction is
+`nf::captionHeight (font, topPadding, bottomPadding)` — 3px above and 4px below, the suite's adopted
+default — and it comes out **18px** here, from a nominal 11px built from a JUCE height rather than through `withPointHeight`.
+
+**The construction is the rule, not the number.** Writing 18 as a literal would break silently at
+the first change of font, size or font construction, which is a change nobody would think to check a
+caption against. It is also how this caption came to inherit JUCE's `rowHeight + rowHeight / 2` in
+the first place — a caption half again *taller* than a row, which is a menu convention rather than a
+panel one.
+
+**The 18 is not a divergence to correct.** Predicting 19 for all four castings and measuring 18
+here is what surfaced the type-scale finding: this casting owns a `monoFontHeightForCssPx`
+converter and the menu type bypasses it, so the same nominal constant renders smaller. That is a
+question about the whole type scale, recorded in the root `CLAUDE.md`, not about captions.
+
 ## Status
 
 - **DSP**: every stage has real, functioning processing - no stubs. `auval` and `pluginval
