@@ -2,6 +2,7 @@ juce_add_console_app(GatecrasherTests PRODUCT_NAME "GatecrasherTests")
 
 target_sources(GatecrasherTests PRIVATE
     RealtimeSafetyTests.cpp
+    NumericalRobustnessTests.cpp
     TestMain.cpp
     ReadoutConformanceTests.cpp
     MenuMetricsTests.cpp
