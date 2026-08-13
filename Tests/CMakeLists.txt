@@ -1,6 +1,7 @@
 juce_add_console_app(GatecrasherTests PRODUCT_NAME "GatecrasherTests")
 
 target_sources(GatecrasherTests PRIVATE
+    RealtimeSafetyTests.cpp
     TestMain.cpp
     ReadoutConformanceTests.cpp
     MenuMetricsTests.cpp
@@ -67,6 +68,9 @@ target_compile_definitions(GatecrasherTests PRIVATE
     JucePlugin_Manufacturer="${GATECRASHER_COMPANY_NAME}")
 
 target_link_libraries(GatecrasherTests PRIVATE
+    # The bug sweep's measurement drivers. TEST target only — never the plugin, which must not
+    # carry an operator new override. See nf/testing/ProcessorHarness.h.
+    nf::testing
     # ProgramManager.cpp is compiled into both targets and calls into core, so both link it.
     nf::core
     # GatecrasherBinaryData, because ReadoutConformanceTests includes ProgramHeader.h to read
