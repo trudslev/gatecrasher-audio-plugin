@@ -29,14 +29,14 @@ namespace ParamIDs
 
 namespace KeySourceNames
 {
-    constexpr auto internalSource = "Internal";
-    constexpr auto sidechain = "Sidechain";
+    constexpr auto internalSource = "INTERNAL";
+    constexpr auto sidechain = "SIDECHAIN";
 }
 
 namespace ShapeNames
 {
-    constexpr auto hard = "Hard";
-    constexpr auto soft = "Soft";
+    constexpr auto hard = "HARD";
+    constexpr auto soft = "SOFT";
 }
 
 namespace AlgorithmNames
@@ -44,10 +44,10 @@ namespace AlgorithmNames
     // Declared in PANEL ORDER, which spec section 9.1 makes part of the contract: the selector's
     // four detents sweep AMBI -> ROOM -> PLATE -> CHMBR across -135 / -45 / +45 / +135, so index 0
     // is Ambience and the default Plate sits at index 2 (+45 degrees).
-    constexpr auto ambience = "Ambience";
-    constexpr auto room = "Room";
-    constexpr auto plate = "Plate";
-    constexpr auto chamber = "Chamber";
+    constexpr auto ambience = "AMBIENCE";
+    constexpr auto room = "ROOM";
+    constexpr auto plate = "PLATE";
+    constexpr auto chamber = "CHAMBER";
 }
 
 namespace LegacyMigration
@@ -192,55 +192,55 @@ inline juce::AudioProcessorValueTreeState::ParameterLayout createGatecrasherPara
 
     // Gate section
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        juce::ParameterID{ParamIDs::threshold, 1}, "Threshold",
+        juce::ParameterID{ParamIDs::threshold, 1}, "THRESHOLD",
         juce::NormalisableRange<float>(-60.0f, 0.0f), -18.5f, dbAttrs));
 
     // Trigger-detection filters: log skew (0.3, matching TapeRot's LP/HP convention) so the
     // musically-relevant low end of the range isn't crammed into a sliver of knob travel.
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        juce::ParameterID{ParamIDs::trigHP, 1}, "Trigger HP",
+        juce::ParameterID{ParamIDs::trigHP, 1}, "TRIGGER HP",
         juce::NormalisableRange<float>(20.0f, 2000.0f, 0.0f, 0.3f), 180.0f, hzAttrs));
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        juce::ParameterID{ParamIDs::trigLP, 1}, "Trigger LP",
+        juce::ParameterID{ParamIDs::trigLP, 1}, "TRIGGER LP",
         juce::NormalisableRange<float>(500.0f, 20000.0f, 0.0f, 0.3f), 6300.0f, hzAttrs));
 
     params.push_back(std::make_unique<juce::AudioParameterChoice>(
-        juce::ParameterID{ParamIDs::keySource, 1}, "Key Source",
+        juce::ParameterID{ParamIDs::keySource, 1}, "KEY SOURCE",
         juce::StringArray{KeySourceNames::internalSource, KeySourceNames::sidechain}, 0));
 
     // Attack skews hard toward the low end (0.25) - sub-millisecond differences matter here and
     // the usable range tops out well before 20ms.
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        juce::ParameterID{ParamIDs::attack, 1}, "Attack",
+        juce::ParameterID{ParamIDs::attack, 1}, "ATTACK",
         juce::NormalisableRange<float>(0.1f, 20.0f, 0.0f, 0.25f), 0.4f, msAttrs));
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        juce::ParameterID{ParamIDs::hold, 1}, "Hold",
+        juce::ParameterID{ParamIDs::hold, 1}, "HOLD",
         juce::NormalisableRange<float>(10.0f, 500.0f), 165.0f, msAttrs));
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        juce::ParameterID{ParamIDs::release, 1}, "Release",
+        juce::ParameterID{ParamIDs::release, 1}, "RELEASE",
         juce::NormalisableRange<float>(1.0f, 200.0f, 0.0f, 0.3f), 4.0f, msAttrs));
 
     // Release-curve character only (see GateEnvelopeGenerator) - attack/hold are unaffected.
     params.push_back(std::make_unique<juce::AudioParameterChoice>(
-        juce::ParameterID{ParamIDs::shape, 1}, "Shape",
+        juce::ParameterID{ParamIDs::shape, 1}, "SHAPE",
         juce::StringArray{ShapeNames::hard, ShapeNames::soft}, 0));
 
     // Reverb section
     params.push_back(std::make_unique<juce::AudioParameterChoice>(
-        juce::ParameterID{ParamIDs::algorithm, 1}, "Algorithm",
+        juce::ParameterID{ParamIDs::algorithm, 1}, "ALGORITHM",
         juce::StringArray{AlgorithmNames::ambience, AlgorithmNames::room,
                            AlgorithmNames::plate, AlgorithmNames::chamber},
         2));   // default Plate, at +45 degrees - section 9.1
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        juce::ParameterID{ParamIDs::size, 1}, "Size",
+        juce::ParameterID{ParamIDs::size, 1}, "SIZE",
         juce::NormalisableRange<float>(0.0f, 1.0f), 0.72f, normAttrs));
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        juce::ParameterID{ParamIDs::preDelay, 1}, "Pre-Delay",
+        juce::ParameterID{ParamIDs::preDelay, 1}, "PRE-DELAY",
         juce::NormalisableRange<float>(0.0f, 120.0f), 18.0f, msAttrs));
 
     // Decay: no panel control - approved design deliberately leaves this automation-only, same
@@ -248,37 +248,37 @@ inline juce::AudioProcessorValueTreeState::ParameterLayout createGatecrasherPara
     // seconds, since it feeds each ReverbTank's own algorithm-specific feedback-coefficient curve
     // rather than a single shared time constant.
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        juce::ParameterID{ParamIDs::decay, 1}, "Decay",
+        juce::ParameterID{ParamIDs::decay, 1}, "DECAY",
         juce::NormalisableRange<float>(0.0f, 1.0f), 0.6f, normAttrs));
 
     // Density: no panel control by design - automation-only (GUI-SPEC.md §9).
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        juce::ParameterID{ParamIDs::density, 1}, "Density",
+        juce::ParameterID{ParamIDs::density, 1}, "DENSITY",
         juce::NormalisableRange<float>(0.0f, 1.0f), 0.6f, normAttrs));
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        juce::ParameterID{ParamIDs::dampHF, 1}, "Damping HF",
+        juce::ParameterID{ParamIDs::dampHF, 1}, "DAMPING HF",
         juce::NormalisableRange<float>(0.0f, 1.0f), 0.55f, normAttrs));
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        juce::ParameterID{ParamIDs::dampLF, 1}, "Damping LF",
+        juce::ParameterID{ParamIDs::dampLF, 1}, "DAMPING LF",
         juce::NormalisableRange<float>(0.0f, 1.0f), 0.35f, normAttrs));
 
     // Output section
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        juce::ParameterID{ParamIDs::slam, 1}, "Slam",
+        juce::ParameterID{ParamIDs::slam, 1}, "SLAM",
         juce::NormalisableRange<float>(0.0f, 12.0f), 7.0f, dbAttrs));
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        juce::ParameterID{ParamIDs::width, 1}, "Stereo Width",
+        juce::ParameterID{ParamIDs::width, 1}, "STEREO WIDTH",
         juce::NormalisableRange<float>(0.0f, 200.0f), 128.0f, percentAttrs));
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        juce::ParameterID{ParamIDs::mix, 1}, "Mix",
+        juce::ParameterID{ParamIDs::mix, 1}, "MIX",
         juce::NormalisableRange<float>(0.0f, 100.0f), 64.0f, percentAttrs));
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        juce::ParameterID{ParamIDs::trim, 1}, "Output Trim",
+        juce::ParameterID{ParamIDs::trim, 1}, "OUTPUT TRIM",
         juce::NormalisableRange<float>(-24.0f, 12.0f), -1.4f, dbAttrs));
 
     // New parameters are appended below this line, never inserted above, to keep existing
