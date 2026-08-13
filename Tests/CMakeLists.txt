@@ -27,16 +27,44 @@ target_sources(GatecrasherTests PRIVATE
     ../Source/DSP/SlamSaturation.cpp
     ../Source/DSP/StereoWidthStage.cpp
     ../Source/DSP/OutputMixStage.cpp
-    ../Source/DSP/ProgramManager.cpp)
+    ../Source/DSP/ProgramManager.cpp
+    # **The REAL processor and the REAL editor, not stand-ins.** Everything above this line is what
+    # core does not own at the DSP layer; everything below it is the wiring and the panel, which no
+    # test could reach while this target compiled DSP alone.
+    #
+    # That gap was not theoretical. Reflect-84 shipped the stale-replay guard with ZERO call sites
+    # for its disarm, and no suite could have seen it: the defect lived in an editor .cpp that was
+    # not compiled into anything a test could run.
+    ../Source/PluginProcessor.cpp
+    ../Source/PluginEditor.cpp
+    ../Source/GUI/GatecrasherEditorContent.cpp
+    ../Source/GUI/ProgramHeader.cpp
+    ../Source/GUI/GatecrasherPanelBackground.cpp
+    ../Source/GUI/GatecrasherLookAndFeel.cpp
+    ../Source/GUI/KnobFilmstripComponent.cpp
+    ../Source/GUI/ToggleSwitchComponent.cpp
+    ../Source/GUI/GateScope.cpp
+    ../Source/GUI/GateLamp.cpp
+    ../Source/GUI/InputMeter.cpp
+    ../Source/GUI/StateLabels.cpp)
 
 # NF_COMPANY_NAME/NF_PRODUCT_NAME come from the parent CMakeLists and must match what the plugin
 # target gets - ProgramManager.cpp is compiled into both, and builds the user-Programs path from
 # them. Inherited from the parent scope rather than restated here, so there is nothing to re-sync.
+#
+# The JucePlugin_* pair and NF_VERSION_SHORT arrived with the processor and panel sources: a console
+# app gets none of the plugin target's generated definitions, and PluginProcessor uses
+# JucePlugin_Name for getName() while PanelBackground prints the version stamp. Inherited from the
+# same parent variables the plugin target uses, so there is nothing to re-sync — a hand-synced copy
+# in CHORUS-60 once drifted to a dead company name and quietly pointed saved Programs at a directory
+# nothing reads.
 target_compile_definitions(GatecrasherTests PRIVATE
     JUCE_WEB_BROWSER=0
     JUCE_USE_CURL=0
     NF_COMPANY_NAME="${GATECRASHER_COMPANY_NAME}"
-    NF_PRODUCT_NAME="${GATECRASHER_PRODUCT_NAME}")
+    NF_PRODUCT_NAME="${GATECRASHER_PRODUCT_NAME}"
+    JucePlugin_Name="${GATECRASHER_PRODUCT_NAME}"
+    JucePlugin_Manufacturer="${GATECRASHER_COMPANY_NAME}")
 
 target_link_libraries(GatecrasherTests PRIVATE
     # ProgramManager.cpp is compiled into both targets and calls into core, so both link it.
