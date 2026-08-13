@@ -115,10 +115,14 @@ is: a host can call `setCurrentProgram` from a non-message thread, so the real a
 deferred through `ProgramManager`'s own `AsyncUpdater`.
 
 **The LCD parameter takeover is `nf::describeParameter`**, reverting **900 ms** after release —
-`nf::ReadoutFormat::revertMs`, where this panel carried 800. The case rule is
-`ValueCase::wordsOnly`, which is section 6.3's own examples: `THRESHOLD: -18.5 dB` and
-`TRIG LP: 6.3 kHz` keep their units as written while `ALGORITHM: PLATE` is capitalised. The
-discriminator is a unit — the floats all carry one or bake it into the text, the choices do not.
+`nf::ReadoutFormat::revertMs`, where this panel carried 800. This panel set
+`ValueCase::wordsOnly` until 2026-08-13, when the designers ruled that **case belongs at the source,
+never at a display site**. Section 6.3's `ALGORITHM: PLATE` is still the target, but PLATE is
+authored that way in `Parameters.h` so the LCD and the host's automation lane print one string.
+`ValueCase` is deleted from core, and its line was removed from `GatecrasherTheme.h` to restore the
+build. **That deletion is a compile fix, not the ruling: the caps re-authoring in `Parameters.h` is
+still outstanding here**, so the readout currently prints names and choice values as authored. See
+the root `../CLAUDE.md` under "Case belongs at the source".
 
 `GatecrasherTheme::readoutFormat()` holds that, **not `ProgramHeader`**, and the placement is
 load-bearing: `ProgramHeader.h` reaches `PluginProcessor.h`, which needs `JucePlugin_*` macros that

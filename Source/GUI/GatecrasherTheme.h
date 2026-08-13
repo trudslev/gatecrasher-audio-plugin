@@ -783,21 +783,21 @@ namespace GatecrasherTheme
         a test that read the format from there could not link. The test must read the SHIPPING
         format rather than a copy, or it asserts against itself.
 
-        `wordsOnly`: section 6.3's own examples set it - "THRESHOLD: -18.5 dB" and "TRIG LP: 6.3
-        kHz" keep their units as written while "ALGORITHM: PLATE" is capitalised. The discriminator
-        is a unit: the float parameters all carry one or bake it into the text, the choice
-        parameters do not, so a unitless, digit-free value is a word and gets the control name's
-        treatment. TapeRot arrived at the same rule independently.
+        **This panel carried `ValueCase::wordsOnly` until 2026-08-13, and the enum is gone.** The
+        ruling is that case belongs at the SOURCE, never at a display site: section 6.3's
+        "ALGORITHM: PLATE" is still the target, but PLATE is authored that way in Parameters.h so
+        the LCD and the host's automation lane print one string. Re-casing here made this the only
+        site that did.
 
-        Elmer's source argues that even a choice name should be authored in caps in Parameters.h
-        instead, so the host's automation lane agrees. Both arguments are recorded beside
-        nf::ReadoutFormat::ValueCase; this panel keeps what it has until the designers rule.
+        **The re-authoring that ruling requires has NOT been done in this casting yet** - see the
+        suite-level note in ../CLAUDE.md under "Case belongs at the source". Until the `name`
+        arguments and the choice strings in Parameters.h are in caps, this panel's readout prints
+        them as authored, which is a visible change from what shipped.
 
         The revert is core's 900 ms, where this panel carried 800. */
     inline nf::ReadoutFormat readoutFormat()
     {
         nf::ReadoutFormat f;
-        f.valueCase = nf::ReadoutFormat::ValueCase::wordsOnly;
         f.nameCharacterBudget = 24;
         return f;
     }
