@@ -10,6 +10,7 @@
 #include "DSP/StereoWidthStage.h"
 #include "DSP/TriggerDetector.h"
 #include <juce_audio_processors/juce_audio_processors.h>
+#include <nf/UserEditGate.h>
 #include <vector>
 
 class GatecrasherAudioProcessor final : public juce::AudioProcessor
@@ -28,13 +29,11 @@ public:
 
     /** **Gatecrasher has no bypass, and that is a decision rather than an omission.**
 
-
         BRAND.md makes a disengaged state optional; the suite audit found four castings saying
 
         which they had chosen and two - this one and TapeRot - saying nothing either way, which
 
         leaves a reader unable to tell a decision from an oversight.
-
 
         The decision: this is a gate, and its whole subject is a signal being let through or not.
 
@@ -98,11 +97,21 @@ public:
         overrides above are the host's boundary and nothing else crosses it. */
     ProgramManager& getProgramManager() noexcept { return programManager; }
 
-    /** Clears the stale-replay guard. Called from the editor when a change is USER-originated. */
-    void noteUserEdit() noexcept { justRestoredState.store(false, std::memory_order_relaxed); }
     bool isCurrentProgramModified() const { return programManager.isModifiedFromLoadedProgram(); }
     void saveNewUserProgram(const juce::String& name) { programManager.saveNewUserProgram(name); }
     void deleteUserProgram(const ProgramId& id) { programManager.deleteUserProgram(id); }
+
+    /** **Guards a host replaying a stale program index over a just-restored session.** Armed by
+        setStateInformation, consumed by the next setCurrentProgram (which ignores it only when the
+        index matches what getCurrentProgram already reports — the shape of a replay), disarmed by
+        the first USER-originated edit. **Automation must not disarm it**: a host may write
+        automation on load before replaying, and that would reopen the hole.
+
+        Public because the editor hands it to `nf::connectUserEdit` for every control, which is the
+        point of it living in core: Reflect-84 once shipped this guard with zero call sites for its
+        disarm, and coupling the disarm to the LCD hand-off is what makes that omission
+        inexpressible. See nf/UserEditGate.h. */
+    nf::UserEditGate userEdits;
 
     juce::AudioProcessorValueTreeState apvts;
 
@@ -117,15 +126,6 @@ public:
     float getTriggerLevel() const noexcept { return triggerLevelDisplay.load(std::memory_order_relaxed); }
 
 private:
-    /** **Guards a host replaying a stale program index over a just-restored session.** Hosts have
-        been observed calling setCurrentProgram AFTER setStateInformation, echoing back the
-        presetNumber they remembered - which would apply a Factory Program over what was restored.
-
-        Armed by setStateInformation, disarmed by the first setCurrentProgram (itself ignored only
-        when it matches what getCurrentProgram already reports - the shape of a replay) or by the
-        first USER-originated edit via noteUserEdit. **Automation must not disarm it**: a host may
-        write automation on load before replaying, and that would reopen the hole. */
-    std::atomic<bool> justRestoredState { false };
 
     ProgramManager programManager;
 

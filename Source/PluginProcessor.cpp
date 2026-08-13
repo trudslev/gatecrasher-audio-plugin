@@ -204,7 +204,7 @@ void GatecrasherAudioProcessor::setCurrentProgram(int index)
     // The stale-replay guard, disarmed by this call whether or not it is honoured. A replay carries
     // the position we last reported, so a matching index right after a restore is ignored; anything
     // else, and every later call, applies normally.
-    if (justRestoredState.exchange(false, std::memory_order_relaxed) && index == getCurrentProgram())
+    if (userEdits.consumeRestore() && index == getCurrentProgram())
         return;
 
     programManager.requestProgramChange(ProgramManager::factoryIdAt(index));
@@ -272,7 +272,7 @@ void GatecrasherAudioProcessor::setStateInformation(const void* data, int sizeIn
 
             // **Armed AFTER replaceState**, or the restore's own parameter writes would look like
             // activity and disarm it immediately.
-            justRestoredState.store(true, std::memory_order_relaxed);
+            userEdits.armRestore();
         }
 }
 

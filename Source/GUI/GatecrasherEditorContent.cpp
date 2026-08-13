@@ -71,18 +71,14 @@ GatecrasherEditorContent::GatecrasherEditorContent(GatecrasherAudioProcessor& p)
         // whichever parameter was written last and flickers for the length of a song.
         auto* rawKnob = knob.get();
         const juce::String paramID(spec.paramID);
-        // The same guard disarms the processor's stale-replay flag, because this is the only place
+        // The same guard disarms the processor's stale-replay gate, because this is the only place
         // that knows a change came from a PERSON. It deliberately does not fire for automation: a
         // host may write automation on session load before replaying its remembered program index,
-        // and disarming there would let that replay land on the restored state.
-        knob->onValueChange = [this, rawKnob, paramID]
-        {
-            if (rawKnob->isMouseButtonDown())
-            {
-                processorRef.noteUserEdit();
-                programHeader.showParameter(paramID);
-            }
-        };
+        // and disarming there would let that replay land on the restored state. One call rather than
+        // two adjacent ones, so the disarm cannot be written without the hand-off - see
+        // nf/UserEditGate.h.
+        nf::connectUserEdit(*rawKnob, processorRef.userEdits,
+                            [this, paramID] { programHeader.showParameter(paramID); });
         knob->onDragEnd = [this] { programHeader.releaseParameter(); };
 
         addAndMakeVisible(*knob);
@@ -108,20 +104,19 @@ GatecrasherEditorContent::GatecrasherEditorContent(GatecrasherAudioProcessor& p)
         often the LEAST obvious thing on a panel: turning a knob shows you its own printed scale,
         while flipping a switch shows you nothing.
 
-        Guarded on isMouseButtonDown for exactly the reason the knobs are, and calling noteUserEdit
-        for exactly the same one: a SliderAttachment fires on Program recall and on every automation
-        step, and this is the only place that knows a change came from a person. */
+        Guarded on isMouseButtonDown for exactly the reason the knobs are, and disarming the
+        stale-replay gate for exactly the same one: a SliderAttachment fires on Program recall and on
+        every automation step, and this is the only place that knows a change came from a person.
+
+        A switch settles the moment it is thrown, so there is no drag to end - it announces and
+        releases inside the one callback rather than needing an onDragEnd. */
     const auto reportSwitch = [this] (ToggleSwitchComponent& sw, juce::String paramID)
     {
-        sw.onValueChange = [this, &sw, paramID]
+        nf::connectUserEdit(sw, processorRef.userEdits, [this, paramID]
         {
-            if (sw.isMouseButtonDown())
-            {
-                processorRef.noteUserEdit();
-                programHeader.showParameter(paramID);
-                programHeader.releaseParameter();
-            }
-        };
+            programHeader.showParameter(paramID);
+            programHeader.releaseParameter();
+        });
     };
 
     placeSwitch(keySourceSwitch, Layout::keySourceTrackX, Layout::keySourceTrackY);
