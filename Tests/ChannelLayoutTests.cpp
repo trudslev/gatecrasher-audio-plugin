@@ -1,4 +1,5 @@
 #include "../Source/PluginProcessor.h"
+#include "../Source/Parameters.h"
 
 #include <nf/testing/ProcessorHarness.h>
 
@@ -45,59 +46,184 @@ public:
 
     void runTest() override
     {
-        beginTest ("Every declared layout is accepted, and every accepted layout makes sound");
+        beginTest ("Two input buses — main, and the sidechain present and absent");
         {
-            struct Candidate { const char* name; int channels; };
-            const Candidate candidates[] = { { "mono", 1 }, { "stereo", 2 } };
+            // **The previous fixture built ONE input bus and this casting has two**, so
+            // `getChannelSet (true, 1)` never described anything and every layout came back
+            // rejected — contradicting the casting's own declaration, which is what said the
+            // instrument was at fault rather than the code.
+            //
+            // What is actually declared (PluginProcessor.cpp:79-89): main input and output must
+            // both be STEREO, and the sidechain may be disabled, mono or stereo.
+            //
+            // KNOWN CASES, named before the run and taken from that declaration rather than
+            // invented: a MONO main must be rejected, and all three sidechain states must be
+            // accepted. If mono main is accepted the fixture is not reading the layout; if a
+            // sidechain state is rejected the declaration and the code disagree.
+            struct Case { const char* label; juce::AudioChannelSet main; juce::AudioChannelSet side; bool expected; };
 
-            for (const auto& candidate : candidates)
+            const Case cases[] = {
+                { "main stereo, sidechain disabled", juce::AudioChannelSet::stereo(), juce::AudioChannelSet::disabled(), true  },
+                { "main stereo, sidechain mono",     juce::AudioChannelSet::stereo(), juce::AudioChannelSet::mono(),     true  },
+                { "main stereo, sidechain stereo",   juce::AudioChannelSet::stereo(), juce::AudioChannelSet::stereo(),   true  },
+                { "main MONO   (must be refused)",   juce::AudioChannelSet::mono(),   juce::AudioChannelSet::disabled(), false },
+            };
+
+            for (const auto& c : cases)
             {
-                // See the header: this fixture cannot describe this casting's buses, so the loop
-                // reports and asserts nothing until the sidechain arm exists.
                 GatecrasherAudioProcessor processor;
 
                 juce::AudioProcessor::BusesLayout layout;
-                const auto set = candidate.channels == 1 ? juce::AudioChannelSet::mono()
-                                                         : juce::AudioChannelSet::stereo();
-                layout.inputBuses.add (set);
-                layout.outputBuses.add (set);
+                layout.inputBuses.add (c.main);
+                layout.inputBuses.add (c.side);
+                layout.outputBuses.add (juce::AudioChannelSet::stereo());
 
                 const bool accepted = processor.checkBusesLayoutSupported (layout)
                                           && processor.setBusesLayout (layout);
 
-                if (! accepted)
-                {
-                    logMessage ("  " + juce::String (candidate.name) + " -> REJECTED");
-                    continue;
-                }
-
-                nf::testing::RenderSpec spec;
-                spec.blockSize = 512;
-                spec.numBlocks = 16;
-                spec.numChannels = candidate.channels;
-
-                const auto out = nf::testing::render (processor, spec);
-
+                juce::String note;
                 double peak = 0.0;
                 bool finite = true;
 
-                for (const auto& channel : out)
-                    for (float v : channel)
+                if (accepted)
+                {
+                    nf::testing::RenderSpec spec;
+                    spec.blockSize = 512;
+                    spec.numBlocks = 16;
+                    spec.numChannels = processor.getTotalNumInputChannels();
+
+                    const auto out = nf::testing::render (processor, spec);
+
+                    for (const auto& channel : out)
+                        for (float v : channel)
+                        {
+                            peak = juce::jmax (peak, (double) std::abs (v));
+                            finite = finite && std::isfinite (v);
+                        }
+
+                    note = ", " + juce::String (spec.numChannels) + " ch in, peak "
+                             + juce::String (peak, 6) + (finite ? "" : "   NON-FINITE");
+                }
+
+                logMessage ("  " + juce::String (c.label).paddedRight (' ', 34)
+                                + (accepted ? "accepted" : "REJECTED") + note);
+
+                expect (accepted == c.expected,
+                        juce::String (c.label) + " came back "
+                            + (accepted ? "accepted" : "rejected")
+                            + " against its own declaration at PluginProcessor.cpp:79-89");
+
+                if (accepted)
+                    expect (finite, juce::String (c.label) + " produced non-finite samples");
+            }
+
+            // **The gate with nothing to listen to is REPORTED, not asserted.** With KEY SOURCE set
+            // to SIDECHAIN and no sidechain connected, an externally-keyed gate has no key and
+            // reads as permanently closed. That is documented suite behaviour rather than a defect,
+            // and asserting either way would be asserting a design decision.
+            {
+                GatecrasherAudioProcessor processor;
+
+                juce::AudioProcessor::BusesLayout layout;
+                layout.inputBuses.add (juce::AudioChannelSet::stereo());
+                layout.inputBuses.add (juce::AudioChannelSet::disabled());
+                layout.outputBuses.add (juce::AudioChannelSet::stereo());
+
+                if (processor.checkBusesLayoutSupported (layout) && processor.setBusesLayout (layout))
+                {
+                    if (auto* key = processor.apvts.getParameter (ParamIDs::keySource))
+                        key->setValueNotifyingHost (1.0f);        // SIDECHAIN
+
+                    nf::testing::RenderSpec spec;
+                    spec.blockSize = 512;
+                    spec.numBlocks = 16;
+                    spec.numChannels = 2;
+
+                    double peak = 0.0;
+                    for (const auto& channel : nf::testing::render (processor, spec))
+                        for (float v : channel)
+                            peak = juce::jmax (peak, (double) std::abs (v));
+
+                    logMessage ("  KEY SOURCE = SIDECHAIN, bus DISABLED   -> peak "
+                                    + juce::String (peak, 6)
+                                    + (peak < 1.0e-6 ? "   (gate closed)" : "   (falls back, passes signal)"));
+                }
+            }
+
+            // **Two different situations that root CLAUDE.md's note runs together.** It says an
+            // externally-keyed gate "reads as permanently closed" when the sidechain has nothing to
+            // listen to — written about the standalone with no microphone permission, where the bus
+            // EXISTS and delivers zeros. That is not the same as the bus being disabled, where the
+            // plugin can see there is no sidechain at all and fall back.
+            //
+            // The arm above is bus-disabled. This one is bus-enabled-and-silent, which is the case
+            // the note actually describes. Measuring both is what separates "falls back sensibly"
+            // from "gate closed", and only one of them is the documented behaviour.
+            {
+                GatecrasherAudioProcessor processor;
+
+                juce::AudioProcessor::BusesLayout layout;
+                layout.inputBuses.add (juce::AudioChannelSet::stereo());
+                layout.inputBuses.add (juce::AudioChannelSet::stereo());
+                layout.outputBuses.add (juce::AudioChannelSet::stereo());
+
+                if (processor.checkBusesLayoutSupported (layout) && processor.setBusesLayout (layout))
+                {
+                    if (auto* key = processor.apvts.getParameter (ParamIDs::keySource))
+                        key->setValueNotifyingHost (1.0f);
+
+                    // **MIX fully wet, so the residual cannot be the dry path.** This is a gated
+                    // REVERB: the gate acts on the wet signal and MIX blends dry back in, so at any
+                    // mix below 100% a perfectly closed gate still passes dry — and a residual would
+                    // be correct rather than a leak. Fully wet is the only configuration in which
+                    // "the gate is closed" and "the output is silent" are the same statement.
+                    if (auto* mix = processor.apvts.getParameter (ParamIDs::mix))
+                        mix->setValueNotifyingHost (1.0f);
+
+                    nf::testing::RenderSpec spec;
+                    spec.blockSize = 512;
+                    spec.numBlocks = 16;
+                    spec.numChannels = 4;
+
+                    // Main gets signal; the sidechain pair is held at silence, which is exactly
+                    // what an ungranted microphone delivers.
+                    spec.fillInput = [] (juce::AudioBuffer<float>& buffer, int blockIndex)
                     {
-                        peak = juce::jmax (peak, (double) std::abs (v));
-                        finite = finite && std::isfinite (v);
-                    }
+                        buffer.clear();
+                        juce::Random r (5150 + blockIndex);
 
-                logMessage ("  " + juce::String (candidate.name) + " -> accepted, "
-                                + juce::String ((int) out.size()) + " channels out, peak "
-                                + juce::String (peak, 6) + (finite ? "" : "   NON-FINITE"));
+                        for (int ch = 0; ch < juce::jmin (2, buffer.getNumChannels()); ++ch)
+                            for (int i = 0; i < buffer.getNumSamples(); ++i)
+                                buffer.setSample (ch, i, r.nextFloat() * 2.0f - 1.0f);
+                    };
 
-                expect (finite, juce::String (candidate.name)
-                                    + " produced non-finite samples");
+                    // **Peak over the whole render cannot tell "leaks throughout" from "opens
+                    // once and then closes".** A gate whose envelope starts open produces one
+                    // transient and then silence, and a peak reports that identically to a gate
+                    // that never closes. So the last quarter is measured separately.
+                    const auto out = nf::testing::render (processor, spec);
 
-                juce::ignoreUnused (accepted);
+                    double peak = 0.0, tailPeak = 0.0;
+                    const size_t tailFrom = out[0].size() * 3 / 4;
 
-                juce::ignoreUnused (peak);
+                    for (const auto& channel : out)
+                        for (size_t i = 0; i < channel.size(); ++i)
+                        {
+                            const double v = std::abs ((double) channel[i]);
+                            peak = juce::jmax (peak, v);
+
+                            if (i >= tailFrom)
+                                tailPeak = juce::jmax (tailPeak, v);
+                        }
+
+                    logMessage ("  KEY SOURCE = SIDECHAIN, bus SILENT     -> peak "
+                                    + juce::String (peak, 6) + ", last-quarter peak "
+                                    + juce::String (tailPeak, 6)
+                                    + (tailPeak < 1.0e-6
+                                           ? "   (opens once, then closed — the documented case)"
+                                           : "   (STILL PASSING at " + juce::String (20.0 * std::log10 (tailPeak), 1)
+                                                 + " dBFS)"));
+                }
             }
         }
 
