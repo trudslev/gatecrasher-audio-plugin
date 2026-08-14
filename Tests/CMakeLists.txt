@@ -4,6 +4,7 @@ target_sources(GatecrasherTests PRIVATE
     RealtimeSafetyTests.cpp
     NumericalRobustnessTests.cpp
     InvarianceTests.cpp
+    AutomationLatencyTests.cpp
     TestMain.cpp
     ReadoutConformanceTests.cpp
     MenuMetricsTests.cpp
