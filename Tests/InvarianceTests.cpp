@@ -1,4 +1,5 @@
 #include "../Source/PluginProcessor.h"
+#include "../Source/Parameters.h"
 
 #include <nf/testing/ProcessorHarness.h>
 
@@ -63,6 +64,133 @@ public:
             if (! ab.sampleExact)
                 logMessage ("  NOTE: a first-run-only difference is itself a finding — an instance's "
                             "first playback differs from every later one. Reported, not asserted.");
+        }
+
+        beginTest ("BISECT — what moves Gatecrasher's first-run divergence off sample 2020?");
+        {
+            // This casting is the one the suite-wide smoother grep explains NOTHING about: zero
+            // unguarded SmoothedValue::reset sites, and a first-run divergence that is not at
+            // sample 0. ~2020 samples is ~42 ms at 48 kHz — state that takes time to express rather
+            // than an initial condition read straight away.
+            //
+            // ## Candidates, named before measuring
+            //
+            //   1. The gate envelope reaching a threshold.
+            //   2. The trigger detector's filter histories, which reach the output only once they
+            //      move the envelope past that threshold.
+            //   3. A tank's first wrap, at whichever line is ~42 ms.
+            //   4. The switch crossfade — RULED OUT BY SHAPE: Reflect-84's equivalent fires on the
+            //      first block, so it would show at sample 0. Recorded so it is not re-derived.
+            //
+            // ## What this instrument is, and what is known about it
+            //
+            // The metric is `firstDivergentSample`, which is not new: it produced correct verdicts
+            // across five castings in this category, including two defects reproduced by other
+            // means. What is new is the DRIVE DESIGN, and the known case for that is this casting's
+            // own baseline — cold against warmed is known to differ, and warmed against warmed is
+            // known to be exact, so the comparison is known able to both fail and pass before a
+            // single row below is read.
+            //
+            // If the divergence point moves with a parameter, that parameter's path owns it. If it
+            // sits at 2020 through every drive, none of the four candidates is right and the
+            // divergence is anchored to something none of these touch.
+            nf::testing::RenderSpec spec;
+            spec.blockSize = 512;
+            spec.numBlocks = 16;
+
+            const auto divergenceAt = [&spec] (const char* id, float normalised)
+            {
+                GatecrasherAudioProcessor cold, warmRef;
+
+                for (auto* p : { &cold, &warmRef })
+                    if (id != nullptr)
+                        if (auto* param = p->apvts.getParameter (id))
+                            param->setValueNotifyingHost (normalised);
+
+                nf::testing::RenderSpec warmSpec;
+                warmSpec.blockSize = 512;
+                warmSpec.numBlocks = 4;
+                nf::testing::render (warmRef, warmSpec);
+
+                return nf::testing::compareRenders (nf::testing::render (cold, spec),
+                                                    nf::testing::render (warmRef, spec));
+            };
+
+            const auto baseline = divergenceAt (nullptr, 0.0f);
+            logMessage ("  baseline (defaults)          -> " + baseline.describe());
+
+            struct Drive { const char* id; const char* why; };
+            const Drive drives[] = {
+                { ParamIDs::threshold, "candidate 1/2 — the gate's own threshold" },
+                { ParamIDs::attack,    "candidate 1 — how fast the envelope gets there" },
+                { ParamIDs::trigHP,    "candidate 2 — the detector's filter" },
+                { ParamIDs::size,      "candidate 3 — the tank's line lengths" },
+                { ParamIDs::preDelay,  "candidate 3 — when the tank is first fed" },
+                { ParamIDs::decay,     "candidate 3 — how long the tank holds" },
+            };
+
+            for (const auto& d : drives)
+                for (float v : { 0.15f, 0.85f })
+                {
+                    const auto r = divergenceAt (d.id, v);
+                    logMessage ("  " + (juce::String (d.id) + " = " + juce::String (v, 2)).paddedRight (' ', 28)
+                                    + " -> first at " + juce::String (r.firstDivergentSample)
+                                    + ", max |delta| " + juce::String (r.maxAbsDifference, 9)
+                                    + "   (" + d.why + ")");
+                }
+
+
+            // **Candidate 4 was ruled out by a shape argument and the argument was WRONG.** It said
+            // a switch crossfade "would show at sample 0, so it is not this". But Reflect-84's
+            // crossfade showed at sample 351 — its WET ARRIVAL — because a difference introduced
+            // inside the tank reaches the output when the wet path does, exactly like every other
+            // candidate here. The drives above establish that this divergence sits at wet arrival,
+            // which does not exclude the crossfade; it is precisely what the crossfade would do.
+            //
+            // Two readings of this casting's source have already produced wrong answers in this
+            // bisect — DampingStage's resize() (which does call reset(), so it is clean) and this
+            // shape argument — so this arm measures rather than reads. ReverbEngine constructs
+            // currentAlgorithm = plate, and the parameter's default index is 2, which the
+            // StringArray also maps to plate. If those agree no crossfade fires on the first block,
+            // and driving the algorithm to each of the four says so directly.
+            // **The baseline diverges exactly like index 1 while the parameter declares index 2.**
+            // Nine identical digits is not a coincidence, so either the default is not what the
+            // layout says or writing a parameter changes something beyond its value. Logged rather
+            // than reasoned about.
+            {
+                GatecrasherAudioProcessor fresh;
+                auto* algo = fresh.apvts.getParameter (ParamIDs::algorithm);
+                logMessage ("  default algorithm reads -> \"" + algo->getCurrentValueAsText()
+                                + "\", normalised " + juce::String (algo->getValue(), 4));
+
+                algo->setValueNotifyingHost (0.67f);
+                logMessage ("  after writing 0.67      -> \"" + algo->getCurrentValueAsText()
+                                + "\", normalised " + juce::String (algo->getValue(), 4));
+            }
+
+            logMessage ("  --- the four algorithms, and the crossfade candidate ---");
+
+            for (float v : { 0.0f, 0.34f, 0.67f, 1.0f })
+            {
+                const auto r = divergenceAt (ParamIDs::algorithm, v);
+                logMessage ("  algorithm = " + juce::String (v, 2) + " -> first at "
+                                + juce::String (r.firstDivergentSample) + ", max |delta| "
+                                + juce::String (r.maxAbsDifference, 9));
+            }
+
+            // Neutralising drives: each removes one stage from the wet path's contribution.
+            for (auto* id : { ParamIDs::mix, ParamIDs::slam, ParamIDs::dampHF, ParamIDs::dampLF })
+                for (float v : { 0.0f, 1.0f })
+                {
+                    const auto r = divergenceAt (id, v);
+                    logMessage ("  " + (juce::String (id) + " = " + juce::String (v, 2)).paddedRight (' ', 28)
+                                    + " -> first at " + juce::String (r.firstDivergentSample)
+                                    + ", max |delta| " + juce::String (r.maxAbsDifference, 9));
+                }
+
+            expect (! baseline.sampleExact,
+                    "the baseline came back exact, so every row above compared two identical things "
+                    "and the bisect measured nothing");
         }
 
         beginTest ("Block size — sample-exact at 64 / 128 / 511 / 2048");
