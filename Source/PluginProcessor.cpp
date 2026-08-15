@@ -1,5 +1,7 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+
+#include <nf/BlockChunking.h>
 #include <cmath>
 
 GatecrasherAudioProcessor::GatecrasherAudioProcessor()
@@ -92,12 +94,29 @@ void GatecrasherAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, j
 {
     juce::ScopedNoDenormals noDenormals;
 
-    auto mainIO = getBusBuffer(buffer, true, 0);
+    // **The over-delivery policy.** dryBuffer.setSize and the two scratch resizes below all grow
+    // when a host sends more samples than it declared, which is a heap allocation on the audio
+    // thread. Chunking removes all three at once: no span is ever longer than the prepared size, so
+    // there is nothing left to grow.
+    //
+    // ScopedNoDenormals stays OUTSIDE - it is scoped, so once per call is correct and cheaper than
+    // once per span.
+    //
+    // **The bus extraction moves INSIDE**, because each span needs its own view of both buses.
+    // getBusBuffer computes a channel offset and a length, and a span has the same channel count
+    // with its own pointers, so asking it per span is exactly right - asking it once outside would
+    // hand every span the whole block's length.
+    //
+    // The body below is otherwise unchanged and deliberately not re-indented, so the diff shows the
+    // wrapper rather than every line of the DSP.
+    nf::processInChunks(buffer, getBlockSize(), [&](juce::AudioBuffer<float>& span)
+    {
+    auto mainIO = getBusBuffer(span, true, 0);
     const int numSamples = mainIO.getNumSamples();
     const int numChannels = mainIO.getNumChannels();
 
     const bool sidechainConnected = getBus(true, 1) != nullptr && getBus(true, 1)->isEnabled();
-    auto sidechainBuffer = sidechainConnected ? getBusBuffer(buffer, true, 1) : juce::AudioBuffer<float>();
+    auto sidechainBuffer = sidechainConnected ? getBusBuffer(span, true, 1) : juce::AudioBuffer<float>();
 
     dryBuffer.setSize(numChannels, numSamples, false, false, true);
     for (int ch = 0; ch < numChannels; ++ch)
@@ -189,6 +208,7 @@ void GatecrasherAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, j
     const float currentOut = outputMeterLevel.load(std::memory_order_relaxed);
     const float coeffOut = outPeak > currentOut ? 0.5f : 0.12f;
     outputMeterLevel.store(currentOut + coeffOut * (outPeak - currentOut), std::memory_order_relaxed);
+    });
 }
 
 juce::AudioProcessorEditor* GatecrasherAudioProcessor::createEditor()
