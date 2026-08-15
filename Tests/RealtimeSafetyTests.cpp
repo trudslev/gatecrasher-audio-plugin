@@ -78,6 +78,46 @@ public:
                                         + steady.describe());
         }
 
+        beginTest ("The 128-byte residue — is it PER SPAN or fixed? (reported, not asserted)");
+        {
+            // **Stage 1b left four allocations totalling 128 bytes on the first over-delivered
+            // block, and a residue carried past its own stage stops being looked at.** Chunking took
+            // 6 alloc / 16512 bytes down to 4 alloc / 128 bytes; the 16384 was the buffer growth
+            // this stage exists to remove, and these four are not that — they do not scale the way
+            // 16384 did, and the matched-size arm reports none.
+            //
+            // The question a sweep answers and a guess does not: **does the count follow the number
+            // of SPANS?** Prepared at 256, driving 512 / 1024 / 2048 gives 2 / 4 / 8 spans. A count
+            // that tracks them is something inside the loop; a count that does not is a one-off on
+            // the first over-delivered block whatever its size.
+            //
+            // **MEASURED: 4 alloc / 128 bytes at ALL FOUR, including 256 — which is one span and
+            // not an over-delivery at all.** So it is neither per-span nor over-delivery-related.
+            // It is a first-block one-off that has always been here, and 1b did not leave it: 1b
+            // removed the 16384 bytes of growth that was hiding it.
+            //
+            // That is exactly the class category 1 named when it required BOTH figures per casting:
+            // *"a casting that allocates once on its very first block reads identically clean under
+            // a warmed probe, and that is a different finding from never allocating."* This casting's
+            // matched-size arm reports no heap activity because it warms first; this one does not
+            // warm, which is the only reason the four are visible at all.
+            //
+            // **Still unnamed, and now a different question.** It is not a chunking leftover, so it
+            // does not belong to 1b — it belongs with category 1's cold-allocation column, and the
+            // next thing worth asking is whether the other five castings show the same profile
+            // under a zero-warm-up probe. Shared, it is a suite finding; alone, it is Gatecrasher's.
+            for (int driven : { 256, 512, 1024, 2048 })
+            {
+                GatecrasherAudioProcessor p;
+                const auto cold = nf::testing::probeProcessBlockAllocation (p, 48000.0, 256, driven, 2, 1, 0);
+
+                logMessage ("  prepared 256, driven " + juce::String (driven).paddedLeft (' ', 4)
+                                + " (" + juce::String (driven / 256) + " spans) -> " + cold.describe());
+            }
+
+            expect (true);   // profiling
+        }
+
         beginTest ("The sidechain bus, present and absent");
         {
             // Gatecrasher is the one casting with a sidechain, so this case exists here and nowhere
