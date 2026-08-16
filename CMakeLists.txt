@@ -107,8 +107,8 @@ set(GATECRASHER_PRODUCT_NAME "Gatecrasher")
 juce_add_plugin(Gatecrasher
     PRODUCT_NAME "${GATECRASHER_PRODUCT_NAME}"
     COMPANY_NAME "${GATECRASHER_COMPANY_NAME}"
-    ICON_BIG "${CMAKE_CURRENT_SOURCE_DIR}/design/assets/icon/gatecrasher-icon-1024.png"
-    ICON_SMALL "${CMAKE_CURRENT_SOURCE_DIR}/design/assets/icon/gatecrasher-icon-256.png"
+    ICON_BIG "${CMAKE_CURRENT_SOURCE_DIR}/design/icons/gatecrasher-icon-1024.png"
+    ICON_SMALL "${CMAKE_CURRENT_SOURCE_DIR}/design/icons/gatecrasher-icon-256.png"
     BUNDLE_ID "com.neonfoundry.gatecrasher"
     # Without this the Standalone cannot get audio INPUT on macOS, and fails silently doing it.
     # An app with no NSMicrophoneUsageDescription is never granted capture access - the OS does not
