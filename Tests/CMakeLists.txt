@@ -6,6 +6,7 @@ target_sources(GatecrasherTests PRIVATE
     InvarianceTests.cpp
     AutomationLatencyTests.cpp
     ChannelLayoutTests.cpp
+    PendingProgramLockTests.cpp
     TestMain.cpp
     ReadoutConformanceTests.cpp
     MenuMetricsTests.cpp
