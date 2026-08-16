@@ -92,7 +92,7 @@ public:
         beginTest("ReverbEngine switching algorithms produces no NaN/Inf and stays bounded through the crossfade");
         {
             ReverbEngine engine;
-            engine.prepare(spec);
+            engine.prepare(spec, ReverbAlgorithm::plate);   // this arm drives switching itself
 
             juce::AudioBuffer<float> buffer(numChannels, blockSize);
 

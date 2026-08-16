@@ -34,7 +34,7 @@ public:
 
             trigger.prepare(spec);
             gate.prepare(sampleRate);
-            reverb.prepare(spec);
+            reverb.prepare(spec, ReverbAlgorithm::plate);
             damping.prepare(spec);
             slam.prepare(spec);
             width.prepare(spec);

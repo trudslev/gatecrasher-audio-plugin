@@ -188,9 +188,52 @@ public:
                                     + ", max |delta| " + juce::String (r.maxAbsDifference, 9));
                 }
 
-            expect (! baseline.sampleExact,
-                    "the baseline came back exact, so every row above compared two identical things "
-                    "and the bisect measured nothing");
+            /*  **CLOSED 2026-08-16 — the divergence this bisect was localising no longer exists.**
+
+                `ReverbEngine::currentAlgorithm` was constructed to `plate` and never reconciled
+                while the default Program selects ROOM, so the first block of every instance started
+                a crossfade nobody asked for. `prepare` takes the algorithm it is prepared for now,
+                and the cold-against-warmed baseline is **sample-exact**.
+
+                So the assertion inverts. It read `expect (! baseline.sampleExact)` — a vacuity guard
+                proving the drive rows above were comparing two different things, correct while the
+                thing it depended on was the defect, and asserting the defect's presence the moment
+                the defect went. That is the fifth of these in this stage, and the reason the plan now
+                says a pinned assertion should state what it becomes when the defect is fixed.
+
+                The drive rows keep running and keep logging. They cost one render each and they are
+                the instrument that would localise a NEW first-run divergence, which is worth more
+                than deleting them to tidy up. */
+            expect (baseline.sampleExact,
+                    "an instance's first playback differs from every later one. ReverbEngine::prepare "
+                    "takes its initial algorithm precisely so no crossfade fires on the first block: "
+                        + baseline.describe());
+
+            /*  The positive control, and it is load-bearing now that the baseline is exact. Every row
+                above reads 0.000000000, which is indistinguishable from a comparison that cannot
+                report anything else. Two renders at DIFFERENT algorithms must differ — a real
+                difference through the same `divergenceAt` fixture, rather than a fault invented to
+                make the instrument look alive. */
+            {
+                GatecrasherAudioProcessor a, b;
+
+                for (auto* p : { &a, &b })
+                    if (auto* algo = p->apvts.getParameter (ParamIDs::algorithm))
+                        algo->setValueNotifyingHost (p == &a ? 0.0f : 1.0f);
+
+                nf::testing::RenderSpec s;
+                s.blockSize = 512;
+                s.numBlocks = 16;
+
+                const auto differentTanks = nf::testing::compareRenders (nf::testing::render (a, s),
+                                                                          nf::testing::render (b, s));
+                logMessage ("  CONTROL two different algorithms -> " + differentTanks.describe());
+
+                expect (! differentTanks.sampleExact,
+                        "**THIS FIXTURE CANNOT REPORT A DIFFERENCE.** Two renders through different "
+                        "reverb tanks came back identical, so the exact rows above are a comparison "
+                        "that only ever reports exact");
+            }
         }
 
         beginTest ("Block size — sample-exact at 64 / 128 / 511 / 2048");

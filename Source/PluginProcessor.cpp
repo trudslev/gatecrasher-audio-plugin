@@ -59,7 +59,12 @@ void GatecrasherAudioProcessor::prepareToPlay(double sampleRate, int samplesPerB
     preDelayLine.prepare(spec);
     preDelayLine.reset();
 
-    reverbEngine.prepare(spec);
+    /*  **Prepared knowing which tank is selected, rather than discovering it on the first block.**
+        `currentAlgorithm` was constructed to `plate` while the default Program selects ROOM, so
+        every instance crossfaded on its first block — 0.041, from a state nobody chose. The map is
+        the same one processBlock uses; duplicating it would be a second place to get the
+        choice-index-to-tank correspondence wrong. */
+    reverbEngine.prepare(spec, tankForAlgorithmChoice((int) algorithmParam->load()));
     dampingStage.prepare(spec);
     slamSaturation.prepare(spec);
     stereoWidthStage.prepare(spec);
@@ -181,12 +186,7 @@ void GatecrasherAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, j
     // The parameter's choice order is the PANEL's (Ambience, Room, Plate, Chamber - spec section
     // 9.1); ReverbAlgorithm's is the DSP's own and is unrelated. Map explicitly rather than casting
     // the index: a static_cast happens to compile and would silently run the wrong tank.
-    static constexpr ReverbAlgorithm tankForChoice[4] = {
-        ReverbAlgorithm::ambience, ReverbAlgorithm::room,
-        ReverbAlgorithm::plate,    ReverbAlgorithm::chamber };
-
-    const int algorithmIndex = juce::jlimit(0, 3, (int) algorithmParam->load());
-    reverbEngine.process(mainIO, tankForChoice[algorithmIndex],
+    reverbEngine.process(mainIO, tankForAlgorithmChoice((int) algorithmParam->load()),
                           sizeParam->load(), decayParam->load(), densityParam->load());
 
     dampingStage.process(mainIO, dampHFParam->load(), dampLFParam->load());

@@ -153,6 +153,19 @@ private:
     TriggerDetector triggerDetector;
     GateEnvelopeGenerator gateEnvelopeGenerator;
     juce::dsp::DelayLine<float> preDelayLine { 1 };
+    /*  The panel's ALGORITHM choice order is the SPEC's (GUI-SPEC 9.1) and `ReverbAlgorithm`'s is
+        the DSP's own; they are unrelated, and a `static_cast` between them compiles and silently
+        runs the wrong tank. One function so `prepare` and `processBlock` cannot disagree about the
+        correspondence — they used to be the only two callers and only one of them had a map. */
+    static constexpr ReverbAlgorithm tankForAlgorithmChoice (int choiceIndex) noexcept
+    {
+        constexpr ReverbAlgorithm byChoice[4] = {
+            ReverbAlgorithm::ambience, ReverbAlgorithm::room,
+            ReverbAlgorithm::plate,    ReverbAlgorithm::chamber };
+
+        return byChoice[choiceIndex < 0 ? 0 : (choiceIndex > 3 ? 3 : choiceIndex)];
+    }
+
     ReverbEngine reverbEngine;
     DampingStage dampingStage;
     SlamSaturation slamSaturation;

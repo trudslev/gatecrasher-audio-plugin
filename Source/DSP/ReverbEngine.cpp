@@ -1,8 +1,9 @@
 #include "ReverbEngine.h"
 
-void ReverbEngine::prepare(const juce::dsp::ProcessSpec& spec)
+void ReverbEngine::prepare(const juce::dsp::ProcessSpec& spec, ReverbAlgorithm initialAlgorithm)
 {
     sampleRate = spec.sampleRate;
+    currentAlgorithm = initialAlgorithm;
     room.prepare(spec);
     plate.prepare(spec);
     chamber.prepare(spec);
