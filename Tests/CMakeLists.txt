@@ -7,6 +7,7 @@ target_sources(GatecrasherTests PRIVATE
     AutomationLatencyTests.cpp
     ChannelLayoutTests.cpp
     PendingProgramLockTests.cpp
+    MeterReadoutBudgetTests.cpp
     TestMain.cpp
     ReadoutConformanceTests.cpp
     MenuMetricsTests.cpp

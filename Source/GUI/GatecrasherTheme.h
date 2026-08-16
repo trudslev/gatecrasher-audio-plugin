@@ -290,6 +290,37 @@ namespace GatecrasherTheme
         // so the threshold marker is meaningful relative to the lit segments.
         constexpr float meterFloorDb = -60.0f, meterCeilingDb = 0.0f;
 
+        /*  **A SECOND ceiling, because the two are different quantities and conflating them was the
+            finding.** `meterCeilingDb` above is where the meter BAR tops out — 0 dB, the top of the
+            drawn scale. The numerals beside it are not on that scale: a signal at +6 dB should read
+            "+6.0", not be clamped to "0.0", which is what reusing the bar's constant would do.
+
+            This casting is the evidence that nobody considered the readout needed a bound at all:
+            it had a ceiling constant, feeding the graphic, while `formatMeterReadout` ignored it and
+            was therefore bounded only by how loud the signal got. */
+        constexpr float meterReadoutCeilingDb = 99.9f;
+
+    /*  **The IN/OUT readout's string, and it lives HERE rather than in ProgramHeader.cpp.**
+
+        Same reason the parameter readout format does: `ProgramHeader.h` reaches `PluginProcessor.h`,
+        whose `JucePlugin_*` macros exist only in the plugin target, so a test reading the format
+        from there cannot link — and a test that declares its own copy asserts against itself and
+        passes while the panel prints something else.
+
+        Suite ruling 2026-08-14: floor sentinel, +99.9 ceiling, one decimal always, an explicit sign
+        decision. The widest string is then FIVE characters as a guarantee rather than as a range. */
+        inline juce::String formatMeterDb (float db)
+        {
+            if (db <= meterFloorDb + 0.05f)
+                return "-INF";
+
+            // `> 0.0f` is the ruled comparison and was already right here; Chorus-60 printed `>=`.
+            const float clamped = juce::jmin (db, meterReadoutCeilingDb);
+
+            return (clamped > 0.0f ? "+" : "") + juce::String (clamped, 1);
+        }
+
+
         // KEY SOURCE / SHAPE switches - identical track geometry (section 5: "reuses the KEY
         // SOURCE switch verbatim"). Caption/label rows are derived around each track with the same
         // internal proportions (spec gives the track/assembly anchors, not sub-pixel caption/label

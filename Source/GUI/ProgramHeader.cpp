@@ -11,12 +11,8 @@ namespace
     {
         using namespace GatecrasherTheme;
 
-        const float db = juce::Decibels::gainToDecibels(juce::jmax(0.0f, linearLevel),
-                                                         Layout::meterFloorDb);
-        if (db <= Layout::meterFloorDb + 0.05f)
-            return "-INF";
-
-        return (db > 0.0f ? "+" : "") + juce::String(db, 1);
+        return Layout::formatMeterDb(juce::Decibels::gainToDecibels(juce::jmax(0.0f, linearLevel),
+                                                                     Layout::meterFloorDb));
     }
 }
 
