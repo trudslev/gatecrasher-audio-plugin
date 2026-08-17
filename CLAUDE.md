@@ -120,9 +120,19 @@ deferred through `ProgramManager`'s own `AsyncUpdater`.
 never at a display site**. Section 6.3's `ALGORITHM: PLATE` is still the target, but PLATE is
 authored that way in `Parameters.h` so the LCD and the host's automation lane print one string.
 `ValueCase` is deleted from core, and its line was removed from `GatecrasherTheme.h` to restore the
-build. **That deletion is a compile fix, not the ruling: the caps re-authoring in `Parameters.h` is
-still outstanding here**, so the readout currently prints names and choice values as authored. See
-the root `../CLAUDE.md` under "Case belongs at the source".
+build.
+
+**The caps re-authoring in `Parameters.h` IS done here.** This paragraph said it was still
+outstanding, and that was stale rather than wrong when written: the deletion of `ValueCase` really
+was a compile fix on the day, and the re-authoring landed afterwards without the sentence being
+revisited. Every parameter name is authored in caps, `Tests/ReadoutConformanceTests.cpp:127` asserts
+it off `getName()` rather than off the literal, and this casting additionally asserts the unitless,
+digit-free values. The suite is green, so the assertion is live rather than merely present.
+
+Corrected 2026-08-17 while scoping the harmonisation rewrite, and recorded in place rather than
+deleted: this is the suite's most expensive documented failure — a plugin's `CLAUDE.md` outliving
+the code it describes, which gets trusted and reproduces the original wrong conclusion. See the root
+`../CLAUDE.md` under "Case belongs at the source".
 
 `GatecrasherTheme::readoutFormat()` holds that, **not `ProgramHeader`**, and the placement is
 load-bearing: `ProgramHeader.h` reaches `PluginProcessor.h`, which needs `JucePlugin_*` macros that
