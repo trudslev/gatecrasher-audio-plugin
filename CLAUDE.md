@@ -13,6 +13,43 @@ content. It is one document now: the bundle used to carry a second `design/CLAUD
 it, and that has been dropped, because a bundled copy of a repo-owned filename reads as authority
 while being a snapshot of whatever the designers held when they cut the zip.
 
+## RESUME POINT — the header has a measured baseline, and it is what a panel move fails against
+
+**Verified `578fb10` on 2026-08-17: this casting's header draws exactly where its own constants say.**
+Not read — captured from the Release standalone and measured off the pixels.
+
+Why it is written here rather than left in a session report: the value of a baseline is entirely in
+being read by whoever moves the panel next, and a figure that lives somewhere the mover does not
+open is worth nothing.
+
+**What was measured**, band at y 29, height 34, canvas 960 x 434:
+
+| Element | Constants | Measured |
+|---|---|---|
+| LCD | `programWindowX` 374.75, W 330 -> 374.75..704.75 | 376.0 .. 703.0 |
+| SAVE | `saveButtonX` 710.75, W 50.2 -> 710.75..760.95 | 711.0 .. 758.5 |
+| DELETE | `deleteButtonX` 765.95 -> 765.95..816.15 | 766.0 .. 814.0 |
+| IN well | `inWindowX` 825, W 44 -> 825..869 | 825.0 .. 866.5 |
+| OUT well | `outWindowX` 875, W 44 -> 875..919 | 875.0 .. 916.5 |
+
+**What this is NOT.** This casting references `nf::HeaderGeometry` **nowhere**, so it is on its own
+canvas and its own layout, and none of the figures above is expected to match the shared part. The
+baseline says *internally consistent*, not *conformant*.
+
+**The defect it exists to catch** was found in Chorus-60 on 2026-08-17: that casting's header pass
+aliased its LCD to the shared part and left SAVE, DELETE and both meter wells as literals from the
+previous canvas — **29 px right and 29 px down** — and nothing could see it, because the plate baked
+those faces and the only symptom was text centred inside a box nobody drew. It surfaced the moment
+the material had to be painted from those rects.
+
+**So when this casting moves: alias every band figure in one edit, then re-measure against the table
+above.** A rect that moves and a rect that does not are indistinguishable in a diff and obvious in a
+measurement. And note that **a literal which happens to agree with core is indistinguishable from an
+alias by reading** — Reflect-84 held four such literals, one of them 2 px off §4's shared descriptor
+anchor, in the casting whose editor had been declared conformant.
+
+---
+
 ## Commands
 
 Gatecrasher builds on macOS (AU + VST3 + Standalone), Windows (VST3 + Standalone), and Linux
