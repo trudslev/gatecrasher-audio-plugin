@@ -31,7 +31,7 @@ void GateScope::timerCallback()
     triggerDisplayHistory[(size_t) writeIndex] = juce::jlimit(0.0f, 1.0f, triggerDisplayDecayed);
     writeIndex = (writeIndex + 1) % historySize;
 
-    gridScrollPhase = std::fmod(gridScrollPhase + Layout::scopePixelsPerFrame, Layout::scopeGridSpacing);
+    gridScrollPhase = std::fmod(gridScrollPhase + Layout::scopePixelsPerFrame, Layout::scopeGridSpacingX);
 
     repaint();
 }
@@ -40,136 +40,156 @@ void GateScope::paint(juce::Graphics& g)
 {
     using namespace GatecrasherTheme;
 
-    // Section 5.1's three nested rectangles. Keeping them distinct is the whole point: the trace,
-    // fill, underlay and grid are clipped to the PLOT REGION, never to the dark rect - clipping to
-    // the dark rect lets the trace run under the scale gutter and collide with the annotations,
-    // which is the one mistake that section exists to prevent.
-    const juce::Rectangle<float> darkRect(Layout::scopeDarkX, Layout::scopeDarkY,
-                                           Layout::scopeDarkW, Layout::scopeDarkH);
-    const juce::Rectangle<float> plotRect(darkRect.getX() + Layout::scopePlotLocalX,
-                                           darkRect.getY() + Layout::scopePlotLocalY,
-                                           Layout::scopePlotW, Layout::scopePlotH);
+    /*  **§5's well, and the split that is the whole point of the section.** The well is 400 x 184;
+        the PLOT is its left 358 and the LEGEND GUTTER the remaining 42, divided by a 1 px rule at
+        x 358. The trace, its fill and the input underlay clip to the plot and never to the well —
+        clipping to the well lets a full-height envelope run under `0 dB` and `−∞` and collide with
+        them, which is exactly what the gutter exists to prevent. */
+    const juce::Rectangle<float> well (Layout::scopeWellX, Layout::scopeWellY,
+                                        Layout::scopeWellW, Layout::scopeWellH);
+    const juce::Rectangle<float> plot (well.getX() + Layout::scopePlotLocalX,
+                                        well.getY() + Layout::scopePlotLocalY,
+                                        Layout::scopePlotW, Layout::scopePlotH);
+    const juce::Rectangle<float> gutter (well.getX() + Layout::scopeGutterLocalX, well.getY(),
+                                          Layout::scopeGutterW, well.getHeight());
 
-    const float baselineY = plotRect.getBottom();
-    const float ceilingY = plotRect.getY();
+    const float baselineY = well.getY() + Layout::scopeTraceBaselineLocalY;
+    const float ceilingY  = plot.getY();
 
-    // The dark rect's own backing, section 5.1: #0B0F11 -> #050708 vertical. The well's recess and
-    // its 1px border are baked into the plate; nothing draws them here.
-    juce::ColourGradient bgGradient(Colour::scopeBgTop, darkRect.getCentreX(), darkRect.getY(),
-                                     Colour::scopeBgBottom, darkRect.getCentreX(), darkRect.getBottom(), false);
-    g.setGradientFill(bgGradient);
-    g.fillRect(darkRect);
+    // Flat glass. It was a vertical gradient with its recess and border baked into the plate; the
+    // plate is gone, so the well draws its own frame.
+    g.setColour (Colour::scopeGlass);
+    g.fillRoundedRectangle (well, Layout::scopeWellRadius);
 
-    // The two reserved strips, flat and slightly darker so they read as chrome rather than as part
-    // of the plot, with their 1px separating rules.
-    const juce::Rectangle<float> titleStrip(darkRect.getX(), darkRect.getY(),
-                                             darkRect.getWidth(), Layout::scopeTitleStripH);
-    const juce::Rectangle<float> gutterStrip(darkRect.getX() + Layout::scopeGutterLocalX,
-                                              darkRect.getY() + Layout::scopeTitleStripH,
-                                              Layout::scopeGutterW,
-                                              darkRect.getHeight() - Layout::scopeTitleStripH);
-    g.setColour(Colour::scopeStrip);
-    g.fillRect(titleStrip);
-    g.fillRect(gutterStrip);
-
-    g.setColour(Colour::scopeStripRule);
-    g.drawHorizontalLine((int) titleStrip.getBottom(), darkRect.getX(), darkRect.getRight());
-    g.drawVerticalLine((int) gutterStrip.getX(), gutterStrip.getY(), gutterStrip.getBottom());
-
-    g.saveState();
-    g.reduceClipRegion(plotRect.getSmallestIntegerContainer());
-
-    // Scrolling vertical grid, 44px pitch, moving in lockstep with the trace's own 2px/frame
-    // scroll (section 5).
-    g.setColour(Colour::scopeGrid);
-    for (float x = plotRect.getRight() - gridScrollPhase; x >= plotRect.getX(); x -= Layout::scopeGridSpacing)
-        g.drawVerticalLine((int) x, plotRect.getY(), plotRect.getBottom());
-
-    // 5 static horizontal grid lines.
-    for (int i = 0; i < Layout::scopeNumStaticHorizontals; ++i)
+    // `inset 0 2px 8px rgba(0,0,0,.9)` - a short falloff from the top edge, which is what a 2 px
+    // offset with an 8 px spread resolves to at this size. Drawn before the grid so the grid reads
+    // through it rather than under it.
     {
-        const float t = (float) i / (float) (Layout::scopeNumStaticHorizontals - 1);
-        const float y = plotRect.getY() + t * plotRect.getHeight();
-        g.drawHorizontalLine((int) y, plotRect.getX(), plotRect.getRight());
+        juce::ColourGradient recess (Colour::scopeWellRecess, well.getCentreX(), well.getY(),
+                                      Colour::scopeWellRecess.withAlpha (0.0f),
+                                      well.getCentreX(), well.getY() + 10.0f, false);
+        g.setGradientFill (recess);
+        g.fillRect (well.withHeight (10.0f));
     }
 
-    // Baseline, brighter than the general grid.
-    g.setColour(Colour::scopeBaseline);
-    g.drawHorizontalLine((int) baselineY, plotRect.getX(), plotRect.getRight());
+    // §5's grid, across the whole well: 50 px horizontally, 46 px vertically. Two spacings, not
+    // one - the constant this replaced could only ever draw a square grid.
+    g.saveState();
+    g.reduceClipRegion (well.getSmallestIntegerContainer());
+    g.setColour (Colour::scopeGrid);
+    for (float x = well.getRight() - gridScrollPhase; x >= well.getX(); x -= Layout::scopeGridSpacingX)
+        g.drawVerticalLine ((int) x, well.getY(), well.getBottom());
+    for (float y = well.getY(); y <= well.getBottom(); y += Layout::scopeGridSpacingY)
+        g.drawHorizontalLine ((int) y, well.getX(), well.getRight());
+    g.restoreState();
 
-    // Build this frame's visible column list (oldest -> newest, left -> right) from the local
-    // history ring buffer.
-    const int visibleColumns = juce::jmin(historySize,
-        (int) std::ceil(plotRect.getWidth() / Layout::scopePixelsPerFrame) + 1);
+    g.setColour (Colour::scopeGutterRule);
+    g.drawVerticalLine ((int) gutter.getX(), well.getY(), well.getBottom());
+
+    g.saveState();
+    g.reduceClipRegion (plot.getSmallestIntegerContainer());
+
+    g.setColour (Colour::scopeBaseline);
+    g.drawHorizontalLine ((int) baselineY, plot.getX() + Layout::scopeTraceInsetX,
+                           plot.getRight() - Layout::scopeTraceInsetX);
+
+    // This frame's visible columns, oldest -> newest, left -> right, off the history ring.
+    const int visibleColumns = juce::jmin (historySize,
+        (int) std::ceil (plot.getWidth() / Layout::scopePixelsPerFrame) + 1);
 
     juce::Path envelopePath, fillPath;
     bool firstColumn = true;
-    float lastX = plotRect.getRight();
+    float lastX = plot.getRight();
 
     for (int col = 0; col < visibleColumns; ++col)
     {
-        const int age = visibleColumns - 1 - col; // 0 = newest (rightmost)
+        const int age = visibleColumns - 1 - col;                 // 0 = newest, rightmost
         const int idx = ((writeIndex - 1 - age) % historySize + historySize) % historySize;
-        const float x = plotRect.getRight() - (float) age * Layout::scopePixelsPerFrame;
-        if (x < plotRect.getX() - Layout::scopePixelsPerFrame)
+        const float x = plot.getRight() - (float) age * Layout::scopePixelsPerFrame;
+        if (x < plot.getX() - Layout::scopePixelsPerFrame)
             continue;
 
-        // Grey input-waveform underlay - 1px vertical strokes, grey, never red (section 5).
+        // Grey input underlay - 1 px vertical strokes, grey, never the accent. §7 allows exactly
+        // one accent on this panel and it is the trace, the lamp and its glow.
         const float triggerY = baselineY - triggerDisplayHistory[(size_t) idx] * (baselineY - ceilingY);
-        g.setColour(Colour::scopeInputWaveform);
-        g.drawVerticalLine((int) x, triggerY, baselineY);
+        g.setColour (Colour::scopeInputWaveform);
+        g.drawVerticalLine ((int) x, triggerY, baselineY);
 
         const float envY = baselineY - envelopeHistory[(size_t) idx] * (baselineY - ceilingY);
         if (firstColumn)
         {
-            envelopePath.startNewSubPath(x, envY);
-            fillPath.startNewSubPath(x, baselineY);
-            fillPath.lineTo(x, envY);
+            envelopePath.startNewSubPath (x, envY);
+            fillPath.startNewSubPath (x, baselineY);
+            fillPath.lineTo (x, envY);
             firstColumn = false;
         }
         else
         {
-            envelopePath.lineTo(x, envY);
-            fillPath.lineTo(x, envY);
+            envelopePath.lineTo (x, envY);
+            fillPath.lineTo (x, envY);
         }
         lastX = x;
     }
 
-    if (!firstColumn)
+    if (! firstColumn)
     {
-        fillPath.lineTo(lastX, baselineY);
+        fillPath.lineTo (lastX, baselineY);
         fillPath.closeSubPath();
 
-        // Fill beneath the trace.
-        juce::ColourGradient fillGradient(Colour::scopeFillTop, plotRect.getCentreX(), ceilingY,
-                                           Colour::scopeFillBottom, plotRect.getCentreX(), baselineY, false);
-        g.setGradientFill(fillGradient);
-        g.fillPath(fillPath);
+        juce::ColourGradient fillGradient (Colour::scopeFillTop, plot.getCentreX(), ceilingY,
+                                            Colour::scopeFillBottom, plot.getCentreX(), baselineY, false);
+        g.setGradientFill (fillGradient);
+        g.fillPath (fillPath);
 
-        // Glow: a blurred copy of the trace's own stroked outline (not the raw centreline, which
-        // has zero fillable area) in the same red (section 5).
+        // `drop-shadow(0 0 6px rgba(255,43,28,.55))`. Blurring the raw centreline gives nothing -
+        // a path with no fillable area casts no shadow - so the stroked OUTLINE is what is blurred.
         juce::Path strokeOutline;
-        juce::PathStrokeType(2.0f, juce::PathStrokeType::mitered, juce::PathStrokeType::butt)
-            .createStrokedPath(strokeOutline, envelopePath);
-        juce::DropShadow glow(Colour::gateAccent.withAlpha(0.55f), 10, {0, 0});
-        glow.drawForPath(g, strokeOutline);
+        juce::PathStrokeType (Layout::scopeTraceThickness, juce::PathStrokeType::mitered,
+                               juce::PathStrokeType::butt).createStrokedPath (strokeOutline, envelopePath);
+        juce::DropShadow glow (Colour::gateAccent.withAlpha (0.55f), 6, {0, 0});
+        glow.drawForPath (g, strokeOutline);
 
-        // The trace itself - hard mitre joins, no smoothing (section 5 / "10. What matters most").
-        g.setColour(Colour::gateAccent);
-        g.strokePath(envelopePath,
-                     juce::PathStrokeType(2.0f, juce::PathStrokeType::mitered, juce::PathStrokeType::butt));
+        g.setColour (Colour::gateAccent);
+        g.strokePath (envelopePath, juce::PathStrokeType (Layout::scopeTraceThickness,
+                                                           juce::PathStrokeType::mitered,
+                                                           juce::PathStrokeType::butt));
     }
 
     g.restoreState();
 
-    // Annotations sit in the two reserved strips, OUTSIDE the plot clip - that separation is why
-    // the strips exist. Section 0.2 marks these R: they are drawn with the scope, not baked.
-    g.setColour(Colour::scopeAnnotation);
-    g.setFont(monoFont(monoFontHeightForCssPx(9.0f)));
-    g.drawText("GATE ENV", titleStrip.reduced(4.0f, 0.0f), juce::Justification::centredLeft, false);
-    g.drawText("0 dB", gutterStrip.withHeight(14.0f).reduced(3.0f, 0.0f),
-               juce::Justification::centredRight, false);
-    g.drawText(juce::String(juce::CharPointer_UTF8("-\xe2\x88\x9e")),
-               gutterStrip.withTop(gutterStrip.getBottom() - 14.0f).reduced(3.0f, 0.0f),
-               juce::Justification::centredRight, false);
+    /*  The legends, OUTSIDE the plot clip - that separation is why the gutter exists. Barlow
+        Condensed 10 / 13 at `#9aa1a6`, which is §7's 7.48:1 on this glass; it was Share Tech Mono
+        at `#A0B2BA` against a gradient ground that no longer exists.
+
+        **`−∞` is built from U+2212 MINUS SIGN and U+221E INFINITY**, never written as a literal:
+        `juce::String`'s `const char*` constructor decodes Latin-1, not UTF-8. */
+    const auto legendFont = labelFont (labelFontHeightForCssPx (Layout::scopeLegendCssPx));
+
+    drawTrackedText (g, "GATE ENV", legendFont,
+                      trackingPxForEm (Layout::scopeTitleTrackingEm, Layout::scopeLegendCssPx),
+                      juce::Rectangle<float> (well.getX() + Layout::scopeTitleLocalX,
+                                               well.getY() + Layout::scopeTitleLocalY,
+                                               200.0f, Layout::scopeLegendLineBox),
+                      juce::Justification::centredLeft, Colour::scopeAnnotation);
+
+    const auto scaleTracking = trackingPxForEm (Layout::scopeScaleTrackingEm, Layout::scopeLegendCssPx);
+    const float legendRight = gutter.getRight() - Layout::scopeLegendRightInset;
+
+    drawTrackedText (g, "0 dB", legendFont, scaleTracking,
+                      juce::Rectangle<float> (gutter.getX(), well.getY() + Layout::scopeTopLegendLocalY,
+                                               legendRight - gutter.getX(), Layout::scopeLegendLineBox),
+                      juce::Justification::centredRight, Colour::scopeAnnotation);
+
+    const juce::String negativeInfinity =
+        juce::String::charToString ((juce::juce_wchar) 0x2212)
+      + juce::String::charToString ((juce::juce_wchar) 0x221E);
+
+    drawTrackedText (g, negativeInfinity, legendFont, scaleTracking,
+                      juce::Rectangle<float> (gutter.getX(), well.getY() + Layout::scopeBottomLegendLocalY,
+                                               legendRight - gutter.getX(), Layout::scopeLegendLineBox),
+                      juce::Justification::centredRight, Colour::scopeAnnotation);
+
+    // §5's frame, stroked last so nothing is drawn over it.
+    g.setColour (Colour::scopeWellRing);
+    g.drawRoundedRectangle (well.reduced (0.5f), Layout::scopeWellRadius, 1.0f);
 }

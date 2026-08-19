@@ -120,25 +120,31 @@ namespace GatecrasherTheme
         inline const juce::Colour switchShoeBottom{0xFF4E545A};
 
         // Gate envelope scope, section 5.
-        inline const juce::Colour scopeBorder{0xFF0A0C0D};
-        // Section 5.1: the dark rect runs #0B0F11 at the top to #050708 at the bottom. These were
-        // inverted (and the bottom value wrong) through Rev 5.
-        inline const juce::Colour scopeBgTop{0xFF0B0F11};
-        inline const juce::Colour scopeBgBottom{0xFF050708};
-        // The title strip and scale gutter: flat, slightly darker than the plot backing so they
-        // read as chrome, with a 1px rule separating each from the plot.
-        inline const juce::Colour scopeStrip{0xFF080B0D};
-        inline const juce::Colour scopeStripRule{0x2E96B4BE};   // rgba(150,180,190,.18)
-        inline const juce::Colour scopeGrid{0x1A96B4BE};       // rgba(150,180,190,.10)
+        /*  **§5's well is FLAT `#0a0c0e` now, not a gradient.** It was `#0B0F11 -> #050708` with
+            its recess and border baked into the plate; nothing is baked, so the well draws its own
+            frame — `inset 0 0 0 1px #6f767b` and an inner shadow. */
+        inline const juce::Colour scopeGlass { 0xFF0A0C0E };
+        inline const juce::Colour scopeWellRing { 0xFF6F767B };
+        /** `inset 0 2px 8px rgba(0,0,0,.9)` — the recess, drawn as a short vertical falloff from
+            the top edge rather than as a blur, which is what a 2 px offset with an 8 px spread
+            resolves to at this size. */
+        inline const juce::Colour scopeWellRecess { 0xE6000000 };
+
+        /** §5's grid: `rgba(255,255,255,.07)`, and the plot/gutter split at `rgba(255,255,255,.10)`.
+            Both are white at low alpha over the glass rather than a mixed grey — the alpha is in
+            the constant, so what composites is what the spec states. */
+        inline const juce::Colour scopeGrid { 0x12FFFFFF };
+        inline const juce::Colour scopeGutterRule { 0x1AFFFFFF };
+
         inline const juce::Colour scopeBaseline{0x3896B4BE};   // rgba(150,180,190,.22)
         inline const juce::Colour scopeInputWaveform{0x4DB2BEC5}; // rgba(178,190,197,.30)
-        // **Opaque, and that alone was the fix.** This draws GATE ENV, 0 dB and -60 dB - printed
-        // scales, which BRAND.md names as functional text. At rgba(160,178,186,.55) it read
-        // 3.40:1; the same colour opaque reads 8.78, so nothing here was ever a colour choice,
-        // only a blend. CHORUS-60 deleted this exact rgba value and recorded the measurement that
-        // condemned it; the fix never crossed over.
-        // contrast: 8.78-9.20:1 vs scopeBgTop,scopeBgBottom [functional]
-        inline const juce::Colour scopeAnnotation{0xFFA0B2BA};
+
+        /*  **§5's legends are `#9aa1a6` on the glass, and the face is Barlow Condensed rather than
+            the mono.** Both moved: this was `#A0B2BA` in Share Tech Mono against a gradient ground
+            that no longer exists. 7.48 is §7's own figure for this ink on `#0a0c0e`, and it is what
+            the tool reproduces. */
+        // contrast: 7.48:1 vs scopeGlass [functional]
+        inline const juce::Colour scopeAnnotation{0xFF9AA1A6};
         inline const juce::Colour scopeFillTop{0x4DFF2B1C};    // rgba(255,43,28,.30)
         inline const juce::Colour scopeFillBottom{0x05FF2B1C}; // rgba(255,43,28,.02)
 
@@ -346,21 +352,45 @@ namespace GatecrasherTheme
         // These were 218/113/344x122 through Rev 5, which is 43px wider than the plate's actual
         // recess - wide enough that the scope's right edge overlapped the algorithm selector's ROOM
         // and AMBI labels once those started being drawn.
-        constexpr float scopeWellX = 208.0f, scopeWellY = 118.0f, scopeWellW = 305.0f, scopeWellH = 116.0f;
-        constexpr float scopeDarkX = 210.0f, scopeDarkY = 120.0f, scopeDarkW = 301.0f, scopeDarkH = 112.0f;
+        /*  **§5's well, on the new canvas — 400 x 184 at (284, 176).** It was 305 x 116 at
+            (208, 118) and its recess and 1 px border were baked; nothing is baked now, so the well
+            draws its own frame.
 
-        // Plot region, local to the dark rect's top-left.
-        constexpr float scopePlotLocalX = 0.0f, scopePlotLocalY = 14.0f;
-        constexpr float scopePlotW = 267.0f, scopePlotH = 98.0f;
+            **Plot region 358 wide, legend gutter 42, split by a 1 px rule at x 358.** Keeping those
+            distinct is the whole point of the section: the trace, fill and grid clip to the PLOT
+            region, never to the well — clipping to the well lets a full-height envelope run under
+            `0 dB` and `−∞` and collide with them, which is exactly what the gutter exists to
+            prevent. The legends live in the gutter, so a full-scale trace cannot reach them. */
+        constexpr float scopeWellX = 284.0f, scopeWellY = 176.0f;
+        constexpr float scopeWellW = 400.0f, scopeWellH = 184.0f;
+        constexpr float scopeWellRadius = 2.0f;
 
-        // The two reserved strips carved out of the dark rect, also local.
-        constexpr float scopeTitleStripH = 14.0f;   // 0,0,301x14 - holds GATE ENV
-        constexpr float scopeGutterLocalX = 267.0f; // 267,14,34x98 - holds 0 dB and -inf
-        constexpr float scopeGutterW = 34.0f;
+        /** Local to the well. The plot starts at its left edge and runs the full height; the gutter
+            is what remains to the right of the split. */
+        constexpr float scopePlotLocalX = 0.0f, scopePlotLocalY = 0.0f;
+        constexpr float scopePlotW = 358.0f, scopePlotH = scopeWellH;
+        constexpr float scopeGutterLocalX = 358.0f;
+        constexpr float scopeGutterW = scopeWellW - scopeGutterLocalX;   // 42
 
+        /** §5's grid: 1 px at 50 horizontally and 46 vertically. Two spacings, not one — the old
+            single `scopeGridSpacing` could only ever draw a square grid. */
+        constexpr float scopeGridSpacingX = 50.0f, scopeGridSpacingY = 46.0f;
         constexpr float scopePixelsPerFrame = 2.0f;
-        constexpr float scopeGridSpacing = 44.0f;
-        constexpr int scopeNumStaticHorizontals = 5;
+
+        /*  §5's legends, local to the well: `GATE ENV` top-left, `0 dB` and `−∞` right-aligned in
+            the gutter. **`−∞` is built from U+2212 and U+221E rather than written as a literal** —
+            `juce::String`'s `const char*` constructor decodes Latin-1, not UTF-8, so a literal
+            prints four bytes of mojibake. */
+        constexpr float scopeLegendCssPx = 10.0f, scopeLegendLineBox = 13.0f;
+        constexpr float scopeTitleTrackingEm = 0.20f, scopeScaleTrackingEm = 0.14f;
+        constexpr float scopeTitleLocalX = 10.0f, scopeTitleLocalY = 8.0f;
+        constexpr float scopeLegendRightInset = 10.0f;
+        constexpr float scopeTopLegendLocalY = 34.0f, scopeBottomLegendLocalY = 148.0f;
+
+        /** §8.4: gate closed draws the baseline only — `7,168 354,168` — so the trace never
+            disappears. Both figures are local to the plot region. */
+        constexpr float scopeTraceInsetX = 7.0f, scopeTraceBaselineLocalY = 168.0f;
+        constexpr float scopeTraceThickness = 3.0f;
 
         // Spec section 5.5: centre (216, 104), diameter 15. This read (224, 95) until Rev 7 - wrong
         // by (+8, -9), and masked for as long as the plate baked an unlit bulb at the correct spot:
