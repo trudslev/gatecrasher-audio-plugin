@@ -50,6 +50,93 @@ anchor, in the casting whose editor had been declared conformant.
 
 ---
 
+## THE PANEL REWRITE'S ENUMERATION — 280 objects, DERIVED, and the list is a command
+
+**This casting goes from one plate blit to an entirely code-drawn panel**, so every label, tick,
+numeral, divider, rail, well and the wordmark stops arriving as pixels and becomes a draw call.
+`GatecrasherPanelBackground::paint` is one `drawImage` today; §0 of the spec says *"no plate, no
+filmstrips, no bitmap of any panel element"*, and one binary ships (`fonts/TudorVictors.ttf`).
+
+**The list is not written down here, and that is the point.** Root `CLAUDE.md` records three
+hand-authored enumerations that each read as complete and each could not contain a whole category —
+HEADER-PART §10's dependant table (six design artefacts, no builds), the merge check's reverse arm
+(phrased over the merged tree, so a file that never arrived was unreachable), and **Chorus-60's plate
+enumeration, eleven rows, every one of them ink, thirteen rows of material missing.** None was a
+failure of care. The boundary is the room the author was standing in, and Chorus-60 had far less
+baked than this casting does.
+
+So the enumeration is regenerated rather than maintained:
+
+    python3 ../tools/enumerate_prototype.py "design/Gatecrasher GR-85 Panel.dc.html" --canvas 1340x700
+
+**The census at bundle 3, and it is what the rewrite owes:**
+
+| | |
+|---|---|
+| **280 objects to draw** | 156 material + 126 ink, **2 of them both** |
+| Material | 73 knob ticks · 15 sweep arcs · 15 bodies · 15 pointers · 13 ladder segments · 4 screws · 4 shoe halves · 3 dividers · 2 rails · 2 button caps · 2 meter wells · 2 shoe frames · header block · LCD well · lamp lens · scope well · scope grid · scope plot rule |
+| Ink | 120 strings · 4 vector (LCD chevron, scope trace) · the 2 meter values, which are also material |
+| Type roles | **18**, against §9's twelve rows |
+
+**The 2 that are both are the finding in miniature.** The first classifier asked `"ink" if text else
+"material"` and dropped **both meter wells** out of the material list entirely — they are a well that
+holds a value, and a branch can only file them once. That is the same construction as root
+`CLAUDE.md`'s *"Wordmark — stays baked, it is the CHORUS badge"* row, true about the badge and false
+about the nameplate. Classify on two independent flags, never on a branch.
+
+**Three things the derivation found that reading §9 would not:**
+
+1. **The meter value carries NO tracking in the prototype.** §9's table pairs it with the LCD at
+   `.10 em`; the prototype's two wells are 17 / 22 with `letter-spacing` unset, and
+   `HEADER-PART.md` §7 — which is authoritative on the header — states the face and the size and is
+   **silent on the tracking**. So the two documents that mention it disagree and the one that
+   governs does not mention it. **Built at `.10 em`**, with the reason beside the constant: the LCD
+   and the wells are the same face at the same size in the same header, and one convention per role
+   is the suite's rule. Raised as an ask; it changes 6.8 px of run in a 64 px well, so it is
+   appearance and never fit.
+2. **`ENVELOPE　50 ms / DIV` has no row in §9 at all.** It draws at 10 / 13, **.22 em**, `#2b3034` —
+   outside §9's *"Scope legend · .14–.20 em · `#9aa1a6`"* row in both tracking and ink. §7's palette
+   does name the ink, as *"scope header data"*, so the figure exists; §9's table is a row short
+   rather than wrong.
+3. **Four codepoints above ASCII, and one of them is invisible.** U+2212 MINUS (×8), U+00B7 MIDDLE
+   DOT, U+221E INFINITY — and **U+3000 IDEOGRAPHIC SPACE**, inside that same scope-header string.
+   Every one must be built from its codepoint: `juce::String`'s `const char*` constructor decodes
+   **Latin-1, not UTF-8**. The ideographic space is the one nobody would have enumerated — it is a
+   space, so a build that transcribes it as `' '` looks right and sets a visibly narrower gap.
+
+**What the current build draws at runtime, measured rather than recalled**, by probing the old
+960 × 434 prototype (`design/reference/Gatecrasher.dc.html`) against the plate's own pixels — every
+string whose box holds no ink is one the code supplies: the LCD's bank tag and name, the `PROGRAM`
+caption, both meter values, and **the eight state labels** (INTERNAL · SIDECHAIN · HARD · SOFT ·
+ROOM · PLATE · AMBI · CHMBR). Everything else on the panel is baked.
+
+**`StateLabels` is deleted by this round rather than ported.** It indicates state by *font weight* —
+700 selected against 400 unselected — and §6 and §8.3 both forbid exactly that: *"legends are printed
+once, under their own half, and never re-inked or moved"*, and §8.1's *"weight is 600 in every cell —
+ink weight never stands in for illumination."* The eight become static printed ink and the shoe and
+the pointer carry the state. Its 8 labels are inside the 120 above.
+
+**The control set does not change: 15 knobs before and 15 after**, `Layout::knobs` against the
+prototype's `knobSpec()`. What changes is every diameter (seven classes → **Ø76 / Ø56**), every
+position, and that the ring is drawn instead of printed.
+
+### Probing a prototype: the trap that makes a fallback look like a finding
+
+**A prototype whose `@font-face` points somewhere the render cannot reach falls back in silence**,
+and the resulting layout is confident, precise and wrong. `design/reference/Gatecrasher.dc.html`
+sources its wordmark from `uploads/TudorVictors-lgxzD.ttf`, which no delivered bundle carries.
+Probed without it, the eleven letter spans lay out on Barlow's metrics and the **final `R` lands
+clear of the plate's ink** — which reads exactly like a missing glyph, and was written down as one
+before it was checked. The plate's wordmark spans canvas x 41.0 → 268.5 and reads GATECRASHER.
+
+The check is the one this repo uses everywhere: **render twice, once with the font source removed,
+and show that boxes move.** The current panel prototype moves **11 of 388** boxes without `fonts/`,
+which is what proves TudorVictors resolved. The tool does this arm on every run and refuses to let
+the two states read alike — *no local face declared* and *declared and did not resolve* are different
+claims, and only the second invalidates a measurement.
+
+---
+
 ## Commands
 
 Gatecrasher builds on macOS (AU + VST3 + Standalone), Windows (VST3 + Standalone), and Linux
