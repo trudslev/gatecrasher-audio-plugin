@@ -30,44 +30,77 @@ void ToggleSwitchComponent::timerCallback()
     }
 }
 
+/*  §6's two-state shoe, the shared §4B part: 128 x 32 in two 64 halves, radius 3, and the engaged
+    half is the light one.
+
+    **This component draws the frame and the two halves. Nothing else.** The legends are printed
+    once, under their own half, in the panel's printed layer — they are not re-inked, not re-weighted
+    and not moved, because the shoe carries the state and does not relabel the control. That is what
+    makes this a port of the shared part rather than a resize of what was here: the old construction
+    drew both labels itself, every frame, at two weights, and had to paint its own tone across the
+    label row first so no baked pixel survived underneath.
+
+    The thumb easing stays. It reads better than a snap however the value changes — a click, a drag,
+    host automation or a Program load — and §8.3's four cells are about which half is light rather
+    than about how it gets there.  */
 void ToggleSwitchComponent::paint(juce::Graphics& g)
 {
     using namespace GatecrasherTheme;
 
-    if (!hasPaintedOnce)
+    if (! hasPaintedOnce)
     {
-        // Snap to the real initial value on the very first paint - only changes made after the
+        // Snap to the real initial value on the very first paint: only changes made while the
         // switch is already on screen should visibly ease between stops.
-        thumbPosition01 = (float) std::round(getValue());
+        thumbPosition01 = (float) std::round (getValue());
         hasPaintedOnce = true;
     }
 
-    // The caption ("KEY SOURCE" / "SHAPE") is static, so PanelChrome engraves it along with every
-    // other fixed label rather than this component redrawing it on every thumb movement.
-    const float originX = Layout::switchLabelOverflowPad;
-    const float originY = Layout::switchVerticalSafetyPad;
+    const juce::Rectangle<float> shoe (0.0f, 0.0f, Layout::shoeW, Layout::shoeH);
+    const float halfW = Layout::shoeW * 0.5f;
 
-    const juce::Rectangle<float> track(originX + Layout::switchAssemblyPad, originY + Layout::switchCaptionRowH,
-                                        Layout::switchTrackW, Layout::switchTrackH);
+    // `0 1px 2px rgba(0,0,0,.3)` under the whole part.
+    g.setColour (Colour::shoeDrop);
+    g.fillRoundedRectangle (shoe.translated (0.0f, 1.0f), Layout::shoeRadius);
 
-    g.setColour(Colour::switchTrackBg);
-    g.fillRect(track);
-    g.setColour(Colour::switchTrackBorder);
-    g.drawRect(track, 1.0f);
+    juce::Graphics::ScopedSaveState clipState (g);
+    {
+        juce::Path rounded;
+        rounded.addRoundedRectangle (shoe, Layout::shoeRadius);
+        g.reduceClipRegion (rounded);
+    }
 
-    // Shoe: "left: 1px for the first position and left: 29px for the second" (section 5), eased
-    // between the two stops via thumbPosition01.
-    const float shoeH = Layout::switchTrackH - 4.0f;
-    const float shoeLeft = 1.0f + thumbPosition01 * 28.0f;
-    const juce::Rectangle<float> shoe(track.getX() + shoeLeft, track.getY() + 2.0f, Layout::switchShoeW, shoeH);
+    for (int half = 0; half < 2; ++half)
+    {
+        const juce::Rectangle<float> face (shoe.getX() + (float) half * halfW, shoe.getY(),
+                                            halfW, shoe.getHeight());
 
-    juce::ColourGradient shoeGradient(Colour::switchShoeTop, shoe.getX(), shoe.getY(),
-                                       Colour::switchShoeBottom, shoe.getX(), shoe.getBottom(), false);
-    g.setGradientFill(shoeGradient);
-    g.fillRect(shoe);
+        // Engagement is continuous while the thumb eases, so the two halves cross-fade rather than
+        // swapping on a frame - which is what makes the ease visible at all on a part with no
+        // travelling thumb to watch.
+        const float engaged = half == 0 ? 1.0f - thumbPosition01 : thumbPosition01;
 
-    // The option labels (INTERNAL/SIDECHAIN, HARD/SOFT) are NOT drawn here. They are two of the
-    // four shoe legends of §6 and belong to GatecrasherPanelBackground's printed layer, which draws
-    // eight together from one table so the switch pair and the algorithm corners cannot drift apart.
-    // This component owns the track and the shoe only.
+        juce::ColourGradient idle (Colour::shoeIdleTop, face.getCentreX(), face.getY(),
+                                    Colour::shoeIdleBottom, face.getCentreX(), face.getBottom(), false);
+        g.setGradientFill (idle);
+        g.fillRect (face);
+
+        if (engaged > 0.0f)
+        {
+            juce::ColourGradient lit (Colour::shoeEngagedTop.withAlpha (engaged),
+                                       face.getCentreX(), face.getY(),
+                                       Colour::shoeEngagedBottom.withAlpha (engaged),
+                                       face.getCentreX(), face.getBottom(), false);
+            g.setGradientFill (lit);
+            g.fillRect (face);
+
+            // `inset 0 1px 0 rgba(255,255,255,.9)` - inside the half, so it reads as a lit face
+            // rather than as a border on it.
+            g.setColour (Colour::shoeEngagedLip.withAlpha (0.9f * engaged));
+            g.fillRect (face.getX(), face.getY(), face.getWidth(), 1.0f);
+        }
+    }
+
+    // `inset 0 0 0 1px #7c8286`, stroked last so nothing is drawn over it.
+    g.setColour (Colour::shoeFrame);
+    g.drawRoundedRectangle (shoe.reduced (0.5f), Layout::shoeRadius, 1.0f);
 }

@@ -134,10 +134,16 @@ namespace GatecrasherTheme
 
 
         // Switch (KEY SOURCE / SHAPE) - recessed track + sliding metal shoe, section 5/7.
-        inline const juce::Colour switchTrackBg{0xFF07090A};
-        inline const juce::Colour switchTrackBorder{0xFF353B40};
-        inline const juce::Colour switchShoeTop{0xFF8D959B};
-        inline const juce::Colour switchShoeBottom{0xFF4E545A};
+        /** §6's shoe: one frame ink, and a pair per half. The engaged half's top lip is
+            `inset 0 1px 0 rgba(255,255,255,.9)` — inside the half, so it reads as a lit face rather
+            than as a border. */
+        inline const juce::Colour shoeFrame       { 0xFF7C8286 };
+        inline const juce::Colour shoeDrop        { 0x4D000000 };   // 0 1px 2px rgba(0,0,0,.3)
+        inline const juce::Colour shoeEngagedTop  { 0xFFE8ECEE };
+        inline const juce::Colour shoeEngagedBottom { 0xFFC0C6CA };
+        inline const juce::Colour shoeEngagedLip  { 0xE6FFFFFF };   // rgba(255,255,255,.9)
+        inline const juce::Colour shoeIdleTop     { 0xFF1D2226 };
+        inline const juce::Colour shoeIdleBottom  { 0xFF0E1113 };
 
         // Gate envelope scope, section 5.
         /*  **§5's well is FLAT `#0a0c0e` now, not a gradient.** It was `#0B0F11 -> #050708` with
@@ -501,65 +507,41 @@ namespace GatecrasherTheme
         // internal proportions (spec gives the track/assembly anchors, not sub-pixel caption/label
         // baselines - these are a careful, symmetric interpolation between the two, not lifted
         // directly from a pixel-measured mockup).
-        constexpr float switchTrackW = 58.0f, switchTrackH = 22.0f;   // section 7
-        constexpr float switchShoeW = 26.0f;
+        /*  **§6's two-state shoe — the SHARED part, §4B, not this casting's own switch.** It was a
+            58 x 22 track with a 26 px shoe sliding in it, and a caption row and a label row bolted
+            above and below. The part is **128 x 32 in two 64 halves**, radius 3, and the engaged
+            half is simply the light one.
 
-        // The switch's full assembly (caption row / track / label row, stacked) is what actually
-        // gets a Component - a plain juce::Slider maps click/drag position against its own full
-        // bounds, so sizing the interactive area to just the 56x20 track (with caption/labels
-        // painted externally, TapeRot ToggleSwitch-style) isn't an option here: there's no
-        // external static painter that can react to live active/inactive label colour the way
-        // SectionPanel does for TapeRot. Splitting the assembly height into a 16px caption row and
-        // a 20px label row around the 20px track is this codebase's own layout choice (the spec
-        // doesn't restate sub-pixel caption/label baselines for either switch).
-        constexpr float switchAssemblyPad = 1.0f;
-        constexpr float switchCaptionRowH = 16.0f;
-        constexpr float switchLabelRowH = 20.0f;
-        constexpr float switchAssemblyW = switchTrackW + 2.0f * switchAssemblyPad;
-        constexpr float switchAssemblyH = switchCaptionRowH + switchTrackH + switchLabelRowH;
+            **The legends are printed once, under their own half, and never re-inked or moved.**
+            That is the rule the old construction did not follow: it drew both labels itself, every
+            frame, at two weights, and had to paint its own tone across the label row first to cover
+            what was baked underneath. So this is a port rather than a resize — the legends are
+            static ink in the printed layer now, at `Layout::shoeLegends`, and this component owns
+            the frame and the two halves only. Nothing about the control changes in any state except
+            which half is light.
 
-        // Verified by cropping the background directly: the baked option-label row (e.g.
-        // "INTERNAL"/"SIDECHAIN") actually spans well beyond the 58px-wide track assembly on both
-        // sides - a real hardware label pair next to a narrow physical switch, not confined to the
-        // switch's own footprint. ToggleSwitchComponent's erase-then-redraw can only reach pixels
-        // within its own Component bounds (JUCE clips child painting there), so the component
-        // itself needs this much extra width on each side, with the track/caption re-centred within
-        // it, or the erase leaves the baked label's outer portions un-erased - which is exactly the
-        // "KEY SOURCE"/"INTERNAL SIDECHAIN" ghosting this constant fixes.
-        constexpr float switchLabelOverflowPad = 45.0f;
+            The overflow and safety pads are gone with them. They existed so a component sized to a
+            58 px track could still draw a label wider than itself; nothing here draws a label. */
+        constexpr float shoeW = 128.0f, shoeH = 32.0f;
+        constexpr float shoeRadius = 3.0f;
+        constexpr float shoeKeySourceX = 74.0f, shoeKeySourceY = 598.0f;
+        constexpr float shoeShapeX = 416.0f, shoeShapeY = 620.0f;
+        /*  **THE PANEL'S TYPE CALIBRATION, NOT THE SHOE'S GEOMETRY — and the shoe port nearly took
+            it out.** These four are what `labelFontHeightForCssPx` fits: a spec quotes an **em**
+            size while `juce::Font`'s height is **ascent + descent**, so the ratio between them has
+            to come from one real measurement, and this is it — the word `INTERNAL` at the mockup's
+            9 CSS px measured 38.00 px wide at .6 px of tracking, taken off the dressed reference
+            artwork.
 
-        // Vertical counterpart to switchLabelOverflowPad: the baked assembly's true position turned
-        // out not to line up with a naive reading of either switch's own spec coordinates (see
-        // shapeTrackY below), and pixel-cropping the raw asset to find the real position is
-        // inherently a few px imprecise - so the component's bounds get this much extra margin top
-        // and bottom, purely as a safety margin against that imprecision (the option-label row's own
-        // fix no longer depends on it, see ToggleSwitchComponent's paint()).
-        constexpr float switchVerticalSafetyPad = 12.0f;
+            They are named for a shoe legend because that is the string that happened to be
+            measured, and the name is what made them look like switch constants when §6 replaced the
+            switch. **Every label on this panel resolves its height through them** — the eight
+            section headings, the corner labels, the shoe legends, the scope's own legends and the
+            header caption — so deleting them takes the type scale with it. The compiler caught it;
+            nothing about reading the block would have.
 
-        // Spec section 7, taken directly: KEY SOURCE track x 84, y 379; SHAPE x 332, y 385; both
-        // 58 x 22. Every one of these moved in the Rev 6/7 redesign - the previous values (88/371
-        // and 362/380 at 56 x 20) were Rev 5's, and the long archaeology that produced them is no
-        // longer relevant now that the plate is authoritative and the spec quotes the track rect
-        // directly. Take them from section 7, not from a crop of the render.
-        constexpr float keySourceTrackX = 84.0f, keySourceTrackY = 379.0f;
-        constexpr float shapeTrackX = 332.0f, shapeTrackY = 385.0f;
-
-        // Option-label ("INTERNAL"/"SIDECHAIN", "HARD"/"SOFT") layout, all measured directly off
-        // gatecrasher-panel@2x.png by cropping the baked label rows and scaling back to canvas units
-        // (KEY SOURCE and SHAPE independently agree on every value below).
-        //
-        // The two words are laid out as a TIGHT PAIR centred on the track's centre with a fixed gap
-        // between them - each word's own rendered width decides where it sits, so the pair's centres
-        // land at different offsets per switch (measured: +-25px for INTERNAL/SIDECHAIN, but only
-        // +-14px for the much shorter HARD/SOFT). An earlier version instead centred one label in
-        // each half of this component's full padded width, which forced a fixed ~74px separation and
-        // flung them far wider apart than the artwork on both switches.
-        constexpr float switchOptionLabelGapX = 9.0f;
-        // Vertical centre of the label text, below the track's bottom edge.
-        constexpr float switchOptionLabelCentreBelowTrack = 13.0f;
-        // Reference width of the baked "INTERNAL" (8 glyphs, 38px in canvas units) - the live font
-        // height is solved from this at runtime via labelFontHeightForTrackedWidth rather than
-        // hard-coded, see that function's comment for why a px size read off the spec doesn't work.
+            Left where they are rather than renamed, because a rename is a second change riding on
+            this one and the note is what the next reader actually needs. */
         constexpr const char* switchOptionLabelRefText = "INTERNAL";
         constexpr float switchOptionLabelRefWidth = 38.0f;
         constexpr float switchOptionLabelRefCssPx = 9.0f; // the mockup's size for this same label

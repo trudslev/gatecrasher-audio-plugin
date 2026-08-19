@@ -83,17 +83,17 @@ GatecrasherEditorContent::GatecrasherEditorContent(GatecrasherAudioProcessor& p)
         knobs[i] = std::move(knob);
     }
 
-    // Widened by switchLabelOverflowPad on each side and switchVerticalSafetyPad top/bottom, beyond
-    // the track's own spec'd footprint, so there's room to erase-then-redraw the whole assembly
-    // (caption, track, option labels) in full - see those constants' comments. ToggleSwitchComponent
-    // draws everything offset by the same pads, so the track's visual position matches
-    // trackX/trackY exactly regardless of this extra margin.
-    auto placeSwitch = [](ToggleSwitchComponent& sw, float trackX, float trackY)
+    /*  **The shoe is exactly its own 128 x 32 now.** The old bounds were the track's footprint
+        widened by an overflow pad each side and a safety pad top and bottom, because the component
+        drew a caption above and two labels below and had to erase a label row wider than itself.
+        It draws neither: the legends are printed once in the panel's printed layer.
+
+        A component sized to what it draws is also one whose hit area is what it looks like, which
+        the padded version was not - it claimed 45 px of bare fascia on each side. */
+    auto placeSwitch = [](ToggleSwitchComponent& sw, float x, float y)
     {
-        sw.setBounds((int) std::round(trackX - Layout::switchAssemblyPad - Layout::switchLabelOverflowPad),
-                     (int) std::round(trackY - Layout::switchCaptionRowH - Layout::switchVerticalSafetyPad),
-                     (int) std::round(Layout::switchAssemblyW + 2.0f * Layout::switchLabelOverflowPad),
-                     (int) std::round(Layout::switchAssemblyH + 2.0f * Layout::switchVerticalSafetyPad));
+        sw.setBounds ((int) std::round (x), (int) std::round (y),
+                       (int) std::round (Layout::shoeW), (int) std::round (Layout::shoeH));
     };
 
     /*  **Both switches report to the LCD, like every knob.** BRAND.md's rule is that every control
@@ -117,14 +117,14 @@ GatecrasherEditorContent::GatecrasherEditorContent(GatecrasherAudioProcessor& p)
         });
     };
 
-    placeSwitch(keySourceSwitch, Layout::keySourceTrackX, Layout::keySourceTrackY);
+    placeSwitch(keySourceSwitch, Layout::shoeKeySourceX, Layout::shoeKeySourceY);
     reportSwitch(keySourceSwitch, ParamIDs::keySource);
     keySourceSwitch.setTooltip("Trigger detector source: Internal (main input) or Sidechain.");
     keySourceAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
         processorRef.apvts, ParamIDs::keySource, keySourceSwitch);
     addAndMakeVisible(keySourceSwitch);
 
-    placeSwitch(shapeSwitch, Layout::shapeTrackX, Layout::shapeTrackY);
+    placeSwitch(shapeSwitch, Layout::shoeShapeX, Layout::shoeShapeY);
     reportSwitch(shapeSwitch, ParamIDs::shape);
     shapeSwitch.setTooltip("Release curve character: Hard is a linear cliff, Soft curves and extends it.");
     shapeAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
