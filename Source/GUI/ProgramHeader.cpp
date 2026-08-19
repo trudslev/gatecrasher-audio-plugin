@@ -445,6 +445,98 @@ void ProgramHeader::paint(juce::Graphics& g)
 {
     using namespace GatecrasherTheme;
 
+    /*  **The header block and the nameplate, drawn for the first time.** Both were pixels in the
+        plate until this pass. The block is the shared part's 1308 x 104 at (16, 16); what goes
+        inside its 303 x 84 nameplate zone is this casting's, per `HeaderPart.h` §I - six metaphors
+        are six paint routines, not six values of one. */
+    {
+        const juce::Rectangle<float> block ((float) nf::HeaderGeometry::blockX,
+                                             (float) nf::HeaderGeometry::blockY,
+                                             (float) nf::HeaderGeometry::blockW,
+                                             (float) nf::HeaderGeometry::blockH);
+        constexpr float blockRadius = 6.0f;
+
+        juce::ColourGradient face (Colour::headerBlockTop, block.getX(), block.getY(),
+                                    Colour::headerBlockBottom, block.getX(), block.getBottom(), false);
+        g.setGradientFill (face);
+        g.fillRoundedRectangle (block, blockRadius);
+
+        // `inset 0 1px 0 rgba(255,255,255,.7)` then `inset 0 0 0 1px #9aa1a6`: the lip sits INSIDE
+        // the ring, so the ring is stroked last or it is drawn over.
+        g.setColour (Colour::headerBlockLip);
+        g.fillRect (block.getX() + blockRadius, block.getY() + 1.0f,
+                     block.getWidth() - blockRadius * 2.0f, 1.0f);
+        g.setColour (Colour::headerBlockRing);
+        g.drawRoundedRectangle (block.reduced (0.5f), blockRadius, 1.0f);
+    }
+
+    /*  The wordmark: a spray stencil, eleven letters each with their own rotation and vertical
+        jitter, the whole run tilted -1.3 deg about its left edge.
+
+        Drawn letter by letter with the advance accumulated from the FONT rather than from a table
+        of x positions, so the run stays correct if the face is ever re-cut - a stored position
+        would keep pointing where the old metrics put it, which is the same failure as storing a
+        printed mark's rotation fraction instead of its value. */
+    {
+        const auto font = wordmarkFont (Layout::wordmarkCssPx);
+        const float tracking = trackingPxForEm (Layout::wordmarkTrackingEm, Layout::wordmarkCssPx);
+        const float baseline = Layout::wordmarkY + font.getAscent();
+
+        juce::Graphics::ScopedSaveState runState (g);
+        g.addTransform (juce::AffineTransform::rotation (
+            juce::degreesToRadians (Layout::wordmarkRunRotationDeg),
+            Layout::wordmarkX, Layout::wordmarkY + Layout::wordmarkLineBox * 0.5f));
+
+        g.setColour (Colour::wordmarkInk);
+        g.setFont (font);
+
+        float pen = Layout::wordmarkX;
+        for (const auto& letter : Layout::wordmarkLetters)
+        {
+            const juce::String glyph (juce::String::charToString ((juce::juce_wchar) letter.glyph));
+            const float advance = juce::GlyphArrangement::getStringWidth (font, glyph);
+
+            juce::Graphics::ScopedSaveState letterState (g);
+            g.addTransform (juce::AffineTransform::rotation (
+                juce::degreesToRadians (letter.rotationDeg),
+                pen + advance * 0.5f, baseline - font.getAscent() * 0.5f));
+            g.drawSingleLineText (glyph, juce::roundToInt (pen),
+                                   juce::roundToInt (baseline + letter.offsetY));
+
+            pen += advance + tracking;
+        }
+    }
+
+    // The descriptor and the model line. The descriptor's y is the SHARED anchor - §4 pins it
+    // across all six - so it is read from core rather than from this casting's stack, and the
+    // static_assert beside the constants is what catches the two disagreeing.
+    {
+        const auto descriptorFont = labelFont (labelFontHeightForCssPx (Layout::descriptorCssPx));
+        drawTrackedText (g, Layout::descriptorText, descriptorFont,
+                          trackingPxForEm (Layout::descriptorTrackingEm, Layout::descriptorCssPx),
+                          juce::Rectangle<float> (Layout::nameplateX, Layout::descriptorY,
+                                                   Layout::nameplateW, Layout::descriptorLineBox),
+                          juce::Justification::centredLeft, Colour::descriptorInk);
+
+        const auto modelFont = monoFont (monoFontHeightForCssPx (Layout::modelLineCssPx));
+        drawTrackedText (g, Layout::modelLineText, modelFont,
+                          trackingPxForEm (Layout::modelLineTrackingEm, Layout::modelLineCssPx),
+                          juce::Rectangle<float> (Layout::nameplateX, Layout::modelLineY,
+                                                   Layout::nameplateW, Layout::modelLineBox),
+                          juce::Justification::centredLeft, Colour::modelLineInk);
+    }
+
+    // §9's version stamp, right-aligned on fascia below the body. Flavour text, and the one place
+    // #34383c survives after §7 moved the model line off it.
+    {
+        const auto stampFont = monoFont (monoFontHeightForCssPx (Layout::versionStampCssPx));
+        drawTrackedText (g, "v" NF_VERSION_SHORT, stampFont,
+                          trackingPxForEm (Layout::versionStampTrackingEm, Layout::versionStampCssPx),
+                          juce::Rectangle<float> (Layout::versionStampX, Layout::versionStampY,
+                                                   Layout::versionStampW, Layout::versionStampLineBox),
+                          juce::Justification::centredRight, Colour::versionStampInk);
+    }
+
     // Section 6.2's caption, drawn rather than baked since Rev 8 - PROGRAM normally, NAME PROGRAM
     // while naming. Barlow Condensed 600 at 10 CSS px, .22em, in the functional ink. No explicit
     // erase: this component is not opaque, so JUCE repaints the plate underneath first, and the

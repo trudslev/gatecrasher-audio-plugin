@@ -70,6 +70,11 @@ target_compile_definitions(GatecrasherTests PRIVATE
     JUCE_USE_CURL=0
     NF_COMPANY_NAME="${GATECRASHER_COMPANY_NAME}"
     NF_PRODUCT_NAME="${GATECRASHER_PRODUCT_NAME}"
+    # The comment above named this and the list did not carry it, which cost a build the first time
+    # the panel drew the version stamp: ProgramHeader.cpp is compiled into both targets, and a
+    # console app gets none of the plugin target's definitions. Same shape as NF_COMPANY_NAME's own
+    # history - the fix is CMake handing both targets the value, not a second copy anywhere.
+    NF_VERSION_SHORT="${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}"
     JucePlugin_Name="${GATECRASHER_PRODUCT_NAME}"
     JucePlugin_Manufacturer="${GATECRASHER_COMPANY_NAME}")
 

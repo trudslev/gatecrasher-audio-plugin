@@ -79,7 +79,13 @@ juce_add_binary_data(GatecrasherBinaryData
         design/assets/fonts/BarlowCondensed-Bold.ttf
         design/assets/fonts/BarlowCondensed-SemiBold.ttf
         design/assets/fonts/BarlowCondensed-Regular.ttf
-        design/assets/fonts/ShareTechMono-Regular.ttf)
+        design/assets/fonts/ShareTechMono-Regular.ttf
+        # The wordmark face, embedded as of 2026-08-19. shared/FONTS.md row 16: licensed,
+        # embeddable, ships - and RECUT.md says distributable. It was absent because the wordmark
+        # was baked into the plate, which §0 has now deleted; the theme's old note gave the LICENCE
+        # as the reason and that half was simply wrong, which is the half that would have stopped
+        # the next person embedding it.
+        design/fonts/TudorVictors.ttf)
 
 # AU is Apple-only; Windows/Linux only ever build VST3 + Standalone. VST3_COPY_DIR/AU_COPY_DIR are
 # only set on Apple - leaving them unset elsewhere lets JUCE apply its own correct per-OS default
@@ -160,6 +166,10 @@ target_sources(Gatecrasher PRIVATE
     Source/GUI/GatecrasherEditorContent.cpp)
 
 target_compile_definitions(Gatecrasher PUBLIC
+    # §9's version stamp is drawn now rather than baked, so the panel needs the number. Derived
+    # from PROJECT_VERSION rather than typed as artwork - three castings bake theirs into a plate
+    # and have to be re-cut when it moves; this one does not, and should not acquire the problem.
+    NF_VERSION_SHORT="${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}"
     JUCE_WEB_BROWSER=0
     JUCE_USE_CURL=0
     JUCE_VST3_CAN_REPLACE_VST2=0

@@ -40,6 +40,33 @@ namespace GatecrasherTheme
             a colour composites over its own ground rather than being read as raw RGB. */
         inline const juce::Colour columnDivider  { 0x9EFFFFFF };
 
+        /*  The header block, §1 and the shared part's §3. Material, so no annotation — but these
+            two ARE the ground every nameplate ink below is measured against, which is why they sit
+            here rather than beside the band. */
+        inline const juce::Colour headerBlockTop    { 0xFFD4D9DD };
+        inline const juce::Colour headerBlockBottom { 0xFFBCC2C7 };
+        inline const juce::Colour headerBlockRing   { 0xFF9AA1A6 };
+        /** `inset 0 1px 0 rgba(255,255,255,.7)` — the block's top lip. */
+        inline const juce::Colour headerBlockLip    { 0xB3FFFFFF };
+
+        /*  The nameplate's three inks, §7. Each is measured against the block's WORST end, which is
+            `headerBlockBottom` — a gradient ground has to clear its floor at both ends and only one
+            of them can be the worst. */
+        // contrast: 9.31:1 vs headerBlockBottom [functional]
+        inline const juce::Colour wordmarkInk   { 0xFF1B1E21 };
+        // contrast: 9.82:1 vs headerBlockBottom [functional]
+        inline const juce::Colour descriptorInk { 0xFF16191C };
+        /*  **This was `#34383c` and measured 6.57 against the block's dark end — under the 7:1
+            functional floor.** §7 moved it to `#2b2f33`, which is the hex the six-material header
+            strip already carried for this role and which the body had not inherited. */
+        // contrast: 7.50:1 vs headerBlockBottom [functional]
+        inline const juce::Colour modelLineInk  { 0xFF2B2F33 };
+        /*  The version stamp KEEPS `#34383c`: it is flavour text on fascia rather than functional
+            text on the block, and it clears 4.5:1 by two stops. Same hex, different ground, and the
+            two are a role apart — which is exactly why the model line's move did not take it. */
+        // contrast: 6.59:1 vs fasciaDark [flavour]
+        inline const juce::Colour versionStampInk { 0xFF34383C };
+
         // Section 2 palette. Every static label is baked into the plate, so the only fascia ink
         // still drawn in code is the EIGHT state-dependent labels of section 0.4 - which is why
         // this list is now two entries rather than a dozen.
@@ -667,15 +694,74 @@ namespace GatecrasherTheme
             Left as a comment rather than deleted silently, because a reader looking for the old
             constant should find out where it went rather than conclude the revert was removed. */
 
-        // Wordmark, section 8. Baked into the plate as of Rev 6; nothing draws it.
-        constexpr float wordmarkX = 38.0f, wordmarkY = 20.0f, wordmarkW = 232.0f, wordmarkH = 40.0f;
-        constexpr float wordmarkHeight = 36.0f; // the mockup's font-size for the stencil
+        /*  **THE NAMEPLATE IS DRAWN AGAIN, and this block said the opposite until 2026-08-19.** It
+            read *"baked into the plate as of Rev 6; nothing draws it"* and carried the rect of a
+            wordmark PNG. Both were true of the plate that this pass deleted. §0 leaves no bitmap of
+            any panel element, so the three lines are code now.
 
-        // The baked wordmark PNG's rect: the nameplate block above, padded 16px on every side. The
-        // overspray halo spreads up to 8px (one pass offset a further -4px) and the spatter flecks
-        // sit outside the text box, so a tight crop to wordmarkX/Y/W/H would clip them.
-        constexpr float wordmarkArtX = wordmarkX - 16.0f, wordmarkArtY = wordmarkY - 16.0f;
-        constexpr float wordmarkArtW = wordmarkW + 32.0f, wordmarkArtH = wordmarkH + 32.0f;
+            **The stack closes on the shared anchor, and that is checkable rather than asserted:**
+
+                wordmark    top nameplateY + 8 = 38, TudorVictors 36 on a 38 px line box
+                + leading   2
+                descriptor  top 78 == nf::HeaderGeometry::descriptorY          <- the anchor
+                + its own   17 == nf::HeaderGeometry::descriptorH
+                model line  top 95 == nf::HeaderGeometry::modelLineY
+
+            `HeaderPart.h` §I keeps what goes inside the 303 x 84 zone per casting — six metaphors
+            are six paint routines — while §4 pins the descriptor's y across all six. So the
+            wordmark's own height and leading are Gatecrasher's and `descriptorY` is not.
+
+            **Read the arm below as catching divergence, not as asserting provenance.** A re-typed 78
+            and this sum are indistinguishable while they agree, and its whole value is the moment §4
+            moves the anchor and this casting does not follow. */
+        constexpr float nameplateX = (float) nf::HeaderGeometry::nameplateX;
+        constexpr float nameplateY = (float) nf::HeaderGeometry::nameplateY;
+        constexpr float nameplateW = (float) nf::HeaderGeometry::nameplateW;
+
+        constexpr float wordmarkTopInset = 8.0f;
+        constexpr float wordmarkX = nameplateX;
+        constexpr float wordmarkY = nameplateY + wordmarkTopInset;      // 38
+        constexpr float wordmarkCssPx = 36.0f, wordmarkLineBox = 38.0f, wordmarkTrackingEm = 0.02f;
+        constexpr float nameplateLeading = 2.0f;
+
+        static_assert (nf::HeaderGeometry::landsOnDescriptorAnchor (
+                           (int) wordmarkY, (int) wordmarkLineBox, (int) nameplateLeading),
+                       "the wordmark stack must close on nf::HeaderGeometry::descriptorY");
+
+        constexpr float descriptorY = (float) nf::HeaderGeometry::descriptorY;
+        constexpr float descriptorLineBox = (float) nf::HeaderGeometry::descriptorH;
+        constexpr float descriptorCssPx = 14.0f, descriptorTrackingEm = 0.26f;
+        constexpr const char* descriptorText = "GATED AMBIENCE PROCESSOR";
+
+        constexpr float modelLineY = (float) nf::HeaderGeometry::modelLineY;
+        constexpr float modelLineBox = (float) nf::HeaderGeometry::modelLineH;
+        constexpr float modelLineCssPx = 11.0f, modelLineTrackingEm = 0.20f;
+        /** U+00B7 MIDDLE DOT from its codepoint. `juce::String`'s `const char*` constructor decodes
+            **Latin-1, not UTF-8**, so a literal here prints two characters of mojibake — and this
+            casting's panel carries three more above ASCII (U+2212, U+221E) for the same reason. */
+        inline const juce::String modelLineText =
+            "MODEL GR-85 " + juce::String::charToString ((juce::juce_wchar) 0x00B7) + " STEREO";
+
+        /*  The wordmark is a spray stencil: the whole run rotated -1.3 deg about its left edge, and
+            each letter given its own rotation and vertical jitter on top. §9 puts it outside call 7
+            as the nameplate metaphor rather than panel lettering.
+
+            **The jitter is a TABLE, not a generator.** It is eleven authored values taken from the
+            delivered prototype's own spans; reproducing them from a seeded PRNG would look the same
+            and be a different mark on every JUCE version whose `Random` changes, which is the kind
+            of thing this suite has had to bisect before. Degrees, then px of vertical offset. */
+        struct WordmarkLetter { char glyph; float rotationDeg, offsetY; };
+        inline constexpr std::array<WordmarkLetter, 11> wordmarkLetters { {
+            {'G', -2.1f,  1.0f}, {'A',  1.4f, -0.5f}, {'T', -0.8f,  0.8f}, {'E',  2.0f, -1.0f},
+            {'C', -1.6f,  0.4f}, {'R',  0.9f,  1.2f}, {'A', -2.4f, -0.6f}, {'S',  1.7f,  0.9f},
+            {'H', -1.1f, -1.1f}, {'E',  2.2f,  0.5f}, {'R', -1.8f, -0.8f},
+        } };
+        constexpr float wordmarkRunRotationDeg = -1.3f;
+
+        /** §9's version stamp: right-aligned in a 110 px box, on fascia rather than on the block. */
+        constexpr float versionStampX = 1180.0f, versionStampY = 668.0f, versionStampW = 110.0f;
+        constexpr float versionStampCssPx = 10.0f, versionStampLineBox = 13.0f;
+        constexpr float versionStampTrackingEm = 0.18f;
 
         // Width generously oversized (was 130, tight against the baked text's own true extent -
         // see GateLamp.cpp's class comment) so the erase-then-redraw this label does is guaranteed
@@ -839,9 +925,39 @@ namespace GatecrasherTheme
         return fontHeightForTrackedWidth(monoFont(probeHeight), probeHeight, text, trackingPx, targetWidthPx);
     }
 
-    // NOTE: there is deliberately no TudorVictors typeface accessor. The wordmark that used it is
-    // now a pre-baked PNG (see wordmarkImage() and WordmarkComponent), and the font is neither
-    // embedded nor tracked - its licence grants no redistribution right.
+    /*  **TudorVictors IS embedded, and the note that used to sit here was wrong about why it was
+        not.** It read: *"the font is neither embedded nor tracked - its licence grants no
+        redistribution right."* `shared/FONTS.md` row 16 says **licensed, embeddable, ships**, and
+        `RECUT.md` says **distributable**; the bundle delivers it at `gatecrasher/fonts/` and
+        `designs/fonts/`. The wordmark was baked into a plate, which is a true reason and a
+        different one — and the licence claim is the half that would have stopped the next person
+        doing the correct thing, since "we may not ship this face" ends the conversation where "it
+        is in the bitmap" invites the obvious question.
+
+        TapeRot's Impact Label Reversed is the case this was confused with: donationware, genuinely
+        not embeddable, letterforms shipping as artwork, declared in its own `fonts/ABSENT.md`.
+        **Two castings, two wordmark faces, opposite licences** — which is why the register is
+        per-face in `FONTS.md` rather than a habit.
+
+        **Taken with `withPointHeight`, not through a calibrated ratio.** `labelFontHeightForCssPx`
+        and `monoFontHeightForCssPx` exist because a spec's `font-size` is an **em** size while
+        `FontOptions(h)` sets **ascent + descent**, and each recovers its face's ratio by fitting a
+        reference string to a reference width. That needs a measured reference and there is none for
+        TudorVictors — inventing one would be the figure-with-no-measurement-behind-it this suite
+        keeps finding. `withPointHeight(px)` already means what a spec means. */
+    inline juce::Typeface::Ptr tudorVictorsTypeface()
+    {
+        static juce::Typeface::Ptr tf =
+            juce::Typeface::createSystemTypefaceFor(BinaryData::TudorVictors_ttf,
+                                                     (size_t) BinaryData::TudorVictors_ttfSize);
+        return tf;
+    }
+
+    inline juce::Font wordmarkFont(float cssPx)
+    {
+        return juce::Font(juce::FontOptions().withTypeface(tudorVictorsTypeface())
+                                              .withPointHeight(cssPx));
+    }
 
     // Binary-data-backed images, decoded once per process via function-local statics (avoids
     // repeated PNG decode on every repaint/instantiation - the knob filmstrips in particular are
