@@ -42,6 +42,32 @@ previous canvas — **29 px right and 29 px down** — and nothing could see it,
 those faces and the only symptom was text centred inside a box nobody drew. It surfaced the moment
 the material had to be painted from those rects.
 
+**AND A BAND FIGURE IS NOT ONLY A RECTANGLE — this failed here on 2026-08-19, in the edit this
+paragraph was written to govern.** The canvas went to 1340 × 700 and every rect was aliased in one
+edit exactly as instructed. The band's **type** was not: `PROGRAM` stayed at y 21 against a band that
+now starts at 61, and both button legends drew **20 px above their caps**, onto bare fascia, in an
+ink meant for a dark face. The caption's tracking was also the scope legend's .22 rather than §7's
+.24.
+
+**The diff showed a coherent edit and the capture showed the legends in mid-air.** That is this
+section's own sentence — *a rect that moves and a rect that does not are indistinguishable in a diff
+and obvious in a measurement* — arriving one layer below where it expected to, on the type positioned
+**from** the band rather than on the band. The baselines are offsets from `nf::HeaderGeometry::bandY`
+now, so what is written down is the property (12.08 and 24.08 into a 34 px cap keeps the pair
+optically even) and the absolute is derived.
+
+**Third time a capture has caught what a diff could not, and this casting has far more of it ahead
+than any of the five.** The other two were Chorus-60's header literals 29 px out behind a plate that
+baked their faces, and its nameplate compared against a prototype rendering in a fallback. All three
+share a shape: **the edit was internally consistent and the panel was wrong**, so nothing that reads
+source can see it. Gatecrasher is going from one plate blit to **280 drawn objects** — every label,
+tick, numeral, divider, rail and the wordmark — which is the largest surface in the suite for a
+consistent-looking edit to be wrong on.
+
+**So capture after every step of the rewrite, not at the end of it.** `tools/capture_panel.py`,
+Release bundle named explicitly, and kill any running instance first — it will otherwise reuse one
+and measure a build you did not just compile, which it did once during this pass.
+
 **So when this casting moves: alias every band figure in one edit, then re-measure against the table
 above.** A rect that moves and a rect that does not are indistinguishable in a diff and obvious in a
 measurement. And note that **a literal which happens to agree with core is indistinguishable from an
