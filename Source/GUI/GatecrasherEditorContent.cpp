@@ -27,7 +27,7 @@ namespace
 }
 
 GatecrasherEditorContent::GatecrasherEditorContent(GatecrasherAudioProcessor& p)
-    : processorRef(p), stateLabels(p), gateScope(p), gateLamp(p), inputMeter(p), programHeader(p)
+    : processorRef(p), gateScope(p), gateLamp(p), inputMeter(p), programHeader(p)
 {
     setSize((int) Layout::canvasWidth, (int) Layout::canvasHeight);
     setLookAndFeel(&lookAndFeel);
@@ -35,11 +35,9 @@ GatecrasherEditorContent::GatecrasherEditorContent(GatecrasherAudioProcessor& p)
     panelBackground.setBounds(getLocalBounds());
     addAndMakeVisible(panelBackground);
 
-    // The plate carries every static label, numeral, tick and the wordmark (spec section 0.2), so
-    // there is no engraved layer to draw and no wordmark component. The only fascia text this build
-    // produces is the eight state-dependent labels below.
-    stateLabels.setBounds(getLocalBounds());
-    addAndMakeVisible(stateLabels);
+    // **There is no plate.** GatecrasherPanelBackground is the printed layer now - fascia, rails,
+    // screws, dividers and every static string - and the nameplate is drawn by ProgramHeader. What
+    // layers above is only what changes.
 
     for (size_t i = 0; i < Layout::knobs.size(); ++i)
     {

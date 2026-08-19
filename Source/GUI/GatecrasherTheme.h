@@ -67,6 +67,19 @@ namespace GatecrasherTheme
         // contrast: 6.59:1 vs fasciaDark [flavour]
         inline const juce::Colour versionStampInk { 0xFF34383C };
 
+        /*  **One ink for every printed label on the fascia, §7.** Section headings, control labels,
+            units, scale numerals, shoe legends, corner labels, the meter caption and GATE OPEN are
+            all `#16191c` — nine roles, one hex, which is why it is one constant rather than nine
+            that would drift apart. Measured against the fascia's darker stripe, the worse of two. */
+        // contrast: 9.84:1 vs fasciaDark [functional]
+        inline const juce::Colour panelInk { 0xFF16191C };
+        /** §7's *"scope header data"* — `ENVELOPE 50 ms / DIV`, on fascia rather than on glass, and
+            its own role rather than the scope legend at a variant setting: the legends inside the
+            well are `#9aa1a6` at .14-.20 em, this is `#2b3034` at .22. §9 gained the row for it in
+            export 6, after the prototype enumeration found the type table a row short. */
+        // contrast: 7.43:1 vs fasciaDark [functional]
+        inline const juce::Colour scopeHeaderInk { 0xFF2B3034 };
+
         // Section 2 palette. Every static label is baked into the plate, so the only fascia ink
         // still drawn in code is the EIGHT state-dependent labels of section 0.4 - which is why
         // this list is now two entries rather than a dozen.
@@ -757,6 +770,73 @@ namespace GatecrasherTheme
             {'H', -1.1f, -1.1f}, {'E',  2.2f,  0.5f}, {'R', -1.8f, -0.8f},
         } };
         constexpr float wordmarkRunRotationDeg = -1.3f;
+
+        /*  **§2's eight section headings, and the printed labels around them.** All of this was
+            pixels in the plate; every row here is one the panel now draws.
+
+            A TABLE walked by one paint pass rather than eight call sites, for the same reason
+            `ringsInBox` filters one enumerable list by containment instead of holding three lists of
+            names: a heading that moves out from under its column is then a geometry question with
+            one answer, not eight places to keep in step. */
+        struct PrintedLabel { const char* text; float x, y, width; juce::Justification::Flags justify; };
+
+        /** Headings: Barlow Condensed 600, 12 px / line box 15 / .28 em, centred on a 216 px column. */
+        constexpr float sectionHeadingCssPx = 12.0f, sectionHeadingLineBox = 15.0f;
+        constexpr float sectionHeadingTrackingEm = 0.28f, sectionHeadingWidth = 216.0f;
+        inline constexpr std::array<PrintedLabel, 8> sectionHeadings { {
+            {"INPUT / TRIGGER",   30.0f, 150.0f, sectionHeadingWidth, juce::Justification::centred},
+            {"TRIGGER FILTER",    30.0f, 386.0f, sectionHeadingWidth, juce::Justification::centred},
+            {"KEY SOURCE",        30.0f, 578.0f, sectionHeadingWidth, juce::Justification::centred},
+            {"GATE ENVELOPE",    372.0f, 384.0f, sectionHeadingWidth, juce::Justification::centred},
+            {"SHAPE",            372.0f, 600.0f, sectionHeadingWidth, juce::Justification::centred},
+            {"REVERB TANK",      747.0f, 150.0f, sectionHeadingWidth, juce::Justification::centred},
+            {"TANK DAMPING",     747.0f, 496.0f, sectionHeadingWidth, juce::Justification::centred},
+            {"OUTPUT",          1059.0f, 150.0f, sectionHeadingWidth, juce::Justification::centred},
+        } };
+
+        /*  §3.3's four corner labels, 10 px / 13 / .18 em. **The ordering is deliberate** — the two
+            small spaces sit left, the two large right — so panel order is ROOM · PLATE above and
+            AMBI · CHMBR below, which is NOT the parameter enum's order. The map between them lives
+            beside the selector; these are ink. */
+        constexpr float cornerLabelCssPx = 10.0f, cornerLabelLineBox = 13.0f;
+        constexpr float cornerLabelTrackingEm = 0.18f;
+        inline constexpr std::array<PrintedLabel, 4> cornerLabels { {
+            {"ROOM",  700.0f, 212.0f, 98.0f, juce::Justification::centredRight},
+            {"PLATE", 912.0f, 212.0f, 94.0f, juce::Justification::centredLeft},
+            {"AMBI",  700.0f, 276.0f, 98.0f, juce::Justification::centredRight},
+            {"CHMBR", 912.0f, 276.0f, 94.0f, juce::Justification::centredLeft},
+        } };
+
+        /*  §6's four shoe legends, 10 px / 13 / .16 em, **printed once under their own half and
+            never re-inked or moved.** The shoe indicates state; it does not relabel the control. */
+        constexpr float shoeLegendCssPx = 10.0f, shoeLegendLineBox = 13.0f;
+        constexpr float shoeLegendTrackingEm = 0.16f;
+        constexpr float shoeHalfW = 64.0f;
+        inline constexpr std::array<PrintedLabel, 4> shoeLegends { {
+            {"INTERNAL",   74.0f, 636.0f, shoeHalfW, juce::Justification::centred},
+            {"SIDECHAIN", 138.0f, 636.0f, shoeHalfW, juce::Justification::centred},
+            {"HARD",      416.0f, 658.0f, shoeHalfW, juce::Justification::centred},
+            {"SOFT",      480.0f, 658.0f, shoeHalfW, juce::Justification::centred},
+        } };
+
+        /** §4's ladder caption and §8.2's lamp legend — two more fascia strings, each at its own
+            tracking, which is why neither folds into a table above. */
+        constexpr float meterCaptionCssPx = 10.0f, meterCaptionLineBox = 13.0f;
+        constexpr float meterCaptionTrackingEm = 0.28f;
+        constexpr float meterCaptionX = 186.0f, meterCaptionY = 310.0f, meterCaptionW = 42.0f;
+
+        constexpr float gateOpenLegendCssPx = 12.0f, gateOpenLegendLineBox = 15.0f;
+        constexpr float gateOpenLegendTrackingEm = 0.18f;
+        constexpr float gateOpenLegendX = 306.0f, gateOpenLegendY = 149.0f;
+
+        /** §5's header data, right-aligned above the scope well. **A normal U+0020 between the word
+            and the figure** — it carried a U+3000 IDEOGRAPHIC SPACE until export 6, which was a
+            stray paste: an invisible character that changes metrics has no place in a source anyone
+            transcribes from, and a gap worth setting is set in the tracking or the box. */
+        constexpr float scopeHeaderCssPx = 10.0f, scopeHeaderLineBox = 13.0f;
+        constexpr float scopeHeaderTrackingEm = 0.22f;
+        constexpr float scopeHeaderX = 484.0f, scopeHeaderY = 151.0f, scopeHeaderW = 200.0f;
+        constexpr const char* scopeHeaderText = "ENVELOPE 50 ms / DIV";
 
         /** §9's version stamp: right-aligned in a 110 px box, on fascia rather than on the block. */
         constexpr float versionStampX = 1180.0f, versionStampY = 668.0f, versionStampW = 110.0f;

@@ -550,7 +550,7 @@ void ProgramHeader::paint(juce::Graphics& g)
 
         drawTrackedText(g, namingMode ? "NAME PROGRAM" : "PROGRAM", captionFont,
                          trackingPxForEm(Layout::programCaptionTrackingEm, Layout::programCaptionCssPx),
-                         captionRect, juce::Justification::left, Colour::labelSelected);
+                         captionRect, juce::Justification::left, Colour::panelInk);
     }
 
     // Clear the two cells before drawing. The plate leaves the LCD windows empty (section 0.2:

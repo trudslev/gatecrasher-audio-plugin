@@ -9,7 +9,6 @@
 #include "InputMeter.h"
 #include "ToggleSwitchComponent.h"
 #include "ProgramHeader.h"
-#include "StateLabels.h"
 #include "../PluginProcessor.h"
 #include <juce_gui_basics/juce_gui_basics.h>
 #include <array>
@@ -28,10 +27,11 @@ private:
     GatecrasherAudioProcessor& processorRef;
     GatecrasherLookAndFeel lookAndFeel;
 
-    // Draw order follows spec section 0.5: the printed plate, then the eight state-dependent
-    // labels, then every live control above them.
+    /*  Draw order: the printed layer - fascia, rails, screws, dividers and every static string -
+        then every live control above it. **The eight state-dependent labels are gone**: §6, §8.1
+        and §8.3 make the legends printed once and never re-inked, so they are ink in
+        `GatecrasherPanelBackground` and the shoe and the pointer carry the state. */
     GatecrasherPanelBackground panelBackground;
-    StateLabels stateLabels;
 
     // density/decay are deliberately automation-only APVTS parameters with no panel control
     // (GUI-SPEC.md section 9) - every other parameter gets a knob here, one per entry

@@ -76,4 +76,60 @@ void GatecrasherPanelBackground::paint(juce::Graphics& g)
     g.setColour(Colour::columnDivider);
     for (const float x : Layout::dividerX)
         g.fillRect(x, Layout::dividerY, 1.0f, Layout::dividerH);
+
+    paintPrintedLabels(g);
+}
+
+/*  **Every printed label on the fascia, drawn in one pass.** All of it was pixels in the plate.
+
+    The three tables are walked rather than called site by site, which makes a heading that moves a
+    geometry question with one answer instead of eight places to keep in step - the same move as
+    filtering one enumerable list by containment rather than holding three lists of names.
+
+    **`StateLabels` is DELETED by this, not ported.** It drew eight of these - the four shoe legends
+    and the four corner labels - and indicated state by FONT WEIGHT, 700 for the selected half
+    against 400 for the other. §6, §8.1 and §8.3 each forbid exactly that, and §8.1 states the
+    general form: *ink weight never stands in for illumination.* The shoe's lit half and the
+    selector's pointer carry the state now; the ink does not move, change weight or redraw. */
+void GatecrasherPanelBackground::paintPrintedLabels(juce::Graphics& g)
+{
+    using namespace GatecrasherTheme;
+
+    const auto draw = [&g](const Layout::PrintedLabel& l, float cssPx, float lineBox,
+                            float trackingEm, juce::Colour ink)
+    {
+        drawTrackedText(g, l.text, labelFont(labelFontHeightForCssPx(cssPx)),
+                         trackingPxForEm(trackingEm, cssPx),
+                         juce::Rectangle<float>(l.x, l.y, l.width, lineBox),
+                         juce::Justification(l.justify), ink);
+    };
+
+    for (const auto& l : Layout::sectionHeadings)
+        draw(l, Layout::sectionHeadingCssPx, Layout::sectionHeadingLineBox,
+              Layout::sectionHeadingTrackingEm, Colour::panelInk);
+
+    for (const auto& l : Layout::cornerLabels)
+        draw(l, Layout::cornerLabelCssPx, Layout::cornerLabelLineBox,
+              Layout::cornerLabelTrackingEm, Colour::panelInk);
+
+    for (const auto& l : Layout::shoeLegends)
+        draw(l, Layout::shoeLegendCssPx, Layout::shoeLegendLineBox,
+              Layout::shoeLegendTrackingEm, Colour::panelInk);
+
+    draw({"IN", Layout::meterCaptionX, Layout::meterCaptionY, Layout::meterCaptionW,
+           juce::Justification::centred},
+          Layout::meterCaptionCssPx, Layout::meterCaptionLineBox,
+          Layout::meterCaptionTrackingEm, Colour::panelInk);
+
+    draw({"GATE OPEN", Layout::gateOpenLegendX, Layout::gateOpenLegendY, 200.0f,
+           juce::Justification::centredLeft},
+          Layout::gateOpenLegendCssPx, Layout::gateOpenLegendLineBox,
+          Layout::gateOpenLegendTrackingEm, Colour::panelInk);
+
+    // Its own ink and its own tracking - §7 names it "scope header data", and §9 gained the row for
+    // it in export 6 after the prototype enumeration found the type table a row short.
+    draw({Layout::scopeHeaderText, Layout::scopeHeaderX, Layout::scopeHeaderY, Layout::scopeHeaderW,
+           juce::Justification::centredRight},
+          Layout::scopeHeaderCssPx, Layout::scopeHeaderLineBox,
+          Layout::scopeHeaderTrackingEm, Colour::scopeHeaderInk);
 }

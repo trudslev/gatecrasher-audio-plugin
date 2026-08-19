@@ -2,16 +2,29 @@
 
 #include <juce_gui_basics/juce_gui_basics.h>
 
-// The flat static background: design/assets/gatecrasher-panel@2x.png (gate-closed), drawn once
-// across the full 960x434 reference canvas. Fascia gradient/grain, rack ears, screws, dividers, and
-// every static label are all baked into this single bitmap - see design/GUI-SPEC.md's "GUI approach"
-// and gatecrasher/CLAUDE.md's GUI section. Every other GUI component in this plugin is layered on
-// top of this one, either painting over a specific region (ProgramHeader, the switches) or adding
-// something the bitmap can't show at all (the knobs, the scope, the lamp).
+/*  **The printed layer, drawn — this used to be one bitmap blit and now draws every static mark on
+    the panel.** §0: no plate, no filmstrips, no bitmap of any panel element. The fascia is a 2 px
+    procedural repeat with nothing that wants baking, so call 6's per-casting permission applies.
+
+    What it owns: the fascia, the two rack rails, the four screws, §1's three column dividers, and
+    every printed string on the fascia — eight section headings, four corner labels, four shoe
+    legends, the ladder caption, the GATE OPEN legend and the scope's header data.
+
+    What it does not: anything that changes. The knobs, pointers, lamp, LCD, meter fill, scope
+    contents and both shoes composite on top.
+
+    Regenerate the object list rather than maintaining one here:
+
+        python3 ../tools/enumerate_prototype.py "design/Gatecrasher GR-85 Panel.dc.html" \
+            --canvas 1340x700
+*/
 class GatecrasherPanelBackground final : public juce::Component
 {
 public:
     GatecrasherPanelBackground();
 
     void paint(juce::Graphics&) override;
+
+private:
+    void paintPrintedLabels(juce::Graphics&);
 };

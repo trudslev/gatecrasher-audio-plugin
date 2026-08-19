@@ -53,7 +53,7 @@ target_sources(GatecrasherTests PRIVATE
     ../Source/GUI/GateScope.cpp
     ../Source/GUI/GateLamp.cpp
     ../Source/GUI/InputMeter.cpp
-    ../Source/GUI/StateLabels.cpp)
+)
 
 # NF_COMPANY_NAME/NF_PRODUCT_NAME come from the parent CMakeLists and must match what the plugin
 # target gets - ProgramManager.cpp is compiled into both, and builds the user-Programs path from

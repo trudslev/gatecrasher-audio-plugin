@@ -161,7 +161,6 @@ target_sources(Gatecrasher PRIVATE
     Source/GUI/GateLamp.cpp
     Source/GUI/InputMeter.cpp
     Source/GUI/ToggleSwitchComponent.cpp
-    Source/GUI/StateLabels.cpp
     Source/GUI/ProgramHeader.cpp
     Source/GUI/GatecrasherEditorContent.cpp)
 

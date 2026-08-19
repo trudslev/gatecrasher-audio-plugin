@@ -67,7 +67,7 @@ void ToggleSwitchComponent::paint(juce::Graphics& g)
     g.fillRect(shoe);
 
     // The option labels (INTERNAL/SIDECHAIN, HARD/SOFT) are NOT drawn here. They are two of the
-    // eight state-dependent labels of spec section 0.4 and belong to StateLabels, which draws all
+    // four shoe legends of §6 and belong to GatecrasherPanelBackground's printed layer, which draws
     // eight together from one table so the switch pair and the algorithm corners cannot drift apart.
     // This component owns the track and the shoe only.
 }
