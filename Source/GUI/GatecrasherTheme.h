@@ -11,12 +11,35 @@
 // the fascia here is a static bitmap (see GatecrasherPanelBackground) rather than code-drawn, so
 // this file's job is narrower: positions/sizes for the *live* pieces layered on top, plus the
 // handful of colours those live pieces need to match the baked artwork around them.
+#include <nf/HeaderPart.h>
 #include <nf/ParameterReadout.h>
 
 namespace GatecrasherTheme
 {
     namespace Colour
     {
+        /*  **The chassis, §1 — material, not ink, so no contrast annotation belongs on it.**
+            `tools/check_contrast.py` measures text against a ground; these ARE grounds. Annotating
+            them would be the shape this suite records as a check whose input comes from the thing
+            it checks: a ratio computed from a value against itself proves nothing.
+
+            They arrive as constants for the first time because the fascia, rails and screws were
+            pixels in `gatecrasher-panel-plate@2x.png` until this pass. A byte here is now the
+            output rather than an input to a projection, which is the state Chorus-60's button-cap
+            pair only reached when the panel started drawing them — and the state in which a
+            one-digit hex drift is a wrong face rather than an invisible 0.0037 of contrast. */
+        inline const juce::Colour fasciaLight    { 0xFFC3C8CC };
+        inline const juce::Colour fasciaDark     { 0xFFBDC2C7 };
+        inline const juce::Colour railEdge       { 0xFF8E959A };
+        inline const juce::Colour railHighlight  { 0xFFB4BABE };
+        inline const juce::Colour railEdgeFar    { 0xFF9AA1A6 };
+        inline const juce::Colour screwHighlight { 0xFF9BA2A8 };
+        inline const juce::Colour screwBody      { 0xFF4A5055 };
+        inline const juce::Colour screwShadow    { 0xFF23272A };
+        /** `rgba(255,255,255,.62)` — alpha lives in the constant, per the contrast tool's rule that
+            a colour composites over its own ground rather than being read as raw RGB. */
+        inline const juce::Colour columnDivider  { 0x9EFFFFFF };
+
         // Section 2 palette. Every static label is baked into the plate, so the only fascia ink
         // still drawn in code is the EIGHT state-dependent labels of section 0.4 - which is why
         // this list is now two entries rather than a dozen.
@@ -116,11 +139,20 @@ namespace GatecrasherTheme
 
         /** Lit is a neutral bright, never the accent #FF2B1C - that stays reserved for the gate
             and the envelope trace.
-            // contrast: 15.90:1 vs buttonCapTop [functional] */
+            **Re-measured 2026-08-19: 13.93, not 15.90.** The figure was stale and the tool had
+            been failing on it before this pass touched anything — and the measured value is exactly
+            what §7 states for the lit legend on the Program cap's light end, so the assets, the
+            spec and the tool all agree and only the comment did not. A stated figure that does not
+            reproduce is a failure in its own right here, which is why it is corrected rather than
+            left as a warning nobody reads.
+            // contrast: 13.93:1 vs buttonCapTop [functional] */
         inline const juce::Colour legendLit{0xFFF4F8FA};
         /** Unlit is printed and readable, not absent: both legends dark has to read as "nothing to
             do here", never as a blank button.
-            // contrast: 5.20:1 vs buttonCapTop [state] */
+            **Re-measured 2026-08-19: 5.68, not 5.20** — §7's figure for the idle legend on the
+            cap's light end, same story as the lit one directly above. Both clear their floors at
+            both ends and always did; the drift was in the record, not in the panel.
+            // contrast: 5.68:1 vs buttonCapTop [state] */
         inline const juce::Colour legendUnlit{0xFF9AA1A6};
     }
 
@@ -130,8 +162,36 @@ namespace GatecrasherTheme
 
     namespace Layout
     {
-        constexpr float canvasWidth = 960.0f;
-        constexpr float canvasHeight = 434.0f;
+        /*  **1340 x 700, and the width is the shared part's rather than this casting's.**
+            `nf::HeaderGeometry::canvasWidth` is 1340 for all six; the height is Gatecrasher's own,
+            per §1. Taking the width from core rather than re-typing 1340 is the only thing that
+            makes a later change to the shared canvas reach this file — a literal that happens to
+            agree is indistinguishable from an alias by reading, which is what put four divergent
+            figures in Reflect-84's bezel.
+
+            **It was 960 x 434.** +380 of width came in with call 1 and is what pays for call 3:
+            seven knob diameters collapse to two and the sections still fit at 216 px of label
+            width per column. Every body figure below is on the new canvas. */
+        constexpr float canvasWidth = (float) nf::HeaderGeometry::canvasWidth;   // 1340
+        constexpr float canvasHeight = 700.0f;
+
+        /*  The chassis, §1. Drawn rather than blitted: this casting is **plateless** — §0 says no
+            plate, no filmstrips, no bitmap of any panel element, and the fascia is a 2 px
+            procedural repeat with nothing that wants baking, so call 6's per-casting permission
+            applies. If a wear layer is ever added it becomes a plate and call 6 binds at 3x. */
+        constexpr float railW = 16.0f;
+        constexpr float screwDiameter = 11.0f;
+        constexpr float screwInset = 2.5f;          // left edge of the left pair
+        constexpr float screwTopY = 20.5f;
+        constexpr float screwBottomY = 668.5f;
+        constexpr float fasciaStripeW = 2.0f;       // repeating-linear-gradient(90deg, a 0 2px, b 2px 4px)
+
+        /** §1's three column dividers, 1 px, y 136 -> 660. The x figures are the section boundaries
+            and are read by the body layout as well as by the paint, so they live here rather than
+            in the painter. */
+        constexpr float dividerY = 136.0f;
+        constexpr float dividerH = 524.0f;          // 136 -> 660
+        inline constexpr std::array<float, 3> dividerX { 260.0f, 700.0f, 1010.0f };
 
         // Rotation range for every knob: pointer at 12 o'clock = centre (section 3).
         /** 190px of vertical drag spans the full range, 760 while Shift is held. Suite figures: six
@@ -190,22 +250,48 @@ namespace GatecrasherTheme
             previous values were Rev 5's and were out by up to 74px, which put knobs on top of their
             own printed numerals once the plate started carrying the scales. Take them from the
             spec, never from a screenshot. */
+        /*  **§3's fifteen, on the new canvas — SEVEN DIAMETERS COLLAPSED TO TWO.** It had
+            62 · 54 · 50 · 44 · 40 · 34 · 32 and kept **none** of them: call 3 maps the whole set
+            onto **Ø76 primary** and **Ø56 standard**. Every knob grew. Gatecrasher takes no Ø104 —
+            it has no MODEL control, and the REVERB TANK selector is a detented switch rather than
+            the control the unit is described by.
+
+            Taken from the delivered prototype's own `knobSpec()` and checked against §3's table,
+            never from a screenshot — the previous set was out by up to 74 px for exactly that
+            reason once the plate started carrying the scales.
+
+            **The two mixed rows are registered rather than top-aligned**, which is the 10 px §3.1
+            found: a Ø76 registration box for every class, `dy = (76 − Ø) / 2`, so the label sits on
+            one line per row while each ring pivots on its own Y. The top band registers on y **262**
+            (THRESHOLD, SLAM, WIDTH) and the envelope band on y **478** (HP, LP, ATTACK, HOLD,
+            RELEASE) — 478 rather than 490 because dropping the Ø56 pair onto the trio's Y put their
+            label line 1 px off the KEY SOURCE heading, and at 478 there is 13 px of clearance.
+
+            **The REVERB TANK selector at (855, 250) is exempt and stays where it is**: it carries
+            corner labels rather than a label on the baseline, so the registration rule does not
+            reach it.
+
+            `KnobFilmstripSize` is on borrowed time here. §10 records call 5 as already conformed in
+            the artwork — the ring, ticks, numerals and pointer were always drawn from rotation
+            fractions — and the sheets it retires were never in this casting's bundle. The strips
+            are what the BUILD still uses; replacing them with the drawn construction is the next
+            step and does not move a single figure below. */
         inline constexpr std::array<KnobSpec, 15> knobs{ {
-            {"threshold", 102.0f, 170.0f, 62.0f, KnobFilmstripSize::large},
-            {"trigHP",     75.0f, 302.0f, 32.0f, KnobFilmstripSize::small},
-            {"trigLP",    151.0f, 302.0f, 32.0f, KnobFilmstripSize::small},
-            {"attack",    259.0f, 289.0f, 54.0f, KnobFilmstripSize::large},
-            {"hold",      361.0f, 289.0f, 54.0f, KnobFilmstripSize::large},
-            {"release",   463.0f, 289.0f, 54.0f, KnobFilmstripSize::large},
-            {"algorithm", 632.0f, 154.0f, 50.0f, KnobFilmstripSize::large},
-            {"size",      580.0f, 239.0f, 44.0f, KnobFilmstripSize::large},
-            {"preDelay",  684.0f, 239.0f, 44.0f, KnobFilmstripSize::large},
-            {"dampHF",    583.0f, 364.0f, 34.0f, KnobFilmstripSize::small},
-            {"dampLF",    681.0f, 364.0f, 34.0f, KnobFilmstripSize::small},
-            {"slam",      793.0f, 157.0f, 40.0f, KnobFilmstripSize::large},
-            {"width",     881.0f, 157.0f, 40.0f, KnobFilmstripSize::large},
-            {"mix",       793.0f, 262.0f, 40.0f, KnobFilmstripSize::large},
-            {"trim",      881.0f, 262.0f, 40.0f, KnobFilmstripSize::large},
+            {"threshold", 116.0f, 262.0f, 76.0f, KnobFilmstripSize::large},
+            {"trigHP",     84.0f, 478.0f, 56.0f, KnobFilmstripSize::small},
+            {"trigLP",    192.0f, 478.0f, 56.0f, KnobFilmstripSize::small},
+            {"attack",    356.0f, 478.0f, 76.0f, KnobFilmstripSize::large},
+            {"hold",      480.0f, 478.0f, 76.0f, KnobFilmstripSize::large},
+            {"release",   604.0f, 478.0f, 76.0f, KnobFilmstripSize::large},
+            {"algorithm", 855.0f, 250.0f, 76.0f, KnobFilmstripSize::large},
+            {"size",      786.0f, 400.0f, 56.0f, KnobFilmstripSize::small},
+            {"preDelay",  926.0f, 400.0f, 56.0f, KnobFilmstripSize::small},
+            {"dampHF",    786.0f, 576.0f, 56.0f, KnobFilmstripSize::small},
+            {"dampLF",    926.0f, 576.0f, 56.0f, KnobFilmstripSize::small},
+            {"slam",     1090.0f, 262.0f, 56.0f, KnobFilmstripSize::small},
+            {"width",    1246.0f, 262.0f, 56.0f, KnobFilmstripSize::small},
+            {"mix",      1090.0f, 440.0f, 56.0f, KnobFilmstripSize::small},
+            {"trim",     1246.0f, 440.0f, 56.0f, KnobFilmstripSize::small},
         } };
 
         // Gate envelope scope, section 5.
@@ -411,8 +497,26 @@ namespace GatecrasherTheme
         /** **The baseline moved up 6.7px with the 34px row**, and drawing at the old 27.75 lands
             the caption inside the LCD's top border. It was right for a 25px window; the taller one
             pushed the caption+window group's centring up the band. */
-        constexpr float programCaptionX = 374.75f, programCaptionBaselineY = 21.08f;
-        constexpr float programCaptionCssPx = 10.0f, programCaptionTrackingEm = 0.22f;
+        /*  **THE CAPTION AND THE LEGENDS ARE PART OF THE BAND, AND THE FIRST VERSION OF THIS PASS
+            LEFT THEM BEHIND.** The rects moved onto `nf::HeaderGeometry` and these three baselines
+            did not, which put `PROGRAM` at y 21 on a band that now starts at 61 and drew both
+            button legends 20 px ABOVE their caps, onto bare fascia in an ink meant for a dark face.
+
+            It was found by capturing the panel, not by reading the diff — the header's own resume
+            point says a rect that moves and a rect that does not are indistinguishable in a diff
+            and obvious in a measurement, and that is exactly what happened, one layer down from
+            where the note expected it. **A "band figure" is not only a rectangle.** Type inside the
+            band is positioned from the band and moves with it.
+
+            So the two that core states are aliased, and the two it does not are expressed as
+            offsets from `bandY` rather than re-typed as absolutes. */
+        constexpr float programCaptionX = (float) nf::HeaderGeometry::lcdX;
+        constexpr float programCaptionBaselineY = (float) nf::HeaderGeometry::captionY + 10.0f;
+        constexpr float programCaptionCssPx = 10.0f;
+        /** §7 of the shared part: `PROGRAM` at 10 px / line box 13 / **.24 em**, left-aligned to the
+            LCD at x 357. It was .22 here, which is the scope-legend figure — one of the two
+            trackings this panel has at 10 px, and the wrong one. */
+        constexpr float programCaptionTrackingEm = 0.24f;
 
         /** **The header band: y 29, height 34, shared by all five parts** - the LCD, both Program
             buttons and both meter windows. 34 is BRAND.md's suite figure rather than this panel's:
@@ -426,25 +530,72 @@ namespace GatecrasherTheme
             Every figure here is BORDER-BOX, and the plate agrees: its LCD, IN and OUT wells all
             measure y 29..63 and the two button positions are bare fascia. A plate from before
             Rev 15 leaves 5px of stale dark well above the live LCD and 6px below it. */
-        constexpr float programWindowX = 374.75f, programWindowY = 29.0f, programWindowW = 330.0f, programWindowH = 34.0f;
-        constexpr float programTagCellX = 375.75f, programTagCellY = 30.0f, programTagCellW = 48.28f, programTagCellH = 32.0f;
-        constexpr float programNameCellX = 424.03f, programNameCellY = 30.0f, programNameCellW = 253.72f, programNameCellH = 32.0f;
-        constexpr float programChevronCellX = 677.75f, programChevronCellY = 30.0f, programChevronCellW = 26.0f, programChevronCellH = 32.0f;
+        /*  **EVERY BAND FIGURE IS AN ALIAS NOW, AND THEY MOVED TOGETHER ON PURPOSE.** This casting's
+            own CLAUDE.md resume point exists for this edit: Chorus-60's header pass aliased its LCD
+            to the shared part and left SAVE, DELETE and both meter wells as literals from the
+            previous canvas — 29 px right and 29 px down — and nothing could see it, because the
+            plate baked those faces and the only symptom was text centred inside a box nobody drew.
+            Gatecrasher has no plate to hide it, but the failure mode is the edit, not the artwork.
 
-        constexpr float saveButtonX = 710.75f, saveButtonY = 29.0f, saveButtonW = 50.2f, saveButtonH = 34.0f;
-        constexpr float deleteButtonX = 765.95f, deleteButtonY = 29.0f, deleteButtonW = 50.2f, deleteButtonH = 34.0f;
+            So the rule the resume point states is applied literally: **alias every band figure in
+            one edit.** A literal that happens to agree with core is indistinguishable from an alias
+            by reading, and the previous values agreed with nothing — the band was at y 29 on a 434
+            canvas and is at y 61 on a 700 one.
+
+            The bank / name / chevron cells come from `nf::LcdCell` rather than being re-derived:
+            core owns the 641 cell's split and its 49-character budget, and §10 records this casting
+            as already conformant on call 2 with its cap having risen 27 -> 47. */
+        constexpr float programWindowX = (float) nf::HeaderGeometry::lcdX;
+        constexpr float programWindowY = (float) nf::HeaderGeometry::bandY;
+        constexpr float programWindowW = (float) nf::HeaderGeometry::lcdW;
+        constexpr float programWindowH = (float) nf::HeaderGeometry::bandH;
+
+        constexpr float programTagCellX = programWindowX;
+        constexpr float programTagCellY = programWindowY;
+        constexpr float programTagCellW = nf::LcdCell::bankCellW;
+        constexpr float programTagCellH = programWindowH;
+
+        constexpr float programNameCellX = programTagCellX + programTagCellW + nf::LcdCell::dividerW;
+        constexpr float programNameCellY = programWindowY;
+        constexpr float programNameCellW = nf::LcdCell::nameAreaW;
+        constexpr float programNameCellH = programWindowH;
+
+        constexpr float programChevronCellX = programNameCellX + programNameCellW;
+        constexpr float programChevronCellY = programWindowY;
+        constexpr float programChevronCellW = nf::LcdCell::chevronTrim;
+        constexpr float programChevronCellH = programWindowH;
+
+        constexpr float saveButtonX = (float) nf::HeaderGeometry::saveX;
+        constexpr float saveButtonY = (float) nf::HeaderGeometry::bandY;
+        constexpr float saveButtonW = (float) nf::HeaderGeometry::saveW;
+        constexpr float saveButtonH = (float) nf::HeaderGeometry::bandH;
+        constexpr float deleteButtonX = (float) nf::HeaderGeometry::deleteX;
+        constexpr float deleteButtonY = (float) nf::HeaderGeometry::bandY;
+        constexpr float deleteButtonW = (float) nf::HeaderGeometry::deleteW;
+        constexpr float deleteButtonH = (float) nf::HeaderGeometry::bandH;
 
         /** The two stacked legends, positioned by BASELINE rather than by box, because that is what
             the spec quotes and what keeps the pair optically even inside a 34px cap. */
-        constexpr float legendUpperBaselineY = 41.08f;
-        constexpr float legendLowerBaselineY = 53.08f;
+        /*  Offsets from the band rather than absolutes, for the reason recorded at
+            `programCaptionBaselineY`: these two were 41.08 and 53.08 against a band at y 29, and
+            survived the move to y 61 pointing at fascia. 12.08 and 24.08 into a 34 px cap is what
+            keeps the pair optically even, which is the property the figures encode — so the
+            property is what is written down and the absolute is derived. */
+        constexpr float legendUpperBaselineY = (float) nf::HeaderGeometry::bandY + 12.08f;
+        constexpr float legendLowerBaselineY = (float) nf::HeaderGeometry::bandY + 24.08f;
         constexpr float legendCssPx = 10.0f;
         constexpr float legendTrackingEm = 0.10f;
 
         // 34 tall on y 29, like every other part of the band. These were 24 - one pixel shorter
         // than the 25px LCD and buttons beside them, which is the drift the suite audit found.
-        constexpr float inWindowX = 825.0f, inWindowY = 29.0f, inWindowW = 44.0f, inWindowH = 34.0f;
-        constexpr float outWindowX = 875.0f, outWindowY = 29.0f, outWindowW = 44.0f, outWindowH = 34.0f;
+        constexpr float inWindowX = (float) nf::HeaderGeometry::inWellX;
+        constexpr float inWindowY = (float) nf::HeaderGeometry::bandY;
+        constexpr float inWindowW = (float) nf::HeaderGeometry::meterWellW;
+        constexpr float inWindowH = (float) nf::HeaderGeometry::bandH;
+        constexpr float outWindowX = (float) nf::HeaderGeometry::outWellX;
+        constexpr float outWindowY = (float) nf::HeaderGeometry::bandY;
+        constexpr float outWindowW = (float) nf::HeaderGeometry::meterWellW;
+        constexpr float outWindowH = (float) nf::HeaderGeometry::bandH;
 
         /** Section 6.1's name-cell budget: **253.72px cell**, 10px padding each side, 233.72
             usable, Share Tech Mono 13px at .10em = 8.32px per character = **28 characters**.

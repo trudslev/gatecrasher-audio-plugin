@@ -8,12 +8,72 @@ GatecrasherPanelBackground::GatecrasherPanelBackground()
     setInterceptsMouseClicks(false, false);
 }
 
+/*  **This was one drawImage of a 1920 x 868 plate and is now drawn.** §0: no plate, no filmstrips,
+    no bitmap of any panel element. The fascia is a 2 px procedural repeat with nothing that wants
+    baking, so call 6's per-casting permission applies and nothing exports at 3x; if a wear layer is
+    ever added it becomes a plate and the call binds.
+
+    The chassis is four objects, and they are four rows of this casting's enumeration rather than a
+    list anyone wrote here: the fascia, two rails, four screws, three dividers. Regenerate it with
+
+        python3 ../tools/enumerate_prototype.py "design/Gatecrasher GR-85 Panel.dc.html" \
+            --canvas 1340x700
+
+    which walks the delivered prototype rather than being maintained by hand - the reason being that
+    Chorus-60's hand-authored plate enumeration came back thirteen rows short with every row in it
+    ink, and this casting has far more to draw than that one did.  */
 void GatecrasherPanelBackground::paint(juce::Graphics& g)
 {
     using namespace GatecrasherTheme;
 
-    g.setImageResamplingQuality(juce::Graphics::highResamplingQuality);
-    g.drawImage(panelBackgroundImage(),
-                juce::Rectangle<float>(0.0f, 0.0f, Layout::canvasWidth, Layout::canvasHeight),
-                juce::RectanglePlacement::stretchToFit);
+    const auto w = Layout::canvasWidth, h = Layout::canvasHeight;
+
+    /*  Fascia: `repeating-linear-gradient(90deg, #c3c8cc 0 2px, #bdc2c7 2px 4px)`.
+
+        Drawn as hard 2 px stripes rather than as a JUCE gradient, because a `ColourGradient` would
+        interpolate between the two and the CSS does not - the stops are `0 2px` and `2px 4px`, so
+        each colour holds flat across its own two pixels. An interpolated version reads as a wash at
+        1:1 and as a moire against the display grid when scaled, which is the failure the "embed 2x
+        only" rule records for fine fascia texture. */
+    g.setColour(Colour::fasciaLight);
+    g.fillRect(0.0f, 0.0f, w, h);
+    g.setColour(Colour::fasciaDark);
+    for (float x = Layout::fasciaStripeW; x < w; x += Layout::fasciaStripeW * 2.0f)
+        g.fillRect(x, 0.0f, Layout::fasciaStripeW, h);
+
+    // Rack rails, §1: mirrored gradients, so the highlight runs toward the panel on both sides.
+    {
+        juce::ColourGradient left(Colour::railEdge, 0.0f, 0.0f,
+                                   Colour::railEdgeFar, Layout::railW, 0.0f, false);
+        left.addColour(0.45, Colour::railHighlight);
+        g.setGradientFill(left);
+        g.fillRect(0.0f, 0.0f, Layout::railW, h);
+
+        juce::ColourGradient right(Colour::railEdgeFar, w - Layout::railW, 0.0f,
+                                    Colour::railEdge, w, 0.0f, false);
+        right.addColour(0.55, Colour::railHighlight);
+        g.setGradientFill(right);
+        g.fillRect(w - Layout::railW, 0.0f, Layout::railW, h);
+    }
+
+    // Four Ø11 screws. Positioned from the canvas rather than from a table of four points, so the
+    // right-hand pair cannot drift from the left when the canvas moves.
+    for (const float cx : { Layout::screwInset,
+                             w - Layout::screwInset - Layout::screwDiameter })
+        for (const float cy : { Layout::screwTopY, Layout::screwBottomY })
+        {
+            const juce::Rectangle<float> r(cx, cy, Layout::screwDiameter, Layout::screwDiameter);
+            juce::ColourGradient head(Colour::screwHighlight,
+                                       r.getX() + r.getWidth() * 0.38f,
+                                       r.getY() + r.getHeight() * 0.30f,
+                                       Colour::screwShadow, r.getRight(), r.getBottom(), true);
+            head.addColour(0.60, Colour::screwBody);
+            g.setGradientFill(head);
+            g.fillEllipse(r);
+        }
+
+    // §1's three column dividers.
+    g.setColour(Colour::columnDivider);
+    for (const float x : Layout::dividerX)
+        g.fillRect(x, Layout::dividerY, 1.0f, Layout::dividerH);
 }
