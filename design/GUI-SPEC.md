@@ -291,7 +291,17 @@ line-height inherits font metrics anywhere on this panel.
 | Scale numeral | Barlow Condensed 500 | 11 / 13 | .04 em | `#16191c` |
 | Corner label, shoe legend, meter caption | Barlow Condensed 600 | 10 / 13 | .18 / .16 / .28 em | `#16191c` |
 | Scope legend | Barlow Condensed 500/600 | 10 / 13 | .14–.20 em | `#9aa1a6` |
+| Scope header data (`ENVELOPE 50 ms / DIV`) | Barlow Condensed 500 | 10 / 13 | .22 em | `#2b3034` |
 | LCD / meter value | Share Tech Mono | 17 / 22 | .10 em | `#e8c96a` |
+
+**The scope header row is new and no pixel moved for it** — the string was always drawn at 10 / 13 /
+.22 em in `#2b3034`, and §7's palette already carried the ink at 7.43:1. It sits outside the scope
+legend row in both tracking and ink, so it is a role of its own rather than that role at a variant
+setting. **`.10 em` on the meter value is confirmed and now also stated in `HEADER-PART.md` §7**,
+which had the size and not the tracking; the wells are the shared part's, so that is where it
+belongs. **The `ENVELOPE` string carried a U+3000 IDEOGRAPHIC SPACE and now carries a normal space.**
+It was a stray paste, not a wider gap by intent: an invisible character that changes metrics has no
+place in a source anyone transcribes from, and a gap worth setting is set in the tracking or the box.
 | Program legend | Barlow Condensed 600 | 11 / 13 | .12 em | see 8.1 |
 | Version stamp | Share Tech Mono | 10 / 13 | .18 em | `#34383c` |
 
