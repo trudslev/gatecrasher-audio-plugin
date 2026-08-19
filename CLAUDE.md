@@ -76,7 +76,7 @@ So the enumeration is regenerated rather than maintained:
 | **280 objects to draw** | 156 material + 126 ink, **2 of them both** |
 | Material | 73 knob ticks · 15 sweep arcs · 15 bodies · 15 pointers · 13 ladder segments · 4 screws · 4 shoe halves · 3 dividers · 2 rails · 2 button caps · 2 meter wells · 2 shoe frames · header block · LCD well · lamp lens · scope well · scope grid · scope plot rule |
 | Ink | 120 strings · 4 vector (LCD chevron, scope trace) · the 2 meter values, which are also material |
-| Type roles | **18**, against §9's twelve rows |
+| Type roles | **18**, against §9's **thirteen** rows — the collapsing is deliberate where it remains |
 
 **The 2 that are both are the finding in miniature.** The first classifier asked `"ink" if text else
 "material"` and dropped **both meter wells** out of the material list entirely — they are a well that
@@ -84,25 +84,31 @@ holds a value, and a branch can only file them once. That is the same constructi
 `CLAUDE.md`'s *"Wordmark — stays baked, it is the CHORUS badge"* row, true about the badge and false
 about the nameplate. Classify on two independent flags, never on a branch.
 
-**Three things the derivation found that reading §9 would not:**
+**Three things the derivation found that reading §9 would not — ALL THREE ANSWERED in export 6, the
+same day they were raised.** Kept with their answers because what the enumeration was able to see is
+the reusable part:
 
-1. **The meter value carries NO tracking in the prototype.** §9's table pairs it with the LCD at
-   `.10 em`; the prototype's two wells are 17 / 22 with `letter-spacing` unset, and
-   `HEADER-PART.md` §7 — which is authoritative on the header — states the face and the size and is
-   **silent on the tracking**. So the two documents that mention it disagree and the one that
-   governs does not mention it. **Built at `.10 em`**, with the reason beside the constant: the LCD
-   and the wells are the same face at the same size in the same header, and one convention per role
-   is the suite's rule. Raised as an ask; it changes 6.8 px of run in a 64 px well, so it is
-   appearance and never fit.
-2. **`ENVELOPE　50 ms / DIV` has no row in §9 at all.** It draws at 10 / 13, **.22 em**, `#2b3034` —
-   outside §9's *"Scope legend · .14–.20 em · `#9aa1a6`"* row in both tracking and ink. §7's palette
-   does name the ink, as *"scope header data"*, so the figure exists; §9's table is a row short
-   rather than wrong.
-3. **Four codepoints above ASCII, and one of them is invisible.** U+2212 MINUS (×8), U+00B7 MIDDLE
+1. **The meter value carried no tracking in the prototype** where §9 paired it with the LCD at
+   `.10 em`, and `HEADER-PART.md` §7 — which governs the header — stated the face and the size and
+   was **silent on the tracking**. Two documents disagreeing and the one that governs not mentioning
+   it. **§7 now states `17 px / line box 22 / .10 em`** and rules explicitly that *"a prototype
+   drawing the wells with tracking unset differs from the part and the part governs."* Build it at
+   `.10 em`, and read the figure from §7 rather than from §9 — the wells are the shared part's.
+2. **`ENVELOPE 50 ms / DIV` had no row in §9 at all.** It draws at 10 / 13, **.22 em**, `#2b3034` —
+   outside the *"Scope legend · .14–.20 em · `#9aa1a6`"* row in both tracking and ink, so a role of
+   its own rather than that role at a variant setting. §9 carries it now and no pixel moved for it.
+3. **Four codepoints above ASCII, and one of them was invisible.** U+2212 MINUS (×8), U+00B7 MIDDLE
    DOT, U+221E INFINITY — and **U+3000 IDEOGRAPHIC SPACE**, inside that same scope-header string.
-   Every one must be built from its codepoint: `juce::String`'s `const char*` constructor decodes
-   **Latin-1, not UTF-8**. The ideographic space is the one nobody would have enumerated — it is a
-   space, so a build that transcribes it as `' '` looks right and sets a visibly narrower gap.
+   The first three stand and every one must be built from its codepoint: `juce::String`'s
+   `const char*` constructor decodes **Latin-1, not UTF-8**. **The U+3000 was a stray paste and is
+   now a normal space**, on a better argument than the ask made — *an invisible character that
+   changes metrics has no place in a source anyone transcribes from, and a gap worth setting is set
+   in the tracking or the box.*
+
+   **It is the one no person enumerates**, and it is why the tool has a whitespace arm separate from
+   its glyph arm: a list of special characters is a list of things you can see. U+00A0, U+2009,
+   U+200B and U+FEFF have the identical property — they transcribe to `' '` and the result looks
+   correct. Swept across all six panels; this was the only one in the suite, and there is none now.
 
 **What the current build draws at runtime, measured rather than recalled**, by probing the old
 960 × 434 prototype (`design/reference/Gatecrasher.dc.html`) against the plate's own pixels — every
