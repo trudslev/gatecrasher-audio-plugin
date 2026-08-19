@@ -80,22 +80,24 @@ namespace GatecrasherTheme
         // contrast: 7.43:1 vs fasciaDark [functional]
         inline const juce::Colour scopeHeaderInk { 0xFF2B3034 };
 
-        // Section 2 palette. Every static label is baked into the plate, so the only fascia ink
-        // still drawn in code is the EIGHT state-dependent labels of section 0.4 - which is why
-        // this list is now two entries rather than a dozen.
-        //
-        // Both values are judged against the DARKEST point of the fascia band each label is drawn
-        // over, where contrast is worst. Rev 5's #7B8287 inactive grey (1.60:1 there) is DELETED -
-        // if it turns up again, it is a regression.
-        //
-        // The figures below are sampled off the shipped plate by tools/check_contrast.py rather
-        // than quoted from the spec. They previously read 7.49 and 5.66, which the plate did not
-        // produce - and labelSelected was the case those numbers were chosen to protect, so it had
-        // been sitting at 6.90 against its own 7:1 bar.
-        // contrast: 7.09-8.43:1 vs plate:keySourceLabels,plate:shapeLabels [functional]
-        inline const juce::Colour labelSelected{0xFF141619};     // 700 weight, per section 2
-        // contrast: 5.21-6.20:1 vs plate:keySourceLabels,plate:shapeLabels [functional exempt: section 2.1 dims the inactive half deliberately - see this repo's CLAUDE.md, "do not fix it"]
-        inline const juce::Colour labelUnselected{0xFF2B3034};   // 400 weight
+        /*  **`labelSelected` and `labelUnselected` are gone as of 2026-08-19, and the second had
+            already stopped being drawn.** They were the two weights `StateLabels` used to indicate
+            state with, which §8.1 forbids — *ink weight never stands in for illumination* — so
+            deleting that component left `labelUnselected` with **zero consumers** while it kept a
+            `[functional]` annotation and kept being measured.
+
+            **A measured role that nothing draws is worse than an unmeasured one**, because a green
+            run then reports on a colour the panel does not contain. The ruling on a constant nothing
+            consumes is *derive it or delete it*, and there is nothing here to derive.
+
+            `labelSelected` had one consumer left — the `PROGRAM` caption — at `#141619`, where §7
+            puts every header caption on `#16191c` with the rest of the panel ink. **One role, two
+            constants**, and the caption reads `panelInk` now.
+
+            Their measured ranges are kept on record because establishing them cost something:
+            7.09-8.43 and 5.21-6.20 against `plate:keySourceLabels` and `plate:shapeLabels`. Those
+            regions are on a plate this build no longer draws, which is the second reason the pair
+            could not stay — the ground they were measured against left the panel with them. */
 
 
         inline const juce::Colour ledWindowBg{0xFF07090A};
@@ -368,42 +370,23 @@ namespace GatecrasherTheme
         constexpr float lampCx = 216.0f, lampCy = 104.0f, lampDiameter = 15.0f;
 
         //======================================================================================
-        /** The eight state-dependent labels of spec section 0.4 - the ONLY text this build draws
-            outside the two LCD windows.
+        /*  **`StateLabel`, its eight rows and its two type constants are gone as of 2026-08-19.**
 
-            They are absent from the plate: bare fascia sits where they go, and all eight are drawn
-            every frame at whichever weight their control is currently in. Rev 6 baked them at their
-            defaults and asked for the changed pair to be redrawn, which cannot work - baked pixels
-            cannot be un-drawn, so turning a bold baked word dim would have meant painting matched
-            fascia over it first. Rev 7 withdrew that; do not reintroduce it.
+            They positioned the four shoe legends and the four corner labels by BASELINE and drew
+            all eight every frame at whichever weight their control was in — 700 selected, 400 not.
+            §6, §8.1 and §8.3 each forbid exactly that: legends are printed once, under their own
+            half, and never re-inked or moved, and *ink weight never stands in for illumination.*
 
-            **Draw from `x`, never by re-centring on `centreX`.** A 700-weight word is wider than the
-            same word at 400, so re-centring would shift it sideways as the control changes. The
-            centre is recorded only because the spec quotes it. */
-        struct StateLabel
-        {
-            const char* text;
-            float x;          // left edge, spec section 0.4
-            float baselineY;
-            float centreX;    // rendered default's centre - reference only, do not lay out from it
-        };
+            They are static ink now, in `Layout::shoeLegends` and `Layout::cornerLabels`, positioned
+            by box like every other printed string on this panel.
 
-        /** Index pairs: 0/1 are KEY SOURCE (Internal/Sidechain), 2/3 SHAPE (Hard/Soft), 4-7 the
-            algorithm corners in ROOM, PLATE, AMBI, CHMBR order - note that is panel order, NOT the
-            parameter's index order, which section 9.1 gives as Ambience, Room, Plate, Chamber. */
-        inline constexpr std::array<StateLabel, 8> stateLabels { {
-            { "INTERNAL",   64.0f, 416.0f,  85.7f },
-            { "SIDECHAIN", 117.0f, 416.0f, 139.7f },
-            { "HARD",      333.0f, 422.0f, 345.0f },
-            { "SOFT",      367.0f, 422.0f, 377.0f },
-            { "ROOM",      557.0f, 127.0f, 568.4f },
-            { "PLATE",     680.0f, 127.0f, 693.3f },
-            { "AMBI",      557.0f, 185.0f, 567.0f },
-            { "CHMBR",     679.0f, 185.0f, 692.8f } } };
-
-        /** Section 2.3: Barlow Condensed 10px, .10em tracking. */
-        constexpr float stateLabelCssPx = 10.0f;
-        constexpr float stateLabelTrackingEm = 0.10f;
+            **The reasoning that block carried is worth keeping**, because it is right about the
+            mechanism and only wrong about which mechanism this panel wants. Rev 6 baked the eight
+            at their defaults and asked for the changed pair to be redrawn, which cannot work: baked
+            pixels cannot be un-drawn, so dimming a bold baked word means painting matched fascia
+            over it first. That is still true, and it is why these labels could not be plate artwork
+            while weight indicated state. **The redesign removed the premise instead of the
+            problem** — nothing about them changes now, so they can be printed. */
 
         // Input meter, section 8: x 165, y 139, 14 x 76. This read (147, 133) through Rev 5, whose
         // header layout put the meter 18px further left; drawn there against the Rev 7 plate it
