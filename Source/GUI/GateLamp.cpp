@@ -1,17 +1,19 @@
 #include "GateLamp.h"
 #include "GatecrasherTheme.h"
+#include <cmath>
 
-namespace
-{
-    // ~40ms cosmetic decay at 60fps (16.67ms/frame): exp(-16.67/40) per frame reaches ~1/e after
-    // roughly one 40ms window, fully imperceptible within a handful of frames.
-    constexpr float glowDecayPerFrame = 0.66f;
-}
+/*  §8.2's GATE OPEN lamp. Ø15 in a 31 px well at (272, 140).
+
+    **Light stops at the lens edge.** The glow is drawn INSIDE the lens rather than around it, which
+    makes that structural rather than something to remember: there is no halo on the fascia because
+    nothing outside the lens is ever painted. And the closed lens stays a dark RED lens rather than
+    going grey — §7 gives this panel one accent, and the unlit state is that accent gone dark, not a
+    different material.  */
 
 GateLamp::GateLamp(GatecrasherAudioProcessor& processor) : processorRef(processor)
 {
     setInterceptsMouseClicks(false, false);
-    startTimerHz(60);
+    startTimerHz(30);
 }
 
 GateLamp::~GateLamp()
@@ -19,16 +21,22 @@ GateLamp::~GateLamp()
     stopTimer();
 }
 
+/*  Opening is INSTANTANEOUS - §5's most emphatic requirement - so the glow snaps to 1 on the poll
+    that reads open and is never eased in. Closing gets a short cosmetic decay at this layer only;
+    GateEnvelopeGenerator leaves it to the GUI deliberately, which decouples how the lamp looks as it
+    goes dark from the audible release curve.  */
 void GateLamp::timerCallback()
 {
-    if (processorRef.isGateOpen())
-        displayedGlow = 1.0f; // instant - no fade-in, no smoothing (section 5)
-    else
-        displayedGlow *= glowDecayPerFrame;
+    constexpr float glowDecayPerFrame = 0.55f;   // ~40 ms to black at 30 Hz
 
-    if (displayedGlow < 0.002f)
-        displayedGlow = 0.0f;
+    const bool open = processorRef.getGateEnvelope() > 0.02f;
+    const float target = open ? 1.0f : displayedGlow * glowDecayPerFrame;
+    const float glow = open ? 1.0f : (target < 0.01f ? 0.0f : target);
 
+    if (std::abs (glow - displayedGlow) < 1.0e-4f)
+        return;
+
+    displayedGlow = glow;
     repaint();
 }
 
@@ -36,43 +44,59 @@ void GateLamp::paint(juce::Graphics& g)
 {
     using namespace GatecrasherTheme;
 
-    const juce::Point<float> centre(Layout::lampCx, Layout::lampCy);
-    const float r = Layout::lampDiameter * 0.5f;
+    const bool displayedOpen = displayedGlow > 0.5f;
 
-    // Outer glow halo (two soft layers per spec's box-shadow values, approximated as a single
-    // multi-stop radial gradient so it fades smoothly rather than reading as a hard-edged ring -
-    // same technique as TapeRot's FailLamp).
-    if (displayedGlow > 0.01f)
+    const juce::Rectangle<float> lens (Layout::lampCx - Layout::lampDiameter * 0.5f,
+                                        Layout::lampCy - Layout::lampDiameter * 0.5f,
+                                        Layout::lampDiameter, Layout::lampDiameter);
+
+    /*  `radial-gradient(circle at 40% 32%, …)`. JUCE's radial gradient is circular, which is what
+        the CSS asks for here, so this is one of the cases that maps directly - the conic and
+        elliptical forms elsewhere in this suite are the ones that need sweeping by hand. */
+    const float cx = lens.getX() + lens.getWidth() * 0.40f;
+    const float cy = lens.getY() + lens.getHeight() * 0.32f;
+
+    juce::ColourGradient lensFill (displayedOpen ? Colour::lampOpenCore : Colour::lampShutCore,
+                                    cx, cy,
+                                    displayedOpen ? Colour::lampOpenEdge : Colour::lampShutEdge,
+                                    lens.getRight(), lens.getBottom(), true);
+    if (displayedOpen)
     {
-        const float glowR = r + 30.0f;
-        juce::ColourGradient glow(Colour::gateAccent.withAlpha(0.55f * displayedGlow), centre.x, centre.y,
-                                   Colour::gateAccent.withAlpha(0.0f), centre.x + glowR, centre.y, true);
-        glow.addColour(0.2, Colour::gateAccent.withAlpha(0.40f * displayedGlow));
-        glow.addColour(0.45, Colour::gateAccent.withAlpha(0.22f * displayedGlow));
-        glow.addColour(0.7, Colour::gateAccent.withAlpha(0.08f * displayedGlow));
-        g.setGradientFill(glow);
-        g.fillEllipse(centre.x - glowR, centre.y - glowR, glowR * 2.0f, glowR * 2.0f);
+        lensFill.addColour (0.35, Colour::lampOpenMid);
+        lensFill.addColour (0.70, Colour::lampOpenDeep);
+    }
+    else
+    {
+        lensFill.addColour (0.60, Colour::lampShutMid);
     }
 
-    const float bulbX = centre.x - r, bulbY = centre.y - r, bulbD = r * 2.0f;
+    g.setGradientFill (lensFill);
+    g.fillEllipse (lens);
 
-    // Closed base: flat unlit fill with a faint inset highlight (spec: "inset rgba(255,255,255,.14)
-    // only" when closed) - drawn under the open-state overlay, at full strength only while closed.
-    g.setColour(Colour::lampUnlit);
-    g.fillEllipse(bulbX, bulbY, bulbD, bulbD);
-    g.setColour(juce::Colours::white.withAlpha(0.14f * (1.0f - displayedGlow)));
-    g.drawEllipse(bulbX + 1.0f, bulbY + 1.0f, bulbD - 2.0f, bulbD - 2.0f, 1.5f);
-
-    // Open: radial gradient core -> mid @70% -> edge, its own alpha carrying the cosmetic decay
-    // (the OPENING transition is unaffected by this fade since displayedGlow is already 1.0 on the
-    // very poll the gate opens - see timerCallback).
-    if (displayedGlow > 0.005f)
+    /*  The open state's `0 0 12px 3px` and `0 0 30px 8px` bloom, clipped to the lens. Outside it
+        the two shadows would spill onto the fascia, which §8.2 forbids in the same sentence that
+        specifies them - so the clip is what makes the spec's two halves consistent rather than a
+        choice between them.  */
+    if (displayedOpen)
     {
-        juce::ColourGradient bulbGradient(Colour::lampOpenCore.withAlpha(displayedGlow), centre.x, centre.y,
-                                           Colour::lampOpenEdge.withAlpha(displayedGlow), centre.x + r, centre.y + r,
-                                           true);
-        bulbGradient.addColour(0.7, Colour::lampOpenMid.withAlpha(displayedGlow));
-        g.setGradientFill(bulbGradient);
-        g.fillEllipse(bulbX, bulbY, bulbD, bulbD);
+        juce::Graphics::ScopedSaveState glowState (g);
+        g.reduceClipRegion (lens.getSmallestIntegerContainer());
+        juce::ColourGradient bloom (Colour::gateAccent.withAlpha (0.55f * displayedGlow), Layout::lampCx, Layout::lampCy,
+                                     Colour::gateAccent.withAlpha (0.0f),
+                                     Layout::lampCx + Layout::lampDiameter, Layout::lampCy, true);
+        g.setGradientFill (bloom);
+        g.fillEllipse (lens.expanded (2.0f));
+    }
+    else
+    {
+        // `inset 0 -2px 4px rgba(0,0,0,.6)` - the closed lens sits deeper in its well.
+        juce::Graphics::ScopedSaveState shadowState (g);
+        g.reduceClipRegion (lens.getSmallestIntegerContainer());
+        juce::ColourGradient recess (juce::Colours::black.withAlpha (0.0f),
+                                      Layout::lampCx, lens.getBottom() - 6.0f,
+                                      juce::Colours::black.withAlpha (0.6f),
+                                      Layout::lampCx, lens.getBottom(), false);
+        g.setGradientFill (recess);
+        g.fillEllipse (lens);
     }
 }

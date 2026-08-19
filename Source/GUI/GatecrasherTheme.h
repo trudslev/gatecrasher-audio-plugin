@@ -110,7 +110,27 @@ namespace GatecrasherTheme
         // the envelope trace, per spec section 1's explicit rule and BRAND.md's one-accent-colour
         // rule. Never used for any knob/label/meter.
         inline const juce::Colour gateAccent{0xFFFF2B1C};
-        inline const juce::Colour lampUnlit{0xFF3A1512};
+        /*  §8.2's two lens states. Both are radial `circle at 40% 32%`, and the closed one is a
+            dark RED lens rather than a grey one — the light goes out, the material does not change.
+
+            `16.59:1` in §4 is the ladder's lit-against-unlit, which is a GRAPHIC ratio rather than a
+            text one: it says the ladder reads as a level rather than as a colour change. No text
+            floor applies to it and it carries no annotation. */
+        inline const juce::Colour lampOpenCore   { 0xFFFF5A4A };
+        inline const juce::Colour lampOpenMid    { 0xFFFF2B1C };
+        inline const juce::Colour lampOpenDeep   { 0xFFB0140C };
+        inline const juce::Colour lampOpenEdge   { 0xFF6D0B06 };
+        inline const juce::Colour lampShutCore   { 0xFF5A221C };
+        inline const juce::Colour lampShutMid    { 0xFF3A1512 };
+        inline const juce::Colour lampShutEdge   { 0xFF240D0A };
+
+        /** §4's ladder, lit and unlit, each a vertical pair with its own inset ring. */
+        inline const juce::Colour ladderLitTop    { 0xFFF2F5F6 };
+        inline const juce::Colour ladderLitBottom { 0xFFD2D8DB };
+        inline const juce::Colour ladderLitRing   { 0x59000000 };   // rgba(0,0,0,.35)
+        inline const juce::Colour ladderDarkTop   { 0xFF20252A };
+        inline const juce::Colour ladderDarkBottom{ 0xFF12161A };
+        inline const juce::Colour ladderDarkRing  { 0x8C000000 };   // rgba(0,0,0,.55)
 
 
         // Switch (KEY SOURCE / SHAPE) - recessed track + sliding metal shoe, section 5/7.
@@ -148,13 +168,11 @@ namespace GatecrasherTheme
         inline const juce::Colour scopeFillTop{0x4DFF2B1C};    // rgba(255,43,28,.30)
         inline const juce::Colour scopeFillBottom{0x05FF2B1C}; // rgba(255,43,28,.02)
 
-        // GATE OPEN lamp, section 5.
-        inline const juce::Colour lampOpenCore{0xFFFF2B1C};
-        inline const juce::Colour lampOpenMid{0xFFB0140C};
-        inline const juce::Colour lampOpenEdge{0xFF6D0B06};
-
-        // Input meter, section 7.
-        inline const juce::Colour meterLitSegment{0xFFF4F8FA};
+        /*  **The previous lamp trio and `meterLitSegment` are gone as of 2026-08-19.** The lamp had
+            three stops beginning at `#ff2b1c`; §8.2 gives four, beginning at `#ff5a4a` — a
+            highlight the old set did not have, which is what makes it read as a lens rather than a
+            disc. The four are above with the closed state's three. The ladder's lit face is a
+            gradient pair now, `#f2f5f6 -> #d2d8db`, where this was one flat colour. */
         inline const juce::Colour meterBloom{0x8CE6F2F8}; // rgba(230,242,248,.55)
         inline const juce::Colour meterThresholdMarker{0x80FFFFFF};
 
@@ -392,12 +410,17 @@ namespace GatecrasherTheme
         constexpr float scopeTraceInsetX = 7.0f, scopeTraceBaselineLocalY = 168.0f;
         constexpr float scopeTraceThickness = 3.0f;
 
-        // Spec section 5.5: centre (216, 104), diameter 15. This read (224, 95) until Rev 7 - wrong
-        // by (+8, -9), and masked for as long as the plate baked an unlit bulb at the correct spot:
-        // the dark disc you saw was the ARTWORK's, with the drawn lamp sitting offset on top of it.
-        // Rev 7 removed the baked bulb, so the drawn position is now the only one and had to be
-        // right. If the lamp ever looks displaced from its GATE OPEN legend, start here.
-        constexpr float lampCx = 216.0f, lampCy = 104.0f, lampDiameter = 15.0f;
+        /*  **§8.2's lamp: Ø15 in a 31 px well at (272, 140).** It was Ø15 at centre (216, 104),
+            which put it under the header block once that grew to 1308 x 104.
+
+            **Light stops at the lens edge.** No halo on the fascia, and the unlit lens stays a dark
+            RED lens rather than going grey — §7 gives this panel one accent and the unlit state is
+            still that accent's hue, not an absence of one. The glow is drawn inside the lens, which
+            is what makes that true by construction rather than by remembering. */
+        constexpr float lampWellX = 272.0f, lampWellY = 140.0f, lampWellSize = 31.0f;
+        constexpr float lampDiameter = 15.0f;
+        constexpr float lampCx = lampWellX + lampWellSize * 0.5f;
+        constexpr float lampCy = lampWellY + lampWellSize * 0.5f;
 
         //======================================================================================
         /*  **`StateLabel`, its eight rows and its two type constants are gone as of 2026-08-19.**
@@ -423,8 +446,21 @@ namespace GatecrasherTheme
         // painted a second column of segments straight over the printed "-15" scale numeral while
         // the real baked well sat empty beside it. Measured back off the plate to confirm: the well
         // spans x 165.0-180.5, y 139.0-214.5 including its 1px border.
-        constexpr float meterX = 165.0f, meterY = 139.0f, meterW = 14.0f, meterH = 76.0f;
-        constexpr float meterSegmentH = 4.0f, meterSegmentPitch = 6.0f;
+        /*  **§4's IN ladder: 13 segments in 22 x 90 at (196, 214), 1 px gaps, radius 1.**
+            *"Original to this casting and not added by this round"* — the geometry moved with the
+            canvas and the construction did not.
+
+            **The segment height is DERIVED, not stated.** 13 segments and 12 one-pixel gaps in 90
+            leaves 78 to divide, so each is 6. Writing 6 down would be a figure with arithmetic
+            behind it that nobody could check against the two the spec does state; deriving it means
+            a change to the count or the height cannot leave a stale third number. */
+        constexpr float meterX = 196.0f, meterY = 214.0f, meterW = 22.0f, meterH = 90.0f;
+        constexpr int meterSegmentCount = 13;
+        constexpr float meterSegmentGap = 1.0f;
+        constexpr float meterSegmentH =
+            (meterH - meterSegmentGap * (float) (meterSegmentCount - 1)) / (float) meterSegmentCount;
+        constexpr float meterSegmentPitch = meterSegmentH + meterSegmentGap;
+        constexpr float meterSegmentRadius = 1.0f;
         // Meter/marker dB range: matches the Threshold parameter's own -60..0dB range (section 9)
         // so the threshold marker is meaningful relative to the lit segments.
         constexpr float meterFloorDb = -60.0f, meterCeilingDb = 0.0f;

@@ -18,50 +18,40 @@ void InputMeter::timerCallback()
     repaint();
 }
 
+/*  §4's IN ladder: 13 segments in 22 x 90 at (196, 214), 1 px gaps, radius 1.
+
+    **Lit against unlit measures 16.59:1**, which §4 states as the property being bought - the ladder
+    reads as a LEVEL rather than as a colour change. That is a graphic ratio, so no text floor
+    applies and the two pairs carry no contrast annotation.
+
+    The segment height is derived from the count and the gaps rather than stated, so a change to
+    either cannot leave a stale third figure behind.  */
 void InputMeter::paint(juce::Graphics& g)
 {
     using namespace GatecrasherTheme;
 
-    const juce::Rectangle<float> rect(Layout::meterX, Layout::meterY, Layout::meterW, Layout::meterH);
+    const float level = juce::jlimit (0.0f, 1.0f, processorRef.getInputMeterLevel());
+    const int lit = juce::roundToInt (level * (float) Layout::meterSegmentCount);
 
-    const float levelLinear = juce::jmax(0.0f, processorRef.getInputMeterLevel());
-    const float levelDb = juce::Decibels::gainToDecibels(levelLinear, Layout::meterFloorDb);
-    const float levelNorm = juce::jlimit(0.0f, 1.0f,
-        (levelDb - Layout::meterFloorDb) / (Layout::meterCeilingDb - Layout::meterFloorDb));
-
-    const int segmentCount = (int) (Layout::meterH / Layout::meterSegmentPitch);
-    const int litCount = (int) std::round(levelNorm * (float) segmentCount);
-
-    // Section 8: "Well and unlit ledger baked; lit segments runtime." So this draws ONLY the lit
-    // segments, and erasing to the plate is a genuine clear of the previous frame - the plate has an
-    // unlit ledger and no lit segments at all. Under Rev 5's dressed background this same erase
-    // restored a baked signal level and the code filled the window flat dark instead to defeat it;
-    // that fill would now paint out the printed ledger, so it is gone with the background it was
-    // fighting. Expanded by the bloom radius so the previous frame's glow is cleared too.
-    eraseToBackground(g, rect.expanded(2.0f), getPosition());
-
-    // Segments are 4px tall on a 6px pitch, anchored to the bottom edge, stacking upward.
-    for (int i = 0; i < litCount && i < segmentCount; ++i)
+    for (int i = 0; i < Layout::meterSegmentCount; ++i)
     {
-        const float segBottom = rect.getBottom() - (float) i * Layout::meterSegmentPitch;
-        const juce::Rectangle<float> seg(rect.getX(), segBottom - Layout::meterSegmentH,
-                                          rect.getWidth(), Layout::meterSegmentH);
+        // Index 0 is the BOTTOM segment: the ladder fills upward, so the topmost box is the last to
+        // light rather than the first.
+        const int fromTop = Layout::meterSegmentCount - 1 - i;
+        const juce::Rectangle<float> seg (Layout::meterX,
+                                           Layout::meterY + (float) fromTop * Layout::meterSegmentPitch,
+                                           Layout::meterW, Layout::meterSegmentH);
 
-        g.setColour(Colour::meterBloom);
-        g.fillRect(seg.expanded(1.5f, 1.5f));
-        g.setColour(Colour::meterLitSegment);
-        g.fillRect(seg);
-    }
+        const bool on = i < lit;
+        juce::ColourGradient face (on ? Colour::ladderLitTop : Colour::ladderDarkTop,
+                                    seg.getCentreX(), seg.getY(),
+                                    on ? Colour::ladderLitBottom : Colour::ladderDarkBottom,
+                                    seg.getCentreX(), seg.getBottom(), false);
+        g.setGradientFill (face);
+        g.fillRoundedRectangle (seg, Layout::meterSegmentRadius);
 
-    // Threshold marker - tracks the live Threshold parameter so it always shows where the gate
-    // will actually trigger, not just a fixed reference line.
-    if (auto* thresholdRaw = processorRef.apvts.getRawParameterValue(ParamIDs::threshold))
-    {
-        const float thresholdDb = thresholdRaw->load();
-        const float thresholdNorm = juce::jlimit(0.0f, 1.0f,
-            (thresholdDb - Layout::meterFloorDb) / (Layout::meterCeilingDb - Layout::meterFloorDb));
-        const float markerY = rect.getBottom() - thresholdNorm * rect.getHeight();
-        g.setColour(Colour::meterThresholdMarker);
-        g.drawHorizontalLine((int) markerY, rect.getX(), rect.getRight());
+        // `inset 0 0 0 1px` - the ring is inside the box, so it is stroked on the inset rect.
+        g.setColour (on ? Colour::ladderLitRing : Colour::ladderDarkRing);
+        g.drawRoundedRectangle (seg.reduced (0.5f), Layout::meterSegmentRadius, 1.0f);
     }
 }
