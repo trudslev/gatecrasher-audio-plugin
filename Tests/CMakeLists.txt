@@ -10,6 +10,7 @@ target_sources(GatecrasherTests PRIVATE
     MeterReadoutBudgetTests.cpp
     TestMain.cpp
     ReadoutConformanceTests.cpp
+    EditorWiringTests.cpp
     PrintedScaleTests.cpp
     MenuMetricsTests.cpp
     TriggerDetectorTests.cpp
