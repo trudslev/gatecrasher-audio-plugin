@@ -48,7 +48,7 @@ target_sources(GatecrasherTests PRIVATE
     ../Source/GUI/ProgramHeader.cpp
     ../Source/GUI/GatecrasherPanelBackground.cpp
     ../Source/GUI/GatecrasherLookAndFeel.cpp
-    ../Source/GUI/KnobFilmstripComponent.cpp
+    ../Source/GUI/KnobComponent.cpp
     ../Source/GUI/ToggleSwitchComponent.cpp
     ../Source/GUI/GateScope.cpp
     ../Source/GUI/GateLamp.cpp

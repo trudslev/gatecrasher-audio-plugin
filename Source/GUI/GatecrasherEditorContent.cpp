@@ -1,4 +1,5 @@
 #include "GatecrasherEditorContent.h"
+#include <algorithm>
 #include "../Parameters.h"
 
 using namespace GatecrasherTheme;
@@ -43,14 +44,25 @@ GatecrasherEditorContent::GatecrasherEditorContent(GatecrasherAudioProcessor& p)
     {
         const auto& spec = Layout::knobs[i];
 
-        auto knob = std::make_unique<KnobFilmstripComponent>(spec.size, spec.diameter);
+        // §3.2's scale for this knob, matched by parameter ID rather than by index. The two tables
+        // are written independently and a shared index is the kind of coupling that survives one
+        // of them being reordered and nothing else.
+        const auto* scale = std::find_if (Layout::knobScales.begin(), Layout::knobScales.end(),
+                                           [&] (const auto& s) { return juce::String (s.paramID) == spec.paramID; });
+        jassert (scale != Layout::knobScales.end());
+
+        auto knob = std::make_unique<KnobComponent>(spec, *scale);
         knob->setName(spec.paramID);
 
         // Bounds are the filmstrip's FRAME box - 1.333 x the cap, section 1.3 - because the whole
         // frame has to be blitted for the baked shadow to fade out inside it. The hit area is NOT
-        // this: KnobFilmstripComponent::hitTest narrows it to the cap, so the transparent margin
+        // this: KnobComponent::hitTest narrows it to the cap, so the transparent margin
         // lying over the plate's printed numerals does not swallow clicks meant for bare fascia.
-        const float half = spec.diameter * Layout::knobBoundingBoxBleed * 0.5f;
+        /*  **§3's 148 box, and BOTH classes take it** — "Primary Ø76: 148 registration box",
+            "Standard Ø56: 128 ring in a **148 box**". It is not a multiple of the diameter, which
+            is what the retired filmstrip bleed was: a Ø56 knob in a 1.333x box gets 75, and its
+            numeral ring needs 128. The capture caught it as clipped numerals under every knob. */
+        const float half = Layout::knobBoxSize * 0.5f;
         knob->setBounds((int) std::round(spec.cx - half), (int) std::round(spec.cy - half),
                          (int) std::round(half * 2.0f), (int) std::round(half * 2.0f));
 

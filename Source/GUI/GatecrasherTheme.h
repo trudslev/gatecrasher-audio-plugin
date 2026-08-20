@@ -145,6 +145,20 @@ namespace GatecrasherTheme
         inline const juce::Colour shoeIdleTop     { 0xFF1D2226 };
         inline const juce::Colour shoeIdleBottom  { 0xFF0E1113 };
 
+        /*  §3's knob body: `radial-gradient(circle at 38% 26%, #565c61, #2b3034 46%, #14181b)`
+            with a top lip, an inner floor shadow and a drop. The filmstrips carried all of it as
+            pixels; both 160 px sheets are retired. */
+        inline const juce::Colour knobBodyHighlight { 0xFF565C61 };
+        inline const juce::Colour knobBodyMid       { 0xFF2B3034 };
+        inline const juce::Colour knobBodyEdge      { 0xFF14181B };
+        inline const juce::Colour knobBodyLip       { 0x2EFFFFFF };   // inset 0 1px 0 rgba(255,255,255,.18)
+        inline const juce::Colour knobBodyFloor     { 0xA6000000 };   // inset 0 -3px 8px rgba(0,0,0,.65)
+        inline const juce::Colour knobBodyDrop      { 0x61000000 };   // 0 3px 6px rgba(0,0,0,.38)
+        inline const juce::Colour knobPointer       { 0xFFE6EAEC };
+        /** The 270° sweep wedge, `rgba(22,25,28,.34)`, masked to a 1.4 px ring. Same ink as the
+            ticks at a third of the alpha, which is why it reads as the arc they stand on. */
+        inline const juce::Colour knobSweepArc      { 0x5716191C };
+
         // Gate envelope scope, section 5.
         /*  **§5's well is FLAT `#0a0c0e` now, not a gradient.** It was `#0B0F11 -> #050708` with
             its recess and border baked into the plate; nothing is baked, so the well draws its own
@@ -280,21 +294,11 @@ namespace GatecrasherTheme
         // LABELLED value instead (section 0.3), which on the four skewed controls is not evenly
         // spaced at all. Reintroducing a drawn ring would lay even ticks over uneven printed ones.
 
-        // Filmstrip frames are square with transparent margin for the baked cast shadow - draw into
-        // the full FRAME box, not just the knob circle. Section 1.3 states the ratio as a contract:
-        // the cap is 0.75 of the frame (120px of cap in a 160px frame), so the box is 1.333 x the
-        // section-3 diameter, centred on the section-3 centre.
-        //
-        // This was 1.07 while the strips were 128px frames around the same 120px cap, and at that
-        // ratio the frames clipped their own cast shadow - border alpha was still 88 top / 95 bottom
-        // / 38 sides, so every knob sat inside a hard-edged dark rectangle instead of a soft shadow.
-        // Rev 9 re-rendered both strips at 160px for exactly this. The cap diameters in section 3 did
-        // not change and must not be adjusted to compensate; only the transparent margin grew.
-        constexpr float knobBoundingBoxBleed = 1.3333333f;
-
-        /** Side of one filmstrip frame, in the strip's own pixels (section 1.3). */
-        constexpr int knobFilmstripFramePx = 160;
-        constexpr int knobFilmstripFrameCount = 128;
+        /*  **The filmstrip box, frame size and frame count are gone** with the sheets. The box was
+            `diameter x 1.333` — a RATIO, because a sprite's margin scales with its sprite — and the
+            drawn ring's does not: its numerals sit `r + 8 + 9 + 6 + 6.5` out, which is r plus a
+            constant. §3's own 148 box says the same thing by giving both classes the same figure,
+            and swapping one for the other is why `knobBoxSize` is not expressed as a multiple. */
 
         /** How far past the cap's edge a click still counts as the knob's. The frame box reaches
             .167 of the diameter beyond the cap now, which on THRESHOLD is 10px of transparent
@@ -322,6 +326,94 @@ namespace GatecrasherTheme
             previous values were Rev 5's and were out by up to 74px, which put knobs on top of their
             own printed numerals once the plate started carrying the scales. Take them from the
             spec, never from a screenshot. */
+        /*  **§3.2's MARK LISTS, VERBATIM. The angles are the contract.**
+
+            HP, LP, ATTACK and RELEASE are skewed, and their marks are **not** evenly spaced —
+            −58.05, −3.51, +69.12 on HP is what its taper puts there, and the same ring drawn at
+            −67.5 / 0 / +67.5 compiles, runs and looks entirely plausible. That is the whole failure
+            mode BRAND.md's printed-scale rule exists for: the ring legends a taper, so if the two
+            disagree the numerals point at values the pointer never reaches, and nothing looks
+            broken. Reflect-84's DAMPING LF nearly lost a minor the same way.
+
+            **Every marked position carries a TICK. What a standard-class knob drops is the
+            NUMERAL, not the mark** — the minors hold the values the ring stops printing, at their
+            real angles, which is why each row below carries five labels even where only three are
+            drawn. Ø76 primary takes five numerals; Ø56 standard takes three.
+
+            `angle = −135 + 270 f`, so a fraction is recoverable from any angle here and the two
+            never need storing side by side. `−` is U+2212 throughout and TRIM's `+12` keeps its
+            leading plus — both are §3.2's, not a formatting choice made here. */
+        struct KnobMark { float angleDeg; const char* numeral; bool numbered; };
+
+        /** −135 · −67.5 · 0 · +67.5 · +135 — the unskewed five, named because eight rows share it
+            and a repeated literal quintet is five chances to mistype one. */
+        inline constexpr std::array<float, 5> evenFive { -135.0f, -67.5f, 0.0f, 67.5f, 135.0f };
+
+        struct KnobScale { const char* paramID; const char* unit; std::array<KnobMark, 5> marks; int markCount; };
+
+        inline constexpr std::array<KnobScale, 15> knobScales { {
+            {"threshold", "dB", {{ {-135.0f,"\u221260",true}, {-67.5f,"\u221245",true}, {0.0f,"\u221230",true}, {67.5f,"\u221215",true}, {135.0f,"0",true} }}, 5},
+            {"trigHP",    "Hz", {{ {-135.0f,"20",true},  {-58.05f,"50",false}, {-3.51f,"200",true}, {69.12f,"800",false}, {135.0f,"2000",true} }}, 5},
+            {"trigLP",    "Hz", {{ {-135.0f,"500",true}, {-45.05f,"1k",false}, {-9.91f,"2k",true},  {38.91f,"5k",false},  {135.0f,"20k",true} }}, 5},
+            {"attack",    "ms", {{ {-135.0f,"0.1",true}, {-33.34f,"0.5",true}, {15.09f,"2",true},   {55.19f,"5",true},    {135.0f,"20",true} }}, 5},
+            {"hold",      "ms", {{ {-135.0f,"10",true},  {-67.5f,"125",true},  {0.0f,"250",true},   {67.5f,"375",true},   {135.0f,"500",true} }}, 5},
+            {"release",   "ms", {{ {-135.0f,"1",true},   {-51.38f,"5",true},   {-1.54f,"20",true},  {52.48f,"60",true},   {135.0f,"200",true} }}, 5},
+            // §3.3's selector: four detents, ticks 2 x 9 centred on each, corner labels instead of numerals.
+            {"algorithm", "",   {{ {-135.0f,"",true},    {-45.0f,"",true},     {45.0f,"",true},     {135.0f,"",true},     {0.0f,"",false} }}, 4},
+            {"size",      "",   {{ {-135.0f,"0",true},   {-67.5f,"0.25",false},{0.0f,"0.5",true},   {67.5f,"0.75",false}, {135.0f,"1.0",true} }}, 5},
+            {"preDelay",  "ms", {{ {-135.0f,"0",true},   {-67.5f,"30",false},  {0.0f,"60",true},    {67.5f,"90",false},   {135.0f,"120",true} }}, 5},
+            {"dampHF",    "",   {{ {-135.0f,"0",true},   {-67.5f,"0.25",false},{0.0f,"0.5",true},   {67.5f,"0.75",false}, {135.0f,"1.0",true} }}, 5},
+            {"dampLF",    "",   {{ {-135.0f,"0",true},   {-67.5f,"0.25",false},{0.0f,"0.5",true},   {67.5f,"0.75",false}, {135.0f,"1.0",true} }}, 5},
+            {"slam",      "dB", {{ {-135.0f,"0",true},   {-67.5f,"3",false},   {0.0f,"6",true},     {67.5f,"9",false},    {135.0f,"12",true} }}, 5},
+            {"width",     "%",  {{ {-135.0f,"0",true},   {-67.5f,"50",false},  {0.0f,"100",true},   {67.5f,"150",false},  {135.0f,"200",true} }}, 5},
+            {"mix",       "%",  {{ {-135.0f,"0",true},   {-67.5f,"25",false},  {0.0f,"50",true},    {67.5f,"75",false},   {135.0f,"100",true} }}, 5},
+            {"trim",      "dB", {{ {-135.0f,"\u221224",true}, {-45.0f,"\u221212",false}, {45.0f,"0",true}, {135.0f,"+12",true}, {0.0f,"",false} }}, 4},
+        } };
+
+        /*  §3's ring construction, all radii from the knob's own r.
+
+            **Both tick weights share an inner end at `r + 8`** — the sweep arc sits at `r + 6` and
+            the ink starts 2 px outside it so the hairline does not bridge into a tick and lengthen
+            it visually. What differs is the outer end: major 9 px of ink, minor 5. Asserting the
+            shared inner end is the arm worth having; asserting two lengths only restates them. */
+        constexpr float knobArcRadiusGap = 6.0f;      // sweep arc at r + 6
+        constexpr float knobArcThickness = 1.4f;
+        constexpr float knobTickInnerGap = 8.0f;      // ink starts 2 px outside the arc
+        constexpr float knobMajorTickInk = 9.0f, knobMajorTickWidth = 2.0f;
+        constexpr float knobMinorTickInk = 5.0f, knobMinorTickWidth = 1.5f;
+
+        /** `r + 8 + 9 + 6 + 6.5` — 6 px clear of the major tick's outer end, plus half a 13 px line
+            box, so the numeral's INNER EDGE holds the clearance rather than its centre. */
+        constexpr float knobNumeralRadius(float r) noexcept
+        {
+            return r + knobTickInnerGap + knobMajorTickInk + 6.0f + 6.5f;
+        }
+        constexpr float knobNumeralCssPx = 11.0f, knobNumeralLineBox = 13.0f;
+        constexpr float knobNumeralTrackingEm = 0.04f;
+
+        /*  §3.1's registration: a **Ø76 box for every class**, so `dy = (76 − Ø) / 2` and the label
+            registers on the box while the ring registers on itself. The sweep's dead zone is the
+            bottom 90°, so the lowest numerals are the ±135° end stops at 0.707 x the numeral radius
+            below centre rather than a full radius — which is the room the unit and label ride up
+            into. */
+        constexpr float knobRegistrationBox = 76.0f;
+        constexpr float knobUnitTop(float d) noexcept  { return d + 20.0f + (knobRegistrationBox - d) * 0.5f; }
+        constexpr float knobLabelTop(float d) noexcept { return d + 34.0f + (knobRegistrationBox - d) * 0.5f; }
+
+        /*  **§3's registration box, and both classes take the same one**: *"Primary Ø76 — 148
+            registration box"* and *"Standard Ø56 — 128 ring in a 148 box"*. So the component is
+            148 x 148 whatever the knob's diameter, and the ring, ticks and numerals draw inside it.
+
+            It is deliberately NOT a multiple of the diameter. The retired filmstrip box was
+            `diameter x 1.333`, which gives a Ø56 knob 75 px — and its numeral ring alone needs 128.
+            A ratio cannot express "the numerals sit a fixed distance outside the cap", which is
+            what the ring actually does: `r + 8 + 9 + 6 + 6.5` is r plus a constant. */
+        constexpr float knobBoxSize = 148.0f;
+
+        constexpr float knobPointerWidth = 3.0f, knobPointerInset = 7.0f;
+        constexpr float knobLabelCssPx = 12.0f, knobLabelLineBox = 15.0f, knobLabelTrackingEm = 0.18f;
+        constexpr float knobUnitCssPx = 10.0f, knobUnitLineBox = 13.0f, knobUnitTrackingEm = 0.16f;
+
         /*  **§3's fifteen, on the new canvas — SEVEN DIAMETERS COLLAPSED TO TWO.** It had
             62 · 54 · 50 · 44 · 40 · 34 · 32 and kept **none** of them: call 3 maps the whole set
             onto **Ø76 primary** and **Ø56 standard**. Every knob grew. Gatecrasher takes no Ø104 —
@@ -1131,31 +1223,24 @@ namespace GatecrasherTheme
                     srcRect.getX(), srcRect.getY(), srcRect.getWidth(), srcRect.getHeight());
     }
 
-    inline const juce::Image& knobLargeFilmstrip()
-    {
-        static const juce::Image image = juce::ImageFileFormat::loadFrom(
-            BinaryData::knob_large_160px_128f_png, (size_t) BinaryData::knob_large_160px_128f_pngSize);
-        return image;
-    }
+    /*  **BOTH 160 px FILMSTRIPS AND EVERYTHING THAT READ THEM ARE RETIRED as of 2026-08-19.** §0
+        leaves no bitmap of any panel element and §10 records call 5 as already conformed in the
+        artwork — the ring, ticks, numerals and pointer were always drawn from rotation fractions,
+        and the sheets were the build's rather than the design's. `KnobComponent` draws all of it.
 
-    inline const juce::Image& knobSmallFilmstrip()
-    {
-        static const juce::Image image = juce::ImageFileFormat::loadFrom(
-            BinaryData::knob_small_160px_128f_png, (size_t) BinaryData::knob_small_160px_128f_pngSize);
-        return image;
-    }
+        **The reason they were awkward is worth keeping**, because it is a fact about compositing
+        rather than about these two files. The frames were not fully opaque across the knob BODY,
+        not merely in their square's transparent corners — confirmed by drawing a bright fill behind
+        one and seeing the whole knob tinted rather than just its corners. They were authored to
+        composite over the plate's own baked knob artwork, which supplied the backdrop the
+        semi-transparent body blended against. A sprite that needs a specific thing behind it is not
+        a sprite, it is half a drawing, and the moment the plate went it had nothing to blend with.
 
-    // The filmstrip frames aren't fully opaque across the knob body itself, not just their square's
-    // transparent corner margin (confirmed by temporarily drawing a bright fill behind one and
-    // seeing the whole knob tinted by it, not just its corners) - they were authored to be
-    // composited over the panel background's own baked-dark knob artwork, which supplied the
-    // "backdrop" the semi-transparent body blends against. KnobFilmstripComponent can't use that
-    // baked artwork directly any more (its own baked pointer would bleed through at the wrong angle
-    // - see that file's paint() comment), so it fills a plain backdrop first instead; that backdrop
-    // has to be dark (matching the knob's own base tone) or the blend reads as washed-out/light
-    // rather than a knob. Sampled directly from each filmstrip's own pixels (bottom-centre of frame
-    // 0, well clear of that frame's pointer, which sweeps the upper ~270deg arc and never reaches
-    // 6 o'clock) rather than a hand-picked hex, so it's an exact match by construction.
+        That is the same shape as Chorus-60's two switch composites, which could not be split back
+        into a body and a lens because the lens's shadow reached nearly every row: **artwork cut as
+        a composite cannot later be used as a layer.** Where the build needs to compose, the parts
+        have to arrive as parts.  */
+
     // The design spec and the reference mockup both quote type sizes as CSS px, but juce::Font's
     // height parameter is ascent+descent, which for a given typeface is a fixed multiple of the CSS
     // em size rather than equal to it - passing a spec px value straight to labelFont() renders

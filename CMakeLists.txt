@@ -74,8 +74,6 @@ FetchContent_MakeAvailable(NeonFoundryCore)
 juce_add_binary_data(GatecrasherBinaryData
     SOURCES
         design/assets/gatecrasher-panel-plate@2x.png
-        design/assets/knob_large_160px_128f.png
-        design/assets/knob_small_160px_128f.png
         design/assets/fonts/BarlowCondensed-Bold.ttf
         design/assets/fonts/BarlowCondensed-SemiBold.ttf
         design/assets/fonts/BarlowCondensed-Regular.ttf
@@ -156,7 +154,7 @@ target_sources(Gatecrasher PRIVATE
     Source/DSP/ProgramManager.cpp
     Source/GUI/GatecrasherLookAndFeel.cpp
     Source/GUI/GatecrasherPanelBackground.cpp
-    Source/GUI/KnobFilmstripComponent.cpp
+    Source/GUI/KnobComponent.cpp
     Source/GUI/GateScope.cpp
     Source/GUI/GateLamp.cpp
     Source/GUI/InputMeter.cpp

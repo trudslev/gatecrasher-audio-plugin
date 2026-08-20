@@ -3,7 +3,7 @@
 #include "GatecrasherTheme.h"
 #include "GatecrasherLookAndFeel.h"
 #include "GatecrasherPanelBackground.h"
-#include "KnobFilmstripComponent.h"
+#include "KnobComponent.h"
 #include "GateScope.h"
 #include "GateLamp.h"
 #include "InputMeter.h"
@@ -36,7 +36,7 @@ private:
     // density/decay are deliberately automation-only APVTS parameters with no panel control
     // (GUI-SPEC.md section 9) - every other parameter gets a knob here, one per entry
     // in GatecrasherTheme::Layout::knobs (which itself omits those two).
-    std::array<std::unique_ptr<KnobFilmstripComponent>, GatecrasherTheme::Layout::knobs.size()> knobs;
+    std::array<std::unique_ptr<KnobComponent>, GatecrasherTheme::Layout::knobs.size()> knobs;
     std::array<std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>,
                GatecrasherTheme::Layout::knobs.size()> knobAttachments;
 
