@@ -103,7 +103,7 @@ Angle = `−135 + 270 f`. Numerals in **bold**; every other row is a minor tick 
 |---|---|---|
 | THRESHOLD | 76 | −135 **−60** · −67.5 **−45** · 0 **−30** · +67.5 **−15** · +135 **0** — dB |
 | ATTACK | 76 | −135 **0.1** · −33.34 **0.5** · +15.09 **2** · +55.19 **5** · +135 **20** — ms |
-| HOLD | 76 | −135 **10** · −67.5 **125** · 0 **250** · +67.5 **375** · +135 **500** — ms |
+| HOLD | 76 | −135 **10** · −71.63 **125** · −2.76 **250** · +66.12 **375** · +135 **500** — ms |
 | RELEASE | 76 | −135 **1** · −51.38 **5** · −1.54 **20** · +52.48 **60** · +135 **200** — ms |
 | HP | 56 | −135 **20** · −58.05 · −3.51 **200** · +69.12 · +135 **2000** — Hz |
 | LP | 56 | −135 **500** · −45.05 · −9.91 **2k** · +38.91 · +135 **20k** — Hz |
@@ -116,7 +116,12 @@ Angle = `−135 + 270 f`. Numerals in **bold**; every other row is a minor tick 
 | TRIM | 56 | −135 **−24** · −45 · +45 **0** · +135 **+12** — dB |
 
 HP, LP, ATTACK, RELEASE are skewed; **their angles are the contract and must not be
-derived by even spacing.** The units print inside the arc's bottom gap, never as a suffix
+derived by even spacing.** HOLD is linear but **not evenly spaced**: its range is
+`NormalisableRange<float>(10.0f, 500.0f)`, so the round numerals fall at
+−71.63 / −2.76 / +66.12, not at the even −67.5 / 0 / +67.5 this table carried until
+2026-08-20. Re-cut under §12 (build wins); the ring reads round numbers on uneven marks,
+like every skewed ring here. Do not restore the even set — 10 ms is the parameter's floor
+and is not being changed to 0. The units print inside the arc's bottom gap, never as a suffix
 on the control name. `−` is U+2212 throughout, and TRIM's `+12` keeps its leading plus.
 
 ### 3.3 REVERB TANK selector

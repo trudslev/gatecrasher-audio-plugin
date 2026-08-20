@@ -356,7 +356,12 @@ namespace GatecrasherTheme
             {"trigHP",    "Hz", {{ {-135.0f,"20",true},  {-58.05f,"50",false}, {-3.51f,"200",true}, {69.12f,"800",false}, {135.0f,"2000",true} }}, 5},
             {"trigLP",    "Hz", {{ {-135.0f,"500",true}, {-45.05f,"1k",false}, {-9.91f,"2k",true},  {38.91f,"5k",false},  {135.0f,"20k",true} }}, 5},
             {"attack",    "ms", {{ {-135.0f,"0.1",true}, {-33.34f,"0.5",true}, {15.09f,"2",true},   {55.19f,"5",true},    {135.0f,"20",true} }}, 5},
-            {"hold",      "ms", {{ {-135.0f,"10",true},  {-67.5f,"125",true},  {0.0f,"250",true},   {67.5f,"375",true},   {135.0f,"500",true} }}, 5},
+            // **Re-cut 2026-08-20 and the only ring here that is neither even nor skewed.** HOLD's
+            // range is linear from 10, not from 0, so round numerals do NOT fall on even angles:
+            // 125 is at −71.63, not −67.5. The even set the spec carried until then was the one
+            // the printed-scale check caught on its first run, and §12's ruling took the build's
+            // side. Do not restore it — 10 ms is the parameter's floor and is not moving to 0.
+            {"hold",      "ms", {{ {-135.0f,"10",true},  {-71.63f,"125",true}, {-2.76f,"250",true}, {66.12f,"375",true},  {135.0f,"500",true} }}, 5},
             {"release",   "ms", {{ {-135.0f,"1",true},   {-51.38f,"5",true},   {-1.54f,"20",true},  {52.48f,"60",true},   {135.0f,"200",true} }}, 5},
             // §3.3's selector: four detents, ticks 2 x 9 centred on each, corner labels instead of numerals.
             {"algorithm", "",   {{ {-135.0f,"",true},    {-45.0f,"",true},     {45.0f,"",true},     {135.0f,"",true},     {0.0f,"",false} }}, 4},
