@@ -71,7 +71,18 @@ public:
 
             const auto defects = nf::printedScaleDefects (asFloat->getNormalisableRange(), marks);
             expect (defects.isEmpty(),
-                    juce::String (scale.paramID) + ": " + defects.joinIntoString ("; "));
+                    juce::String (scale.paramID) + ": " + defects.joinIntoString ("; ")
+                        + (juce::String (scale.paramID) == "hold"
+                               ? juce::String ("\n  OPEN FINDING, DELIBERATELY RED — HOLD's ring is "
+                                 "evenly spaced and its parameter is not. §12's own ruling applies "
+                                 "(the build wins, the artwork is re-cut) and the figures are "
+                                 "Design's to give, so it is raised as "
+                                 "design-asks/gatecrasher-hold-ring-is-evenly-spaced.md rather than "
+                                 "applied. NOT a regression, and NOT a bug in this check — the four "
+                                 "SKEWED rings all reproduce their tapers. Passing it would mean "
+                                 "widening the tolerance past 4.13 degrees, which waives the one "
+                                 "property this check asserts.")
+                               : juce::String()));
         }
 
         /*  **The arm that proves the one above can fail.** A printed-scale check that only ever
