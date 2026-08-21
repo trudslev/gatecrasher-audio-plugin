@@ -1075,6 +1075,24 @@ namespace GatecrasherTheme
     // flags are left plain/bold for metrics purposes only - the actual embedded typeface (already a
     // specific weight) is what's applied via withTypeface() so the correct weight always renders,
     // even on a system where "bold" synthesis would otherwise be used.
+    /*  **SemiBold (600) stands in for Barlow Condensed Medium (500) on five of §8's roles, and
+        this is the statement the ruling requires until the file lands.**
+
+        §8 asks for **500** on the unit (10 / 13 / .16 em), the scale numeral (11 / 13 / .04 em),
+        the scope legend, the scope header data, and §3.2's numeral ring at `r + 8 + 9 + 6 + 6.5`.
+        `design/fonts/` carries SemiBold only, so all five draw one weight heavier than specified.
+
+        **The difference is invisible on the panel**, the way a size 20 % small is — which is why
+        the rewrite made the substitution without recording it, and why `shared/FONTS.md` names an
+        undeclared substituted face as the exact failure that register exists to prevent.
+
+        Ruled 2026-08-21 (`shared/FONTS.md`, `design/fonts/ABSENT.md`): **the weight stands and the
+        file moves.** The same OFL `BarlowCondensed-Medium.ttf` already cut for Fifth Member is owed
+        to this casting and to TapeRot; §8's rows are NOT being changed to 600. When it lands this
+        becomes a `barlowMediumTypeface()` and five call sites move to it — one line each.
+
+        Until then the substitution is stated here rather than at five separate sites, because it is
+        one fact about one missing file and five copies of it would be five things to remove. */
     inline juce::Font labelFont(float heightPx)
     {
         return juce::Font(juce::FontOptions(heightPx).withTypeface(barlowSemiBoldTypeface()));
