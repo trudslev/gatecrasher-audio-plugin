@@ -23,6 +23,7 @@ public:
     void paint (juce::Graphics&) override;
     /** The hit area is the CAP, not the bounds: the numeral ring reaches well past the cap and a
         click on a numeral belongs to the panel, not to the knob. */
+    void mouseDown (const juce::MouseEvent&) override;
     bool hitTest (int x, int y) override;
 
 private:

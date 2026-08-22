@@ -13,6 +13,23 @@ KnobComponent::KnobComponent (const Layout::KnobSpec& spec, const Layout::KnobSc
     setMouseDragSensitivity (Layout::knobDragPixels);
 }
 
+/*  **Shift-fine, restored.** BRAND.md makes drag feel suite-wide — *"190px vertical coarse, 760px
+    on Shift for fine, everywhere… a player who learns Shift-fine on one expects it on the next"* —
+    and `1e19aed`, the pass that retired both filmstrips, deleted
+    `KnobFilmstripComponent::mouseDown` with the class it belonged to. `knobFineDragPixels` has sat
+    declared and unread since.
+
+    **Sensitivity has to be settled BEFORE `Slider::mouseDown` records its drag anchor.** JUCE
+    measures from that anchor and scales by the current sensitivity, so changing it mid-drag
+    rescales the distance already travelled and the value jumps. The deleted line carried that
+    comment and it comes back with it.  */
+void KnobComponent::mouseDown (const juce::MouseEvent& e)
+{
+    setMouseDragSensitivity (e.mods.isShiftDown() ? Layout::knobFineDragPixels
+                                                  : Layout::knobDragPixels);
+    juce::Slider::mouseDown (e);
+}
+
 bool KnobComponent::hitTest (int x, int y)
 {
     const float r = knobSpec.diameter * 0.5f + Layout::knobClickMargin;
