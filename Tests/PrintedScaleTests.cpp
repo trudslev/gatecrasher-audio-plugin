@@ -133,6 +133,74 @@ public:
                     juce::String (spec.paramID) + " prints " + juce::String (numbered)
                         + " numerals, §3.1 says " + juce::String (expected));
         }
+
+        /*  **§8's UNIT row, which had no drawing site at all until 2026-08-22.**
+
+            Fifteen constants existed and were correct — `knobScales`' per-knob `unit`,
+            `knobUnitCssPx` / `knobUnitLineBox` / `knobUnitTrackingEm`, and §3.1's `knobUnitTop(d)`
+            registration — and **nothing in `Source/` consumed any of them.** A spec role with a
+            complete, correct, unused implementation reads exactly like a finished one.
+
+            Eleven of fifteen rings print a unit and four do not, and that split is not a judgement:
+            the four silent ones are the four with nothing to print — ALGORITHM is a detented
+            selector with no numerals, and SIZE, HF and LF are unitless 0–1.0 controls. So §8's row
+            needed implementing rather than qualifying.
+
+            **The check is against the PARAMETER, which is outside the table.** Comparing the table's
+            unit with the string the panel draws would agree with itself. Two rings are exempt by
+            name and with the reason: Trigger HP and LP switch between Hz and kHz at 1000, so their
+            unit is value-dependent and `hzAttrs` deliberately carries no label — the same shape as
+            Elmer's SIDECHAIN HP, and the same reason a blanket assertion would have been wrong.  */
+        beginTest ("Every ring's printed unit is its parameter's own label");
+        {
+            int checked = 0, valueDependent = 0, unitless = 0;
+
+            for (const auto& scale : Layout::knobScales)
+            {
+                auto* param = dynamic_cast<juce::RangedAudioParameter*> (
+                    processor.apvts.getParameter (scale.paramID));
+
+                if (param == nullptr)
+                    continue;
+
+                const juce::String tableUnit (scale.unit != nullptr ? scale.unit : "");
+                const juce::String paramLabel = param->getLabel();
+                const juce::String id (scale.paramID);
+
+                if (id == "trigHP" || id == "trigLP")
+                {
+                    ++valueDependent;
+                    expect (tableUnit == "Hz",
+                            id + " is the value-dependent pair and its ring prints Hz");
+                    expect (paramLabel.isEmpty(),
+                            id + " must carry no label — its unit moves to kHz above 1000, which is "
+                                 "why the unit lives in the value text");
+                    continue;
+                }
+
+                if (tableUnit.isEmpty())
+                {
+                    ++unitless;
+                    expect (paramLabel.isEmpty(),
+                            id + " prints no unit but its parameter carries the label '"
+                                + paramLabel + "' — one of the two is wrong");
+                    continue;
+                }
+
+                ++checked;
+                expectEquals (tableUnit, paramLabel,
+                              id + "'s printed unit is not its parameter's label");
+            }
+
+            logMessage ("  " + juce::String (checked) + " rings checked against their label, "
+                            + juce::String (valueDependent) + " value-dependent, "
+                            + juce::String (unitless) + " unitless");
+
+            expectEquals (checked + valueDependent, 11,
+                          "§8's unit row applies to eleven rings; the count has moved");
+            expectEquals (unitless, 4,
+                          "four rings have nothing to print — ALGORITHM, SIZE, HF, LF");
+        }
     }
 
 private:

@@ -101,6 +101,38 @@ void KnobComponent::renderStaticLayer (float deviceScale)
                           juce::Justification::centred, Colour::panelInk);
     }
 
+    /*  §8's UNIT row, in the arc's bottom gap — **drawn for the first time**.
+
+        Every one of the fifteen constants this needs already existed and was correct; nothing
+        consumed any of them. `knobScales` carries a `unit` string per knob, `knobUnitCssPx`,
+        `knobUnitLineBox` and `knobUnitTrackingEm` carry §8's 10 / 13 / .16 em, and
+        `knobUnitTop(d)` carries §3.1's registration — *unit and legend are positioned off a Ø76 box
+        for EVERY class*, so the offset is `d + 20 + (76 − d)/2`. That evaluates to **96 at Ø76 and
+        86 at Ø56**, which is where the delivered prototype puts all eleven units, to the pixel.
+
+        **Eleven of fifteen rings print one and four do not, and the split is already in the table.**
+        The four silent ones are exactly the four with no unit to print: ALGORITHM is a detented
+        selector with no numerals, and SIZE, HF and LF are unitless 0–1.0 controls. So §8's row is
+        owed rather than aspirational and needed no qualifying — it is implementable as written, and
+        `knobScale.unit` is its own data source.
+
+        **None of this panel's numerals carries its own unit**, which is what makes the row real
+        work rather than a double-print. Elmer is the contrast and its split is genuine: RATIO
+        prints `4:1` and RELEASE prints `0.6s` and `AUTO`, values that carry their own suffixes, so
+        those two rings correctly hold a null unit. Gatecrasher has no such ring — `1k` and `20k`
+        are magnitude prefixes on a Hz scale, not units, and the prototype prints `Hz` under that
+        ring anyway.  */
+    if (const auto* unit = knobScale.unit; unit != nullptr && *unit != '\0')
+    {
+        const auto unitFont = GatecrasherTheme::numeralFont (labelFontHeightForCssPx (Layout::knobUnitCssPx));
+        const float top = (centre.y - r) + Layout::knobUnitTop (knobSpec.diameter);
+
+        drawTrackedText (g, juce::String (juce::CharPointer_UTF8 (unit)), unitFont,
+                          trackingPxForEm (Layout::knobUnitTrackingEm, Layout::knobUnitCssPx),
+                          juce::Rectangle<float> (centre.x - 30.0f, top, 60.0f, Layout::knobUnitLineBox),
+                          juce::Justification::centred, Colour::panelInk);
+    }
+
     // The body, over the ring: `0 3px 6px rgba(0,0,0,.38)` under it, then the radial face.
     const juce::Rectangle<float> cap (centre.x - r, centre.y - r, r * 2.0f, r * 2.0f);
 
