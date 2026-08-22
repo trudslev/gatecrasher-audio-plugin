@@ -70,7 +70,8 @@ void KnobComponent::renderStaticLayer (float deviceScale)
 
     /*  Numerals, placed by rotation fraction and counter-rotated to upright. §3.3's selector prints
         none - it carries corner labels instead, which are in the panel's printed layer.  */
-    const auto numeralFont = labelFont (labelFontHeightForCssPx (Layout::knobNumeralCssPx));
+    // §8's scale numeral is Barlow Condensed 500 — a value, not a name.
+    const auto numeralFont = GatecrasherTheme::numeralFont (labelFontHeightForCssPx (Layout::knobNumeralCssPx));
     const float numeralTracking = trackingPxForEm (Layout::knobNumeralTrackingEm, Layout::knobNumeralCssPx);
     const float numeralRadius = Layout::knobNumeralRadius (r);
 

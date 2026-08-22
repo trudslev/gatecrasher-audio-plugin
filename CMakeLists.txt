@@ -95,7 +95,12 @@ juce_add_binary_data(GatecrasherBinaryData
         # the second casting — and Chorus-60's Librestile was checked on its own evidence at the
         # same time and DIFFERS (SIL OFL), so it ships unchanged. A conclusion about one wordmark
         # face transfers to another only by accident.
-        design/assets/gatecrasher-wordmark.png)
+        design/assets/gatecrasher-wordmark.png
+        # §8's 500 weight, delivered export 12 — the same cut TapeRot has, 680 glyphs,
+        # usWeightClass 500, v1.408, OFL. Four §8 rows asked for it and drew SemiBold until now:
+        # unit, scale numeral, the scope legend's scale values and the scope header data.
+        # Numerals sit one step below the labels they qualify, and that step is the hierarchy.
+        design/fonts/BarlowCondensed-Medium.ttf)
 
 # AU is Apple-only; Windows/Linux only ever build VST3 + Standalone. VST3_COPY_DIR/AU_COPY_DIR are
 # only set on Apple - leaving them unset elsewhere lets JUCE apply its own correct per-OS default

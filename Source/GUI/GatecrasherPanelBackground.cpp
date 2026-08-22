@@ -95,10 +95,15 @@ void GatecrasherPanelBackground::paintPrintedLabels(juce::Graphics& g)
 {
     using namespace GatecrasherTheme;
 
+    /*  `weight500` picks §8's Medium for the rows that ask for it. Every other printed label on
+        this panel is a NAME and stays at 600; the one row here that is a value is the scope header
+        data, which reads `ENVELOPE 50 ms / DIV`.  */
     const auto draw = [&g](const Layout::PrintedLabel& l, float cssPx, float lineBox,
-                            float trackingEm, juce::Colour ink)
+                            float trackingEm, juce::Colour ink, bool weight500 = false)
     {
-        drawTrackedText(g, l.text, labelFont(labelFontHeightForCssPx(cssPx)),
+        const auto face = weight500 ? numeralFont(labelFontHeightForCssPx(cssPx))
+                                     : labelFont(labelFontHeightForCssPx(cssPx));
+        drawTrackedText(g, l.text, face,
                          trackingPxForEm(trackingEm, cssPx),
                          juce::Rectangle<float>(l.x, l.y, l.width, lineBox),
                          juce::Justification(l.justify), ink);
@@ -131,5 +136,5 @@ void GatecrasherPanelBackground::paintPrintedLabels(juce::Graphics& g)
     draw({Layout::scopeHeaderText, Layout::scopeHeaderX, Layout::scopeHeaderY, Layout::scopeHeaderW,
            juce::Justification::centredRight},
           Layout::scopeHeaderCssPx, Layout::scopeHeaderLineBox,
-          Layout::scopeHeaderTrackingEm, Colour::scopeHeaderInk);
+          Layout::scopeHeaderTrackingEm, Colour::scopeHeaderInk, /* weight500 */ true);
 }

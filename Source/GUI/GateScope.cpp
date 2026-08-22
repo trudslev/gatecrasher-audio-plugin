@@ -172,10 +172,14 @@ void GateScope::paint(juce::Graphics& g)
                                                200.0f, Layout::scopeLegendLineBox),
                       juce::Justification::centredLeft, Colour::scopeAnnotation);
 
+    /*  §8's scope-legend row is "500/600", and the split is the suite's own hierarchy: `GATE ENV`
+        is a title and keeps `legendFont` at 600, while the scale VALUES below take 500. The two
+        trackings say the same thing — .20 em on the title, .14 on the values.  */
+    const auto scaleFont = numeralFont (labelFontHeightForCssPx (Layout::scopeLegendCssPx));
     const auto scaleTracking = trackingPxForEm (Layout::scopeScaleTrackingEm, Layout::scopeLegendCssPx);
     const float legendRight = gutter.getRight() - Layout::scopeLegendRightInset;
 
-    drawTrackedText (g, "0 dB", legendFont, scaleTracking,
+    drawTrackedText (g, "0 dB", scaleFont, scaleTracking,
                       juce::Rectangle<float> (gutter.getX(), well.getY() + Layout::scopeTopLegendLocalY,
                                                legendRight - gutter.getX(), Layout::scopeLegendLineBox),
                       juce::Justification::centredRight, Colour::scopeAnnotation);
@@ -184,7 +188,7 @@ void GateScope::paint(juce::Graphics& g)
         juce::String::charToString ((juce::juce_wchar) 0x2212)
       + juce::String::charToString ((juce::juce_wchar) 0x221E);
 
-    drawTrackedText (g, negativeInfinity, legendFont, scaleTracking,
+    drawTrackedText (g, negativeInfinity, scaleFont, scaleTracking,
                       juce::Rectangle<float> (gutter.getX(), well.getY() + Layout::scopeBottomLegendLocalY,
                                                legendRight - gutter.getX(), Layout::scopeLegendLineBox),
                       juce::Justification::centredRight, Colour::scopeAnnotation);

@@ -1091,24 +1091,15 @@ namespace GatecrasherTheme
     // flags are left plain/bold for metrics purposes only - the actual embedded typeface (already a
     // specific weight) is what's applied via withTypeface() so the correct weight always renders,
     // even on a system where "bold" synthesis would otherwise be used.
-    /*  **SemiBold (600) stands in for Barlow Condensed Medium (500) on five of §8's roles, and
-        this is the statement the ruling requires until the file lands.**
+    /*  **600, and it is the NAMES.** Section headings, control labels, corner labels, shoe
+        legends, the meter caption, the function descriptor and the scope title all take this.
+        Values — numerals, units, the scope's scale and its header data — take `numeralFont` at
+        500, which is §8's hierarchy rather than a preference.
 
-        §8 asks for **500** on the unit (10 / 13 / .16 em), the scale numeral (11 / 13 / .04 em),
-        the scope legend, the scope header data, and §3.2's numeral ring at `r + 8 + 9 + 6 + 6.5`.
-        `design/fonts/` carries SemiBold only, so all five draw one weight heavier than specified.
-
-        **The difference is invisible on the panel**, the way a size 20 % small is — which is why
-        the rewrite made the substitution without recording it, and why `shared/FONTS.md` names an
-        undeclared substituted face as the exact failure that register exists to prevent.
-
-        Ruled 2026-08-21 (`shared/FONTS.md`, `design/fonts/ABSENT.md`): **the weight stands and the
-        file moves.** The same OFL `BarlowCondensed-Medium.ttf` already cut for Fifth Member is owed
-        to this casting and to TapeRot; §8's rows are NOT being changed to 600. When it lands this
-        becomes a `barlowMediumTypeface()` and five call sites move to it — one line each.
-
-        Until then the substitution is stated here rather than at five separate sites, because it is
-        one fact about one missing file and five copies of it would be five things to remove. */
+        This carried a substitution note from 2026-08-21 to 2026-08-22, saying that five roles drew
+        SemiBold because Barlow Condensed Medium had never been delivered here. It was four roles,
+        not five, and the file arrived in export 12. `RECUT.md` asked for the note to come out with
+        the next build change; this is it.  */
     inline juce::Font labelFont(float heightPx)
     {
         return juce::Font(juce::FontOptions(heightPx).withTypeface(barlowSemiBoldTypeface()));
@@ -1118,6 +1109,29 @@ namespace GatecrasherTheme
         return juce::Font(juce::FontOptions(heightPx).withTypeface(barlowBoldTypeface()));
     }
     // Section 2.3's 400 weight, for the UNSELECTED half of each section-0.4 label pair.
+    /** §8's **500** weight, delivered export 12 and drawn from export 12 on.
+
+        Four §8 rows ask for it — unit, scale numeral, scope legend's scale values and scope header
+        data — and all four drew SemiBold until the file arrived. The fifth row the register used to
+        claim was §3.2 restating the numeral-ring role, double-counted by a grep over mentions.
+
+        **Numerals sit one step below the labels they qualify, and that step is the hierarchy.** It
+        is why §8 asks for 500 on values and 600 on names, and why the ruling moved the file rather
+        than changing the rows to 600. `GATE ENV` keeps 600 for the same reason: it is a title. */
+    inline juce::Typeface::Ptr barlowMediumTypeface()
+    {
+        static const juce::Typeface::Ptr t =
+            juce::Typeface::createSystemTypefaceFor(BinaryData::BarlowCondensedMedium_ttf,
+                                                      (size_t) BinaryData::BarlowCondensedMedium_ttfSize);
+        return t;
+    }
+
+    /** Barlow Condensed 500 — values, not names. See `barlowMediumTypeface`. */
+    inline juce::Font numeralFont(float heightPx)
+    {
+        return juce::Font(juce::FontOptions(heightPx).withTypeface(barlowMediumTypeface()));
+    }
+
     inline juce::Font labelFontRegular(float heightPx)
     {
         return juce::Font(juce::FontOptions(heightPx).withTypeface(barlowRegularTypeface()));

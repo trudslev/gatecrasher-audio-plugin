@@ -14,7 +14,7 @@ that wants baking, so call 6’s per-casting permission applies (GUI-SPEC §10).
 | `icons/gatecrasher-icon-{1024,512,256,128,64,32,16}.png` | **done** — seven optical cuts, each drawn at its size, ladder in GUI-SPEC §11 |
 | `fonts/TudorVictors.ttf` | **withdrawn — NOT distributable.** © Chequered Ink 2020, All Rights Reserved, read from the file itself; no licence bought and none available that covers redistribution. Replaced by `assets/gatecrasher-wordmark.png` |
 | `assets/gatecrasher-wordmark.png` | **done** — wordmark cut at 3×, **699 × 120 raster / 233 × 40 drawn**, transparent ground, face verified loaded at cut time. Standalone cut, not a plate: this casting has none to bake into |
-| `fonts/BarlowCondensed-Medium.ttf` | **OWED — not delivered.** §8 asks for weight 500 in five rows; the build draws all five in SemiBold (600) and the rewrite made that substitution **without recording it**. Ruled 2026-08-21: the weight stands and the file ships — the same OFL file already cut for fifth-member. See `fonts/ABSENT.md` |
+| `fonts/BarlowCondensed-Medium.ttf` | **done — delivered export 12**, 680 glyphs, `usWeightClass` 500, v1.408, OFL. §8 asks for weight 500 in **four** rows — the fifth was §3.2 restating the numeral-ring role; the build drew all four in SemiBold (600) until now. The prototype never substituted. `labelFont`’s substitution note comes out with the next build change |
 
 ## §3.2's HOLD ring, re-cut in the prototype (export 10)
 
