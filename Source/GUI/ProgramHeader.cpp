@@ -470,40 +470,54 @@ void ProgramHeader::paint(juce::Graphics& g)
         g.drawRoundedRectangle (block.reduced (0.5f), blockRadius, 1.0f);
     }
 
-    /*  The wordmark: a spray stencil, eleven letters each with their own rotation and vertical
-        jitter, the whole run tilted -1.3 deg about its left edge.
+    /*  **The wordmark is ARTWORK now, not a face** — export 11, and the reason is licensing.
 
-        Drawn letter by letter with the advance accumulated from the FONT rather than from a table
-        of x positions, so the run stays correct if the face is ever re-cut - a stored position
-        would keep pointing where the old metrics put it, which is the same failure as storing a
-        printed mark's rotation fraction instead of its value. */
+        It was eleven letter spans set in TudorVictors, each with its own rotation and vertical
+        jitter, drawn with the advance accumulated from the font. `TudorVictors.ttf` is
+        **© Chequered Ink 2020, All Rights Reserved** by its own `name` table — which is where the
+        designers read it, and where anyone can — **no licence was bought, and the licences on offer
+        grant use of the face to make things rather than the right to redistribute the file.** So the
+        font is withdrawn from the bundle, from `design/fonts/` and from this binary.
+
+        **This is TapeRot's treatment arriving at the second casting**, and the two are worth reading
+        together: two wordmark faces, opposite licences, and the register is per-face in
+        `shared/FONTS.md` for exactly that reason. Chorus-60's Librestile was checked on its own
+        evidence at the same time and **differs** — its file states SIL Open Font License, so it
+        ships unchanged. A conclusion about one wordmark face transfers to another only by accident.
+
+        **The theme's old note here was corrected once already and the correction did not go far
+        enough.** It had said the face was "neither embedded nor tracked — its licence grants no
+        redistribution right", which was struck as false because the face IS embeddable. That was
+        right about embedding and silent about *commercial* use, which is the half that mattered:
+        `shared/FONTS.md` then read "licensed, embeddable · ships" for two years' worth of exports,
+        and **"licensed" is a claim that somebody bought something.** Nobody had.
+
+        §9: 699 × 120 raster drawn at **233 × 40**, transparent ground so the header's own gradient
+        shows through, placed at left −4.67 / top +2.33 inside the nameplate's text box because the
+        rotated bounding box overhung its line box and those offsets put the ink where the spans had
+        it. A standalone cut, not a plate — this casting has none to bake into.  */
     {
-        const auto font = wordmarkFont (Layout::wordmarkCssPx);
-        const float tracking = trackingPxForEm (Layout::wordmarkTrackingEm, Layout::wordmarkCssPx);
-        const float baseline = Layout::wordmarkY + font.getAscent();
+        static const juce::Image wordmark = juce::ImageCache::getFromMemory (
+            BinaryData::gatecrasherwordmark_png, BinaryData::gatecrasherwordmark_pngSize);
 
-        juce::Graphics::ScopedSaveState runState (g);
-        g.addTransform (juce::AffineTransform::rotation (
-            juce::degreesToRadians (Layout::wordmarkRunRotationDeg),
-            Layout::wordmarkX, Layout::wordmarkY + Layout::wordmarkLineBox * 0.5f));
-
-        g.setColour (Colour::wordmarkInk);
-        g.setFont (font);
-
-        float pen = Layout::wordmarkX;
-        for (const auto& letter : Layout::wordmarkLetters)
+        if (wordmark.isValid())
         {
-            const juce::String glyph (juce::String::charToString ((juce::juce_wchar) letter.glyph));
-            const float advance = juce::GlyphArrangement::getStringWidth (font, glyph);
-
-            juce::Graphics::ScopedSaveState letterState (g);
-            g.addTransform (juce::AffineTransform::rotation (
-                juce::degreesToRadians (letter.rotationDeg),
-                pen + advance * 0.5f, baseline - font.getAscent() * 0.5f));
-            g.drawSingleLineText (glyph, juce::roundToInt (pen),
-                                   juce::roundToInt (baseline + letter.offsetY));
-
-            pen += advance + tracking;
+            g.drawImage (wordmark,
+                          juce::Rectangle<float> (Layout::wordmarkX + Layout::wordmarkArtLeft,
+                                                  Layout::wordmarkY + Layout::wordmarkArtTop,
+                                                  Layout::wordmarkArtW, Layout::wordmarkArtH),
+                          juce::RectanglePlacement::stretchToFit);
+        }
+        else
+        {
+            /*  A visible fault rather than a silent gap. A missing wordmark that falls back to bare
+                header material reads as a design decision; this reads as broken, which is what it
+                is. The same reasoning as TapeRot's fallback.  */
+            g.setColour (Colour::wordmarkInk);
+            g.drawText ("GATECRASHER",
+                        juce::Rectangle<float> (Layout::wordmarkX, Layout::wordmarkY,
+                                                Layout::wordmarkArtW, Layout::wordmarkArtH),
+                        juce::Justification::centredLeft, false);
         }
     }
 

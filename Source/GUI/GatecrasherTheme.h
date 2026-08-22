@@ -892,6 +892,22 @@ namespace GatecrasherTheme
             and be a different mark on every JUCE version whose `Random` changes, which is the kind
             of thing this suite has had to bisect before. Degrees, then px of vertical offset. */
         struct WordmarkLetter { char glyph; float rotationDeg, offsetY; };
+        /** §9's cut, and the four figures the blit needs.
+
+            **699 × 120 raster drawn at 233 × 40**, transparent ground so the header's own gradient
+            shows through. The left/top offsets are §9's: the spray run's rotated bounding box
+            overhung its line box, and −4.67 / +2.33 put the ink where the eleven spans had it, so
+            nothing on the nameplate moved when the face was withdrawn. */
+        inline constexpr float wordmarkArtW = 233.0f;
+        inline constexpr float wordmarkArtH = 40.0f;
+        inline constexpr float wordmarkArtLeft = -4.67f;
+        inline constexpr float wordmarkArtTop = 2.33f;
+
+        /*  **`wordmarkLetters` is kept and is no longer drawn.** It is the record of how the cut was
+            made — eleven glyphs, each rotation and offset — and §9 calls the artwork "cut from
+            TudorVictors 36 px", which is this table. Deleting it would leave the raster as the only
+            description of a mark nobody could reproduce, since the face cannot ship. It is the same
+            argument Chorus-60's spec makes for keeping a mark table whose ring is baked.  */
         inline constexpr std::array<WordmarkLetter, 11> wordmarkLetters { {
             {'G', -2.1f,  1.0f}, {'A',  1.4f, -0.5f}, {'T', -0.8f,  0.8f}, {'E',  2.0f, -1.0f},
             {'C', -1.6f,  0.4f}, {'R',  0.9f,  1.2f}, {'A', -2.4f, -0.6f}, {'S',  1.7f,  0.9f},
@@ -1151,39 +1167,27 @@ namespace GatecrasherTheme
         return fontHeightForTrackedWidth(monoFont(probeHeight), probeHeight, text, trackingPx, targetWidthPx);
     }
 
-    /*  **TudorVictors IS embedded, and the note that used to sit here was wrong about why it was
-        not.** It read: *"the font is neither embedded nor tracked - its licence grants no
-        redistribution right."* `shared/FONTS.md` row 16 says **licensed, embeddable, ships**, and
-        `RECUT.md` says **distributable**; the bundle delivers it at `gatecrasher/fonts/` and
-        `designs/fonts/`. The wordmark was baked into a plate, which is a true reason and a
-        different one — and the licence claim is the half that would have stopped the next person
-        doing the correct thing, since "we may not ship this face" ends the conversation where "it
-        is in the bitmap" invites the obvious question.
+    /*  **TudorVictors is withdrawn, and there is no wordmark typeface accessor.**
 
-        TapeRot's Impact Label Reversed is the case this was confused with: donationware, genuinely
-        not embeddable, letterforms shipping as artwork, declared in its own `fonts/ABSENT.md`.
-        **Two castings, two wordmark faces, opposite licences** — which is why the register is
-        per-face in `FONTS.md` rather than a habit.
+        The face is **© Chequered Ink 2020, All Rights Reserved** by its own `name` table; no licence
+        was bought, and the licences on offer grant use of the face to make things rather than the
+        right to redistribute the file. Export 11 withdrew it from the bundle; it is gone from
+        `design/fonts/`, from BinaryData and from this repo. §9's wordmark is
+        `assets/gatecrasher-wordmark.png`.
 
-        **Taken with `withPointHeight`, not through a calibrated ratio.** `labelFontHeightForCssPx`
-        and `monoFontHeightForCssPx` exist because a spec's `font-size` is an **em** size while
-        `FontOptions(h)` sets **ascent + descent**, and each recovers its face's ratio by fitting a
-        reference string to a reference width. That needs a measured reference and there is none for
-        TudorVictors — inventing one would be the figure-with-no-measurement-behind-it this suite
-        keeps finding. `withPointHeight(px)` already means what a spec means. */
-    inline juce::Typeface::Ptr tudorVictorsTypeface()
-    {
-        static juce::Typeface::Ptr tf =
-            juce::Typeface::createSystemTypefaceFor(BinaryData::TudorVictors_ttf,
-                                                     (size_t) BinaryData::TudorVictors_ttfSize);
-        return tf;
-    }
+        **This note has now been wrong twice in opposite directions, which is why it is long.** It
+        first said the face was "neither embedded nor tracked - its licence grants no redistribution
+        right", using a licence claim to explain why it was not EMBEDDED. That was struck as false,
+        correctly: the reason it was not embedded is that the wordmark was baked into a plate. But
+        the correction established *embeddable* and said nothing about *commercial*, and
+        `shared/FONTS.md` then carried "licensed, embeddable · ships" — **a claim that somebody
+        bought something, which nobody had.** The first note was wrong about the reason; the second
+        was right about the reason and silent about the constraint.
 
-    inline juce::Font wordmarkFont(float cssPx)
-    {
-        return juce::Font(juce::FontOptions().withTypeface(tudorVictorsTypeface())
-                                              .withPointHeight(cssPx));
-    }
+        **Chorus-60's Librestile was checked on its own evidence at the same time and differs** — its
+        file states SIL Open Font License, ocelothe2k1 2024, so it ships unchanged and now on a fact
+        rather than on the same unchecked phrase. Two wordmark faces, two answers, and the register
+        is per-face for exactly that reason. */
 
     // Binary-data-backed images, decoded once per process via function-local statics (avoids
     // repeated PNG decode on every repaint/instantiation - the knob filmstrips in particular are

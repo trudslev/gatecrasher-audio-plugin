@@ -1,7 +1,19 @@
 # ABSENT — gatecrasher/fonts/
 
-This directory holds `TudorVictors.ttf` only. Two faces it draws with are not here, for two
-different reasons, and the difference matters.
+This directory holds no faces. Three are involved and the three reasons differ, which is the
+whole content of this file.
+
+- **Tudor Victors (the wordmark)** — **ABSENT BY LICENSING, and it must stay absent.** The
+  delivered `.ttf` states its own terms in its `name` table: *"Typeface by Chequered Ink. © 2020.
+  All Rights Reserved."* No Chequered Ink licence was bought, and the available licences grant use
+  of the face to make things rather than the right to redistribute the file — so embedding it in a
+  distributed binary is not covered **at either price**. Removed from this directory and from the
+  prototype's `@font-face` in export 11.
+
+  The letterforms ship as artwork instead, TapeRot's treatment: **`../assets/gatecrasher-wordmark.png`**,
+  cut at 3× (699 × 120 raster, **233 × 40 drawn**) with the face checked loaded at cut time so the
+  glyphs are the real ones. §2's "one binary ships: `fonts/TudorVictors.ttf`" is now wrong in both
+  halves — no font ships and a PNG does.
 
 - **Barlow Condensed SemiBold (600)** — **absent by delivery route, not missing.** Every casting
   carries its own copies of the weights it uses; Gatecrasher's SemiBold resolves through the

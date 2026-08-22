@@ -55,9 +55,12 @@ FetchContent_MakeAvailable(NeonFoundryCore)
 #
 # The dressed renders (gatecrasher-panel@Nx, -gate-open@Nx), the knob render comparison and the
 # SHAPE-switch scope references are pixel-matching acceptance targets for design/, not runtime
-# assets, so they stay out of BinaryData. gatecrasher-wordmark@3x.png is gone with
-# WordmarkComponent - the wordmark is baked into the plate now. TudorVictors.ttf ships in design/
-# only so the wordmark can be re-baked; it is not a runtime face and is not embedded.
+# assets, so they stay out of BinaryData.
+#
+# **This paragraph said the wordmark was baked into the plate and that TudorVictors "ships in
+# design/ only so the wordmark can be re-baked".** Both stopped being true: the panel rewrite
+# deleted the plate, so the wordmark became a draw call and the face became a runtime input - and
+# export 11 withdrew the face entirely on licensing. §9's wordmark is artwork now, embedded below.
 #
 # Fonts: the faces spec section 2.3 draws at RUNTIME. All THREE Barlow weights are needed, which is
 # one more than design/assets/fonts/README.md implies - it says SemiBold (600) is wanted only for a
@@ -83,7 +86,16 @@ juce_add_binary_data(GatecrasherBinaryData
         # was baked into the plate, which §0 has now deleted; the theme's old note gave the LICENCE
         # as the reason and that half was simply wrong, which is the half that would have stopped
         # the next person embedding it.
-        design/fonts/TudorVictors.ttf)
+        # §9's wordmark, as ARTWORK. `TudorVictors.ttf` is © Chequered Ink 2020, All Rights
+        # Reserved by its own `name` table; no licence was bought, and the licences on offer grant
+        # use of the face to make things rather than the right to redistribute the file. Withdrawn
+        # from the bundle at export 11 and from this list with it.
+        #
+        # 699 x 120 raster drawn at 233 x 40, transparent ground. TapeRot's treatment arriving at
+        # the second casting — and Chorus-60's Librestile was checked on its own evidence at the
+        # same time and DIFFERS (SIL OFL), so it ships unchanged. A conclusion about one wordmark
+        # face transfers to another only by accident.
+        design/assets/gatecrasher-wordmark.png)
 
 # AU is Apple-only; Windows/Linux only ever build VST3 + Standalone. VST3_COPY_DIR/AU_COPY_DIR are
 # only set on Apple - leaving them unset elsewhere lets JUCE apply its own correct per-OS default

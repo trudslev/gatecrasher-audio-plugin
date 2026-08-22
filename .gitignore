@@ -7,11 +7,25 @@ cmake-build-*/
 *.xcworkspace/xcuserdata/
 .DS_Store
 
-# TudorVictors is Chequered Ink's: their terms permit non-profit use but grant no right to
-# redistribute the font file, so it must never be committed. It arrives in each design bundle and
-# is kept locally only so the wordmark can be re-baked; as of Rev 6 the wordmark is baked into
-# gatecrasher-panel-plate@2x.png, so nothing in the build needs it.
-design/assets/TudorVictors.ttf
+# TudorVictors is Chequered Ink's, **© 2020 All Rights Reserved by the file's own `name` table**.
+# No licence was bought, and the licences on offer grant use of the face to make things rather than
+# the right to redistribute the file. Withdrawn from the bundle at export 11; §9's wordmark ships as
+# artwork instead (`design/assets/gatecrasher-wordmark.png`). Nothing should ever put it back.
+#
+# **This rule matched ONE LITERAL PATH and that is how the file came to be committed.** It pinned
+# `design/assets/TudorVictors.ttf`; the bundle delivered to `design/fonts/`, one directory over, so
+# the rule did not fire and `88b862f` committed a font we have no right to redistribute. That is
+# the SECOND time this exact mechanism has bitten this casting — the first was an `old/` of 44
+# files carrying a second copy of the same font, for the same reason, recorded in the root
+# CLAUDE.md. A rule that names a path only protects that path.
+#
+# So it matches the NAME, anywhere. The two stale halves of the note this replaces are worth
+# knowing about: it said the font "arrives in each design bundle", which stopped being true at
+# export 11, and that "as of Rev 6 the wordmark is baked into gatecrasher-panel-plate@2x.png, so
+# nothing in the build needs it" — the plate was deleted in the panel rewrite and the build DID
+# need it, which is what made the committed copy load-bearing rather than merely present.
+TudorVictors.ttf
+**/TudorVictors.ttf
 
 # Designer hand-off archives land in handoff/, which is ignored whole. design/ holds only the
 # design the plugin is CURRENTLY built from, so the two never have to be told apart by timestamp:

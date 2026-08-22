@@ -11,8 +11,9 @@ material choices meet the shared geometry.
 
 **Asset format: vector / code-drawn.** No plate, no filmstrips, no bitmap of any panel
 element. The fascia is a 2 px brushed-steel repeat, every label, tick, numeral, knob,
-lamp segment and scope trace is drawn at runtime. One binary ships: `fonts/TudorVictors.ttf`
-for the wordmark.
+lamp segment and scope trace is drawn at runtime. **One binary ships, and it is not a font:**
+`assets/gatecrasher-wordmark.png`, the wordmark cut at 3×. Through export 10 this line read
+*"one binary ships: `fonts/TudorVictors.ttf`"* and was wrong in both halves — see §8.
 
 ---
 
@@ -287,7 +288,7 @@ line-height inherits font metrics anywhere on this panel.
 
 | Role | Face | Size / line box | Tracking | Ink |
 |---|---|---|---|---|
-| Wordmark | TudorVictors 36 px | 36 / 38 | .02 em | `#1b1e21` |
+| Wordmark | **artwork, not a face** — cut from TudorVictors 36 px | 233 × 40 drawn (699 × 120 at 3×) | — | `#1b1e21` baked |
 | Function descriptor | Barlow Condensed 600 | 14 / 17 | .26 em | `#16191c` |
 | Model line | Share Tech Mono | 11 / 14 | .20 em | `#2b2f33` |
 | Section heading | Barlow Condensed 600 | 12 / 15 | .28 em | `#16191c` |
@@ -312,7 +313,16 @@ place in a source anyone transcribes from, and a gap worth setting is set in the
 
 **The wordmark is the one per-casting face** and is outside call 7 — it is the nameplate
 metaphor, a spray stencil set in TudorVictors with per-letter rotation and vertical
-jitter, baked into no bitmap and drawn as eleven rotated spans. Panel lettering is
+jitter. **It is no longer drawn as eleven rotated spans, and TudorVictors no longer ships**
+(export 11): the file is © Chequered Ink 2020, All Rights Reserved by its own `name` table, no
+licence was bought, and the licences on offer grant use of the face to make things rather than the
+right to redistribute it. So the letterforms ship as artwork, TapeRot's treatment —
+`assets/gatecrasher-wordmark.png`, **699 × 120 raster / 233 × 40 drawn**, transparent ground so the
+header's own gradient shows through, cut with the face verified loaded so the glyphs are Tudor
+Victors and not the Barlow Condensed fallback behind it. Placed at **left −4.67, top +2.33** in the
+header's 303 × 84 text box — the rotated bbox overhung its line box, and those offsets put the ink
+where the spans had it. **A standalone cut, not a plate:** this casting has no plate to bake into.
+Panel lettering is
 Barlow Condensed; **numerals and the model line stay in Share Tech Mono**, which is this
 casting's own mono as well as the shared LCD face.
 
@@ -328,7 +338,7 @@ gap by construction.
 | **2** — one LCD face, Share Tech Mono 17 / .10 em, 641 cell, budget 49, cap 47 | **already conformed.** Gatecrasher was on Share Tech Mono; only its cap moved, and it moved up (27 → 47). No name is orphaned. |
 | **4** — every size a CSS px em with a pinned line box | **already conformed.** Every figure in §9 was already a pair; nothing resolved from font metrics. |
 | **5** — knobs code-drawn and cached, no filmstrips | **already conformed** in artwork: the ring, ticks, numerals and pointer were always drawn from rotation fractions. The sheets the call retires were never in this casting's bundle; `setBufferedToImage` is the build's to add. |
-| **6** — plates export at 3× | **checked, and it stays plateless.** The fascia is a 2 px procedural repeat with no texture that wants baking, so call 6's per-casting permission applies and nothing exports at 3×. If a wear layer is ever added it becomes a plate and the call binds. |
+| **6** — plates export at 3× | **checked, and it stays plateless** as a panel — the fascia is a 2 px procedural repeat with no texture that wants baking, so call 6's per-casting permission applies. The wordmark cut in §8 is at 3× and conforms to the call's resolution without being a plate. If a wear layer is ever added the fascia becomes a plate and the call binds. |
 | **7** — one panel typeface, Barlow Condensed | **already conformed** for all panel lettering. The wordmark is the nameplate metaphor and outside the call; scale numerals and the model line stay in the casting's own mono per call 7's split. |
 | **§4B** — two-state shoe, 128 × 32 in two 64 halves, legends printed once | **already conformed.** Both shoes were built to the part; neither re-inks a legend. |
 | **Lamps** — light stops at the lens edge, unlit lens stays in its own hue | **already conformed** on the GATE OPEN lamp. |
