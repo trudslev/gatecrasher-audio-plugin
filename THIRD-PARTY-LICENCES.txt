@@ -59,10 +59,10 @@ JUCE 8.0.14
 ==============================================================================
 TYPEFACES
 ==============================================================================
-Barlow Condensed  (Bold, Medium, Regular, SemiBold)
+Barlow Condensed  (Medium, SemiBold)
     Copyright 2017 The Barlow Project Authors (https://github.com/jpt/barlow)
     Licence: SIL Open Font License, Version 1.1  —  full text below under [OFL-1.1]
-    Embedded as: BarlowCondensed-Bold.ttf, BarlowCondensed-Medium.ttf, BarlowCondensed-Regular.ttf, BarlowCondensed-SemiBold.ttf
+    Embedded as: BarlowCondensed-Medium.ttf, BarlowCondensed-SemiBold.ttf
 
 Share Tech Mono  (Regular)
     Copyright (c) 2012, Carrois Type Design, Ralph du Carrois (post@carrois.com www.carrois.com), with Reserved Font Name 'Share'

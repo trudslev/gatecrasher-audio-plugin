@@ -1094,21 +1094,17 @@ namespace GatecrasherTheme
                                                       (size_t) BinaryData::BarlowCondensedSemiBold_ttfSize);
         return typeface;
     }
-    inline juce::Typeface::Ptr barlowRegularTypeface()
-    {
-        static const juce::Typeface::Ptr typeface =
-            juce::Typeface::createSystemTypefaceFor(BinaryData::BarlowCondensedRegular_ttf,
-                                                      (size_t) BinaryData::BarlowCondensedRegular_ttfSize);
-        return typeface;
-    }
+    /*  **No Barlow Condensed 400 or 700 here, and the absence is a ruling.** Both were embedded
+        and wrapped in builders nothing called. §8 asks for **500 and 600 only**, the delivered
+        prototype's template and logic draw 500 and 600 only, and the About part needs 500 and 600
+        — so there was no weight hole for them to fill.
 
-    inline juce::Typeface::Ptr barlowBoldTypeface()
-    {
-        static const juce::Typeface::Ptr typeface =
-            juce::Typeface::createSystemTypefaceFor(BinaryData::BarlowCondensedBold_ttf,
-                                                      (size_t) BinaryData::BarlowCondensedBold_ttfSize);
-        return typeface;
-    }
+        **What seeded them was the prototype's font LINK.** Every casting requested
+        `Barlow+Condensed:wght@400;500;600;700` from Google Fonts while drawing two or three
+        weights. A `<link>` is a weight declaration nobody owns, sitting in the artefact a build
+        reads for guidance, and it over-declares SILENTLY — in the direction that makes a stray
+        look intended. The links are trimmed to what each casting draws; this comment is the code
+        side of that. Removed 2026-08-23. */
     inline juce::Typeface::Ptr shareTechMonoTypeface()
     {
         static const juce::Typeface::Ptr typeface =
@@ -1139,14 +1135,6 @@ namespace GatecrasherTheme
         // bridge, and got wrong.
         return juce::Font(juce::FontOptions(barlowSemiBoldTypeface()).withPointHeight(cssPx));
     }
-    inline juce::Font labelFontBold(float cssPx)
-    {
-        // `withPointHeight` IS the CSS em size. `FontOptions(h)` is ascent+descent, a
-        // face-specific multiple of it — which is what the retired converters existed to
-        // bridge, and got wrong.
-        return juce::Font(juce::FontOptions(barlowBoldTypeface()).withPointHeight(cssPx));
-    }
-    // Section 2.3's 400 weight, for the UNSELECTED half of each section-0.4 label pair.
     /** §8's **500** weight, delivered export 12 and drawn from export 12 on.
 
         Four §8 rows ask for it — unit, scale numeral, scope legend's scale values and scope header
@@ -1171,14 +1159,6 @@ namespace GatecrasherTheme
         // face-specific multiple of it — which is what the retired converters existed to
         // bridge, and got wrong.
         return juce::Font(juce::FontOptions(barlowMediumTypeface()).withPointHeight(cssPx));
-    }
-
-    inline juce::Font labelFontRegular(float cssPx)
-    {
-        // `withPointHeight` IS the CSS em size. `FontOptions(h)` is ascent+descent, a
-        // face-specific multiple of it — which is what the retired converters existed to
-        // bridge, and got wrong.
-        return juce::Font(juce::FontOptions(barlowRegularTypeface()).withPointHeight(cssPx));
     }
     inline juce::Font monoFont(float cssPx)
     {

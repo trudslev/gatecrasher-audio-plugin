@@ -77,9 +77,7 @@ FetchContent_MakeAvailable(NeonFoundryCore)
 juce_add_binary_data(GatecrasherBinaryData
     SOURCES
         design/assets/gatecrasher-panel-plate@2x.png
-        design/assets/fonts/BarlowCondensed-Bold.ttf
         design/assets/fonts/BarlowCondensed-SemiBold.ttf
-        design/assets/fonts/BarlowCondensed-Regular.ttf
         design/assets/fonts/ShareTechMono-Regular.ttf
         # The wordmark face, embedded as of 2026-08-19. shared/FONTS.md row 16: licensed,
         # embeddable, ships - and RECUT.md says distributable. It was absent because the wordmark
