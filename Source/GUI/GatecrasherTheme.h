@@ -819,8 +819,9 @@ namespace GatecrasherTheme
         // Algorithm selector's four corner labels, around the 120x78 block centred on the reverb
         // column. Which one is lit tracks the live Algorithm parameter, so PanelReadouts draws
         // these rather than PanelChrome.
-        constexpr float algoLabelLeftX = 627.0f, algoLabelRightX = 746.0f;
-        constexpr float algoLabelTopCentreY = 133.0f, algoLabelBottomCentreY = 198.5f;
+        // `algoLabelLeftX/RightX/TopCentreY/BottomCentreY` retired here — 627/746/133/198.5, a
+        // pre-rewrite canvas's version of this same band, read by nothing since the PrintedLabel
+        // tables replaced it. `check_unused_constants.py` reported all four.
 
         constexpr int maxProgramNameLength = 25; // mirrors ProgramManager::maxProgramNameLength
 
@@ -944,11 +945,42 @@ namespace GatecrasherTheme
             beside the selector; these are ink. */
         constexpr float cornerLabelCssPx = 10.0f, cornerLabelLineBox = 13.0f;
         constexpr float cornerLabelTrackingEm = 0.18f;
+        /*  **THE FOUR AMBIENCE POSITION NAMES SIT ON THE KNOB'S OWN NUMERAL RING.**
+
+            They were a horizontal BAND — two at y 212 and two at 276, pinned to the left and right
+            of the selector — while the four detents are DIAGONAL, at ∓45° and ∓135°. That left
+            every name about 30 px from the tick it names.
+
+            The names stand in for numerals on this control, so they belong exactly where a numeral
+            would: on `knobNumeralRadius`, which for the Ø76 selector is `38 + 8 + 9 + 6 + 6.5` =
+            **67.5**, at 45° on both axes — `67.5 × cos 45°` = **47.73** from the pivot at
+            (855, 250). Derived from the ring rather than transcribed, so a change to the tick or
+            numeral geometry carries the names with it instead of leaving them behind, which is how
+            they came to be 30 px out in the first place.
+
+            **Export 16 fixed 1.8 px of this and export 17 retired that fix.** The 1.8 px was real —
+            the trailing letter-space export 15 ruled on, correctly predicted for a right-aligned
+            box — and it was 1.8 px of a 30 px error. *A rule that explains a symptom is the first
+            explanation reached for and the last one questioned.* The names are centred now, which
+            is the alignment that rule actually applies to.
+
+            The ticks needed nothing here: this build already flags all four detents `numbered`, so
+            they draw as major (2 × 9), and `KnobComponent` skips the numeral when the string is
+            empty. It was the PROTOTYPE that carried `numbered: 0` and drew them minor, which
+            export 17 corrected to match. */
+        constexpr float algoPivotX = 855.0f, algoPivotY = 250.0f, algoKnobRadius = 38.0f;
+        constexpr float algoNameOffset = knobNumeralRadius(algoKnobRadius) * 0.70710678f;
+        constexpr float algoNameBoxW = 120.0f;
+        constexpr float algoNameLeftX   = algoPivotX - algoNameOffset - algoNameBoxW * 0.5f;
+        constexpr float algoNameRightX  = algoPivotX + algoNameOffset - algoNameBoxW * 0.5f;
+        constexpr float algoNameTopY    = algoPivotY - algoNameOffset - cornerLabelLineBox * 0.5f;
+        constexpr float algoNameBottomY = algoPivotY + algoNameOffset - cornerLabelLineBox * 0.5f;
+
         inline constexpr std::array<PrintedLabel, 4> cornerLabels { {
-            {"ROOM",  700.0f, 212.0f, 98.0f, juce::Justification::centredRight},
-            {"PLATE", 912.0f, 212.0f, 94.0f, juce::Justification::centredLeft},
-            {"AMBI",  700.0f, 276.0f, 98.0f, juce::Justification::centredRight},
-            {"CHMBR", 912.0f, 276.0f, 94.0f, juce::Justification::centredLeft},
+            {"ROOM",  algoNameLeftX,  algoNameTopY,    algoNameBoxW, juce::Justification::centred},
+            {"PLATE", algoNameRightX, algoNameTopY,    algoNameBoxW, juce::Justification::centred},
+            {"AMBI",  algoNameLeftX,  algoNameBottomY, algoNameBoxW, juce::Justification::centred},
+            {"CHMBR", algoNameRightX, algoNameBottomY, algoNameBoxW, juce::Justification::centred},
         } };
 
         /*  §6's four shoe legends, 10 px / 13 / .16 em, **printed once under their own half and

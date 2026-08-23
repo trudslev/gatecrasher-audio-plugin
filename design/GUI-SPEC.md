@@ -96,6 +96,36 @@ their label line 1 px off the KEY SOURCE heading; at 478 there is 13 px of clear
 The REVERB TANK selector at (855, 250) is **exempt and stays where it is**: it carries
 corner labels, not a label on the baseline, so the rule does not reach it.
 
+
+### The AMBIENCE selector's four corner labels
+
+Ø76 at (855, 250), four detents at −135 / −45 / +45 / +135 and no numerals — the position names
+stand in for them, as on Reflect-84's ALGORITHM. **They are the panel's only tracked strings that are
+neither centred nor left-flowing**, and that is what put them out of place until export 16.
+
+| Label | Box | Align |
+|---|---|---|
+| ROOM | left 700, top **211.5**, width **99.8** | right |
+| PLATE | left 912, top **211.5**, width 94 | left |
+| AMBI | left 700, top **275.5**, width **99.8** | right |
+| CHMBR | left 912, top **275.5**, width 94 | left |
+
+**Both corrections come from the same property.** `letter-spacing: .18em` at 10 px is 1.8 px, and a
+tracked string's advance carries one trailing letter-space **inside** its box:
+
+- **Horizontal.** With the boxes at a matched width of 98, the two right-aligned labels ended their
+  ink 1.8 px short of their own right edge while the left-aligned pair started exactly at theirs —
+  so ROOM and AMBI hung **1.8 px further from the knob** than PLATE and CHMBR. Widening the
+  right-aligned pair to **99.8** puts all four ink edges **19 px** off the Ø76 rim.
+- **Vertical.** Tops of 212 / 276 with a 13 px line box put the two ink centres at 218.5 and 282.5 —
+  a midpoint of 250.5 against a knob centre of **250**. Tops of **211.5 / 275.5** put them at 218 and
+  282, symmetric.
+
+**`text-indent` is not the fix here and would do nothing.** It shifts a line's start edge, so it
+cancels the trailing space for *centred* text and is a no-op for right-aligned. The right-aligned
+case needs the box widened (or a negative right margin) — recorded in `../shared/HEADER-PART.md` as
+the standing rule, which named this case before it was found.
+
 ### 3.2 Mark lists
 
 Angle = `−135 + 270 f`. Numerals in **bold**; every other row is a minor tick at a real value.
