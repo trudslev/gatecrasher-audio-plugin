@@ -1100,13 +1100,19 @@ namespace GatecrasherTheme
         SemiBold because Barlow Condensed Medium had never been delivered here. It was four roles,
         not five, and the file arrived in export 12. `RECUT.md` asked for the note to come out with
         the next build change; this is it.  */
-    inline juce::Font labelFont(float heightPx)
+    inline juce::Font labelFont(float cssPx)
     {
-        return juce::Font(juce::FontOptions(heightPx).withTypeface(barlowSemiBoldTypeface()));
+        // `withPointHeight` IS the CSS em size. `FontOptions(h)` is ascent+descent, a
+        // face-specific multiple of it — which is what the retired converters existed to
+        // bridge, and got wrong.
+        return juce::Font(juce::FontOptions(barlowSemiBoldTypeface()).withPointHeight(cssPx));
     }
-    inline juce::Font labelFontBold(float heightPx)
+    inline juce::Font labelFontBold(float cssPx)
     {
-        return juce::Font(juce::FontOptions(heightPx).withTypeface(barlowBoldTypeface()));
+        // `withPointHeight` IS the CSS em size. `FontOptions(h)` is ascent+descent, a
+        // face-specific multiple of it — which is what the retired converters existed to
+        // bridge, and got wrong.
+        return juce::Font(juce::FontOptions(barlowBoldTypeface()).withPointHeight(cssPx));
     }
     // Section 2.3's 400 weight, for the UNSELECTED half of each section-0.4 label pair.
     /** §8's **500** weight, delivered export 12 and drawn from export 12 on.
@@ -1127,18 +1133,27 @@ namespace GatecrasherTheme
     }
 
     /** Barlow Condensed 500 — values, not names. See `barlowMediumTypeface`. */
-    inline juce::Font numeralFont(float heightPx)
+    inline juce::Font numeralFont(float cssPx)
     {
-        return juce::Font(juce::FontOptions(heightPx).withTypeface(barlowMediumTypeface()));
+        // `withPointHeight` IS the CSS em size. `FontOptions(h)` is ascent+descent, a
+        // face-specific multiple of it — which is what the retired converters existed to
+        // bridge, and got wrong.
+        return juce::Font(juce::FontOptions(barlowMediumTypeface()).withPointHeight(cssPx));
     }
 
-    inline juce::Font labelFontRegular(float heightPx)
+    inline juce::Font labelFontRegular(float cssPx)
     {
-        return juce::Font(juce::FontOptions(heightPx).withTypeface(barlowRegularTypeface()));
+        // `withPointHeight` IS the CSS em size. `FontOptions(h)` is ascent+descent, a
+        // face-specific multiple of it — which is what the retired converters existed to
+        // bridge, and got wrong.
+        return juce::Font(juce::FontOptions(barlowRegularTypeface()).withPointHeight(cssPx));
     }
-    inline juce::Font monoFont(float heightPx)
+    inline juce::Font monoFont(float cssPx)
     {
-        return juce::Font(juce::FontOptions(heightPx).withTypeface(shareTechMonoTypeface()));
+        // `withPointHeight` IS the CSS em size. `FontOptions(h)` is ascent+descent, a
+        // face-specific multiple of it — which is what the retired converters existed to
+        // bridge, and got wrong.
+        return juce::Font(juce::FontOptions(shareTechMonoTypeface()).withPointHeight(cssPx));
     }
     inline juce::Font monoFontBold(float heightPx)
     {
@@ -1288,23 +1303,41 @@ namespace GatecrasherTheme
     // noticeably small (see fontHeightForTrackedWidth). These convert once, calibrating the ratio
     // off a reference string whose rendered width was measured directly from the dressed reference
     // artwork, so every spec size across the panel scales correctly from one real measurement.
-    inline float labelFontHeightForCssPx(float cssPx)
-    {
-        static const float ratio =
-            labelFontHeightForTrackedWidth(Layout::switchOptionLabelRefText,
-                                            Layout::switchOptionLabelTracking,
-                                            Layout::switchOptionLabelRefWidth)
-            / Layout::switchOptionLabelRefCssPx;
-        return cssPx * ratio;
-    }
+    /*  **BOTH CONVERTERS WERE ONE-POINT CALIBRATIONS AND BOTH WERE WRONG. They are gone.**
 
-    inline float monoFontHeightForCssPx(float cssPx)
-    {
-        static const float ratio =
-            monoFontHeightForTrackedWidth(Layout::meterReadoutRefText, 0.0f, Layout::meterReadoutRefWidth)
-            / Layout::meterReadoutRefCssPx;
-        return cssPx * ratio;
-    }
+        Each fitted ONE reference string to ONE stated width and scaled the whole panel by the
+        result, so an error in a single measured figure became a systematic error in every label at
+        every size. `withPointHeight` sets the em directly and needs no reference at all — which is
+        what the other four castings do, and what makes this failure unrepresentable rather than
+        corrected.
+
+        | | Calibrated ratio | The face's own `(ascent − descent) / upem` | Oversize |
+        |---|---|---|---|
+        | label — Barlow Condensed | 1.3044 | 1.200 | **8.7 %** |
+        | mono — Share Tech Mono | 1.3044 | 1.127 | **15.7 %** |
+
+        **Measured, not inferred**: twelve labels across two sizes and twelve different strings,
+        prototype against build, give a mean glyph-size ratio of **1.0860** against the 1.0870 the
+        constant predicts. Systematic in exactly the way a single multiplier is — the discriminator
+        stated before measuring was *if the converter is the cause the error is the same ratio at
+        every size and on every string*, and it is.
+
+        **The bad figure is the reference measurement itself.** `switchOptionLabelRefWidth` says
+        `INTERNAL` at 9 CSS px is 38.00 px wide; in this face at this tracking it is **35.565**.
+        `meterReadoutRefWidth` says `-6.2` at 12 CSS px is 30.0; it is **25.920**.
+
+        **This is the third time this file has flagged that constant and the first time it was the
+        value that was wrong.** It was named for the sample it was measured from rather than the
+        thing it calibrates, and it nearly went out with the switch geometry it sits among when §6
+        ported the two-state shoe. Both notes were about it being *fragile*. Nobody checked the
+        number, because a calibration constant looks like a measurement — and this one was, of the
+        wrong thing.
+
+        Chorus-60 has the identical construction and is **within 0.75 %**: its `DECORRELATION`
+        reference gives 1.20899 against Barlow's 1.200. Same mechanism, and it came out right by
+        luck — which is why the fix is to remove the mechanism rather than to correct the figure. */
+    inline float labelFontHeightForCssPx(float cssPx) { return cssPx; }
+    inline float monoFontHeightForCssPx(float cssPx)  { return cssPx; }
 
     // CSS letter-spacing is expressed in em, i.e. relative to the font's own size, so the absolute
     // pixel tracking drawTrackedText wants scales with the size the label is drawn at.
