@@ -449,3 +449,42 @@ opened up — plateau to .60, fall to .855 — so the diagonal has pixels to exi
 - **`shared/HEADER-PART.md` revision 3 is pending three build answers** — the meter's
   display clamp, its number format at both ends, and the sign convention. Nothing on this
   panel changes either way: the wells stay 64 and hold five characters.
+
+
+---
+
+## 13 · The About part — this casting's material
+
+**Shared contract: `../shared/ABOUT-PART.md` revision 2.** Nothing here restates its geometry; these
+are the five figures that are **this casting's** and the two coordinates that depend on its canvas.
+**Fitted in the prototype, change set 35.**
+
+### 13.1 The tab
+
+| | |
+|---|---|
+| Right edge | **1302** · bottom edge **680** (canvas height 700 − 20), height **24**, width shrink-to-fit on padding 10 |
+| Well face | `#2b2f32 → #33383b` |
+| Ink | `#c3cace` — **7.15:1** on the well's lighter stop |
+| Face | Share Tech Mono **10 / 13**, this casting's own mono |
+| Hover | well one step lighter, ink to `#e8c96a` |
+
+**The ink is measured against the well, not the fascia** — `../shared/CONTRAST-CEILING.md` §1: no ink
+reaches 7:1 on a ground of luminance 0.100–0.300, and a mid-value fascia is exactly that. The recess
+is a surface this casting chooses.
+
+### 13.2 The box
+
+| | |
+|---|---|
+| Position | **230, 80** — x from §4's law, y = (700 − 540) / 2 |
+| Surface | `#0d0f11`, this casting's display glass — **a screen, not a plate** |
+| Body ink | `#f2f5f6` — **17.53:1** |
+| Dim ink | `#9fa9ad` — **8.00:1** |
+| Accent / links | `#e8c96a` — **11.88:1** |
+| Repository | `github.com/trudslev/gatecrasher-audio-plugin` |
+
+**Typeface credits, embedded faces only:** Barlow Condensed and Share Tech Mono, both under the SIL Open Font License.
+
+**The dim ink is the tight one across the suite** — TapeRot's 7.12 is the narrowest margin, so **no
+casting may darken its dim ink to taste.**
