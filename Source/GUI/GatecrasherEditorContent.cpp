@@ -201,8 +201,12 @@ GatecrasherEditorContent::GatecrasherEditorContent(GatecrasherAudioProcessor& p)
             Its own type table gives the version stamp as Share Tech Mono 10 / 13 / .18 em, which is
             what §13.1 restates and what `ProgramHeader` drew - so there is nothing to correct here,
             unlike Reflect-84 where the panel and the spec disagreed. */
+        /*  **Full semver, not `NF_VERSION_SHORT`.** Every delivered prototype that spells its tab's
+            version literally prints the patch field, and §1 states the plugin version as semver.
+            The short form is right for a panel stamp — which is what this string was before §2
+            promoted it — and wrong for the box's own identity line. */
         aboutTab = std::make_unique<nf::AboutTab> (aboutMaterials, shareTechMonoTypeface(),
-                                                   "v" NF_VERSION_SHORT,
+                                                   "v" NF_VERSION,
                                                    Layout::versionStampCssPx,
                                                    Layout::versionStampTrackingEm);
         aboutTab->onClick = [this] { aboutBox->open(); };
