@@ -2,6 +2,7 @@ juce_add_console_app(GatecrasherTests PRODUCT_NAME "GatecrasherTests")
 
 target_sources(GatecrasherTests PRIVATE
     RealtimeSafetyTests.cpp
+    AboutPartTests.cpp
     CpuBaselineTests.cpp
     NumericalRobustnessTests.cpp
     InvarianceTests.cpp
@@ -93,6 +94,7 @@ target_compile_definitions(GatecrasherTests PRIVATE
     # console app gets none of the plugin target's definitions. Same shape as NF_COMPANY_NAME's own
     # history - the fix is CMake handing both targets the value, not a second copy anywhere.
     NF_VERSION_SHORT="${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}"
+    NF_VERSION="${PROJECT_VERSION}"
     JucePlugin_Name="${GATECRASHER_PRODUCT_NAME}"
     JucePlugin_Manufacturer="${GATECRASHER_COMPANY_NAME}")
 

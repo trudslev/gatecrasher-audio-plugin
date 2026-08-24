@@ -540,16 +540,21 @@ void ProgramHeader::paint(juce::Graphics& g)
                           juce::Justification::centredLeft, Colour::modelLineInk);
     }
 
-    // §9's version stamp, right-aligned on fascia below the body. Flavour text, and the one place
-    // #34383c survives after §7 moved the model line off it.
-    {
-        const auto stampFont = monoFont (monoFontHeightForCssPx (Layout::versionStampCssPx));
-        drawTrackedText (g, "v" NF_VERSION_SHORT, stampFont,
-                          trackingPxForEm (Layout::versionStampTrackingEm, Layout::versionStampCssPx),
-                          juce::Rectangle<float> (Layout::versionStampX, Layout::versionStampY,
-                                                   Layout::versionStampW, Layout::versionStampLineBox),
-                          juce::Justification::centredRight, Colour::versionStampInk);
-    }
+    /*  **§9's version stamp is no longer drawn here: `ABOUT-PART.md` §2 PROMOTED it to a recessed
+        tab**, and the tab is `nf::AboutTab`, built in `GatecrasherEditorContent`. Drawing it in
+        both places would double-print one string in two overlapping positions - the old site was
+        x 1180…1290 / y 668…681 and the tab's box is y 656…680 at the same right end.
+
+        It keeps its face and size: §8's version-stamp row is Share Tech Mono 10 / 13 / .18 em and
+        the tab takes those, per §2 revision 3.
+
+        **Its INK does not survive, and that is the change.** `Colour::versionStampInk` is `#34383c`
+        at 6.59 on the fascia, classified flavour - which was defensible for a decorative string on
+        a panel and is not for an affordance. §9.2 measures the tab's ink against the WELL instead,
+        where `#c3cace` reaches 7.15. That is the suite's narrowest tab margin, so the well may not
+        be lightened. `versionStampInk` and the five `versionStamp*` layout figures now have no
+        consumer - the fossil shape `tools/check_unused_constants.py` reports, noted here so the
+        next reader of that report has the answer without going looking. */
 
     // Section 6.2's caption, drawn rather than baked since Rev 8 - PROGRAM normally, NAME PROGRAM
     // while naming. Barlow Condensed 600 at 10 CSS px, .22em, in the functional ink. No explicit

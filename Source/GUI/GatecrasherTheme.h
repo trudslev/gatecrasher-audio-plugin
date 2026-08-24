@@ -240,6 +240,47 @@ namespace GatecrasherTheme
             both ends and always did; the drift was in the record, not in the panel.
             // contrast: 5.68:1 vs buttonCapTop [state] */
         inline const juce::Colour legendUnlit{0xFF9AA1A6};
+
+        /*  `ABOUT-PART.md` §9.1 and §9.2, and every ratio here is the spec's own measured figure.
+
+            §9: **the box is this casting's display GLASS, not its fascia** - a screen, not a plate.
+
+            §9.2: **the tab's ink is measured against the WELL, not the fascia.** This casting's
+            darkest fascia stop tops out at **6.45** whatever the ink, because a 7:1 ceiling is set
+            by the ground - and its **7.15 on the well is the suite's narrowest tab margin, so the
+            well may not be lightened.** */
+        inline const juce::Colour aboutGlass      { 0xFF0D0F11 };   // §9.1
+        inline const juce::Colour aboutBody       { 0xFFF2F5F6 };   // 17.53 on glass
+        inline const juce::Colour aboutDim        { 0xFF9FA9AD };   //  8.00
+        inline const juce::Colour aboutAccent     { 0xFFE8C96A };   // 11.88
+        inline const juce::Colour aboutRing       { 0xFF2A3134 };   // §9.1, glass lightened ~18 %
+
+        inline const juce::Colour aboutWellTop    { 0xFF2B2F32 };   // §9.2
+        inline const juce::Colour aboutWellBottom { 0xFF33383B };
+        inline const juce::Colour aboutWellInk    { 0xFFC3CACE };   // 7.15 - the suite's narrowest
+    }
+
+    //==============================================================================
+    namespace Cursor
+    {
+        /*  §2b: `help`, not `pointer`. `pointer` says *this acts*; `help` says *this explains
+            something*, and an About box explains. JUCE has no help cursor in `StandardCursorType`,
+            so the delivered 64 x 64 @2x asset is embedded and a cursor built from it.
+
+            **Hotspot (7, 4) in image pixels**, which is the arrow's tip - read off the artwork
+            rather than assumed at the origin, because a cursor whose hotspot is wrong is off by the
+            distance from the corner to the tip on every click. */
+        inline juce::MouseCursor help()
+        {
+            static const juce::MouseCursor c = []
+            {
+                const auto img = juce::ImageFileFormat::loadFrom (BinaryData::aboutcursor2x_png,
+                                                                  (size_t) BinaryData::aboutcursor2x_pngSize);
+                return img.isValid() ? juce::MouseCursor (img, 7, 4, 2.0f)
+                                     : juce::MouseCursor (juce::MouseCursor::PointingHandCursor);
+            }();
+            return c;
+        }
     }
 
     // The knob filmstrips ship in two skirt styles (see design/GUI-SPEC.md's asset list) -

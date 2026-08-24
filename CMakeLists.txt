@@ -98,7 +98,10 @@ juce_add_binary_data(GatecrasherBinaryData
         # usWeightClass 500, v1.408, OFL. Four §8 rows asked for it and drew SemiBold until now:
         # unit, scale numeral, the scope legend's scale values and the scope header data.
         # Numerals sit one step below the labels they qualify, and that step is the hierarchy.
-        design/fonts/BarlowCondensed-Medium.ttf)
+        design/fonts/BarlowCondensed-Medium.ttf
+        # ABOUT-PART.md §2b's cursor. JUCE has no help cursor in StandardCursorType, so the
+        # delivered asset is embedded and a MouseCursor is built from it.
+        design/assets/about-cursor-2x.png)
 
 # AU is Apple-only; Windows/Linux only ever build VST3 + Standalone. VST3_COPY_DIR/AU_COPY_DIR are
 # only set on Apple - leaving them unset elsewhere lets JUCE apply its own correct per-OS default
@@ -182,6 +185,9 @@ target_compile_definitions(Gatecrasher PUBLIC
     # from PROJECT_VERSION rather than typed as artwork - three castings bake theirs into a plate
     # and have to be re-cut when it moves; this one does not, and should not acquire the problem.
     NF_VERSION_SHORT="${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}"
+    # ABOUT-PART.md §1: the About box prints the plugin version as SEMVER, and the panel
+    # stamp prints major.minor. Two strings, two consumers - never one derived from the other.
+    NF_VERSION="${PROJECT_VERSION}"
     JUCE_WEB_BROWSER=0
     JUCE_USE_CURL=0
     JUCE_VST3_CAN_REPLACE_VST2=0

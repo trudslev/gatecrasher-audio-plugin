@@ -170,6 +170,60 @@ GatecrasherEditorContent::GatecrasherEditorContent(GatecrasherAudioProcessor& p)
     addAndMakeVisible(menuHost);
     menuHost.toFront(false);
     programHeader.setMenuParent(&menuHost);
+
+    /*  `ABOUT-PART.md`. §9's materials and §1's five strings are all this casting supplies. */
+    {
+        constexpr int frameOriginX = 0;   // no rack ears: the frame IS the window
+
+        const nf::AboutMaterials aboutMaterials {
+            Colour::aboutGlass, Colour::aboutBody, Colour::aboutDim, Colour::aboutAccent,
+            Colour::aboutRing,
+            Colour::aboutWellTop, Colour::aboutWellBottom, Colour::aboutWellInk,
+            barlowSemiBoldTypeface(), barlowMediumTypeface(), shareTechMonoTypeface(),
+            Cursor::help()
+        };
+
+        /*  §8: the credits name the faces this casting EMBEDS, not the ones it draws with - so the
+            three Barlow cuts are one entry and `TudorVictors.ttf` is not here at all. That face is
+            © Chequered Ink, All Rights Reserved, and this casting ships the wordmark as ARTWORK
+            rather than as a font for exactly that reason. Nothing to credit that we do not ship. */
+        const nf::AboutContent aboutContent {
+            "GATECRASHER", "GR-85",
+            NF_VERSION,                 // semver, from PROJECT_VERSION - never a literal
+            nf::suiteRelease,           // §1: a separate string, and neither derives from the other
+            "github.com/trudslev/gatecrasher-audio-plugin",
+            "Barlow Condensed and Share Tech Mono, both under the SIL Open Font License."
+        };
+
+        aboutBox = std::make_unique<nf::AboutBox> (aboutMaterials, aboutContent, frameOriginX);
+
+        /*  §2, revision 3: the tab takes **the face and size this casting's stamp already uses**.
+            Its own type table gives the version stamp as Share Tech Mono 10 / 13 / .18 em, which is
+            what §13.1 restates and what `ProgramHeader` drew - so there is nothing to correct here,
+            unlike Reflect-84 where the panel and the spec disagreed. */
+        aboutTab = std::make_unique<nf::AboutTab> (aboutMaterials, shareTechMonoTypeface(),
+                                                   "v" NF_VERSION_SHORT,
+                                                   Layout::versionStampCssPx,
+                                                   Layout::versionStampTrackingEm);
+        aboutTab->onClick = [this] { aboutBox->open(); };
+
+        /*  §2a: the wordmark is the PRIMARY affordance, and this is one of the two castings whose
+            wordmark is a BITMAP. That is exactly the objection revision 2 raised and §2a struck: a
+            hit region needs a rectangle, and `HeaderGeometry::nameplate()` is the same rectangle
+            over artwork as over live text. It draws nothing. */
+        aboutWordmark = std::make_unique<nf::AboutWordmarkHit> (Cursor::help());
+        aboutWordmark->onClick = [this] { aboutBox->open(); };
+
+        /*  **Registered LAST, and that is not tidiness.** JUCE paints children in the order they
+            were added, so registering these beside their construction puts the tab under the panel
+            background - drawn, correct, and invisible in a capture. */
+        aboutTab->layoutFor (getHeight(), frameOriginX);
+        aboutWordmark->setBounds (nf::AboutWordmarkHit::zone (frameOriginX));
+        aboutBox->setBounds (getLocalBounds());
+        addAndMakeVisible (*aboutWordmark);
+        addAndMakeVisible (*aboutTab);
+        addChildComponent (*aboutBox);
+    }
 }
 
 GatecrasherEditorContent::~GatecrasherEditorContent()
