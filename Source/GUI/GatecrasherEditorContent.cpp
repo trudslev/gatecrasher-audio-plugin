@@ -179,7 +179,8 @@ GatecrasherEditorContent::GatecrasherEditorContent(GatecrasherAudioProcessor& p)
             Colour::aboutGlass, Colour::aboutBody, Colour::aboutDim, Colour::aboutAccent,
             Colour::aboutRing,
             Colour::aboutWellTop, Colour::aboutWellBottom, Colour::aboutWellInk,
-            barlowSemiBoldTypeface(), barlowMediumTypeface(), shareTechMonoTypeface()
+            barlowSemiBoldTypeface(), barlowMediumTypeface(), shareTechMonoTypeface(),
+            Cursor::help()
         };
 
         /*  §8: the credits name the faces this casting EMBEDS, not the ones it draws with - so the
@@ -214,7 +215,7 @@ GatecrasherEditorContent::GatecrasherEditorContent(GatecrasherAudioProcessor& p)
             wordmark is a BITMAP. That is exactly the objection revision 2 raised and §2a struck: a
             hit region needs a rectangle, and `HeaderGeometry::nameplate()` is the same rectangle
             over artwork as over live text. It draws nothing. */
-        aboutWordmark = std::make_unique<nf::AboutWordmarkHit>();
+        aboutWordmark = std::make_unique<nf::AboutWordmarkHit> (Cursor::help());
         aboutWordmark->onClick = [this] { aboutBox->open(); };
 
         /*  **Registered LAST, and that is not tidiness.** JUCE paints children in the order they

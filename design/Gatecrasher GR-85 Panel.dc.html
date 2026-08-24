@@ -30,8 +30,8 @@
   <div style="position:absolute;left:1326.5px;top:668.5px;width:11px;height:11px;border-radius:50%;background:radial-gradient(circle at 38% 30%,#9ba2a8,#4a5055 60%,#23272a);box-shadow:inset 0 1px 0 rgba(255,255,255,.35);"></div>
 
   <div style="position:absolute;left:16px;top:16px;width:1308px;height:104px;box-sizing:border-box;border-radius:6px;background:linear-gradient(180deg,#d4d9dd,#bcc2c7);box-shadow:inset 0 0 0 1px #9aa1a6, inset 0 1px 0 rgba(255,255,255,.7), 0 1px 2px rgba(0,0,0,.18);">
-    <div onClick="{{ aboutOpen }}" title="About Gatecrasher" style="position:absolute;left:22px;top:14px;width:303px;height:84px;cursor:pointer;">
-      <img src="assets/gatecrasher/gatecrasher-wordmark.png" alt="GATECRASHER" style="position:absolute;left:-4.67px;top:2.33px;width:233px;height:40px;cursor:pointer;" />
+    <div style="position:absolute;left:22px;top:14px;width:303px;height:84px;">
+      <img onClick="{{ aboutOpen }}" title="About Gatecrasher" src="assets/gatecrasher/gatecrasher-wordmark.png" alt="GATECRASHER" style="position:absolute;left:-4.67px;top:2.33px;width:233px;height:40px;cursor:help;" />
       <div style="font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:14px;line-height:17px;letter-spacing:.26em;color:#16191c;margin-top:48px;">GATED AMBIENCE PROCESSOR</div>
       <div style="font-family:'Share Tech Mono',monospace;font-size:11px;line-height:14px;letter-spacing:.20em;color:#2b2f33;">MODEL GR-85 · STEREO</div>
     </div>
@@ -125,7 +125,7 @@
   <div style="position:absolute;left:416px;top:658px;width:64px;text-align:center;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:10px;line-height:13px;letter-spacing:.16em; text-indent: .16em;color:#16191c;">HARD</div>
   <div style="position:absolute;left:480px;top:658px;width:64px;text-align:center;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:10px;line-height:13px;letter-spacing:.16em; text-indent: .16em;color:#16191c;">SOFT</div>
 
-  <div onClick="{{ aboutOpen }}" title="About" style="position:absolute;right:38px;top:656px;height:24px;box-sizing:border-box;display:inline-flex;align-items:center;padding:0 10px;border-radius:2px;background:linear-gradient(180deg,#2b2f32,#33383b);box-shadow:inset 0 0 0 1px #22262a, inset 0 1px 3px rgba(0,0,0,.55);cursor:pointer;font-family:'Share Tech Mono',monospace;font-size:10px;line-height:13px;letter-spacing:.18em;color:#c3cace;" style-hover="background:linear-gradient(180deg,#33383b,#3c4145);color:#e8c96a;">v1.0.0</div>
+  <div onClick="{{ aboutOpen }}" title="About" style="position:absolute;right:38px;top:656px;height:24px;box-sizing:border-box;display:inline-flex;align-items:center;padding:0 10px;border-radius:2px;background:linear-gradient(180deg,#2b2f32,#33383b);box-shadow:inset 0 0 0 1px #22262a, inset 0 1px 3px rgba(0,0,0,.55);cursor:help;font-family:'Share Tech Mono',monospace;font-size:10px;line-height:13px;letter-spacing:.18em;color:#c3cace;" style-hover="background:linear-gradient(180deg,#33383b,#3c4145);color:#e8c96a;">v1.0.0</div>
 
   <sc-if value="{{ aboutIsOpen }}" hint-placeholder-val="{{ false }}">
     <div onClick="{{ aboutClose }}" style="position:absolute;inset:0;z-index:60;background:rgba(8,9,11,.72);cursor:default;"></div>
