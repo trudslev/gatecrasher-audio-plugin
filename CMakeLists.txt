@@ -98,10 +98,7 @@ juce_add_binary_data(GatecrasherBinaryData
         # usWeightClass 500, v1.408, OFL. Four §8 rows asked for it and drew SemiBold until now:
         # unit, scale numeral, the scope legend's scale values and the scope header data.
         # Numerals sit one step below the labels they qualify, and that step is the hierarchy.
-        design/fonts/BarlowCondensed-Medium.ttf
-        # ABOUT-PART.md §2b's cursor. JUCE has no help cursor in StandardCursorType, so the
-        # delivered asset is embedded and a MouseCursor is built from it.
-        design/assets/about-cursor-2x.png)
+        design/fonts/BarlowCondensed-Medium.ttf)
 
 # AU is Apple-only; Windows/Linux only ever build VST3 + Standalone. VST3_COPY_DIR/AU_COPY_DIR are
 # only set on Apple - leaving them unset elsewhere lets JUCE apply its own correct per-OS default
