@@ -49,7 +49,7 @@ project(Gatecrasher VERSION 1.0.0 LANGUAGES CXX C)
 # GCC gets no flag: its execution charset is UTF-8 already, so the class does not arise, and an
 # unrecognised -Werror= is itself an error rather than a no-op, so nothing is added blind.
 if(MSVC)
-    add_compile_options(/utf-8 /we4566 /we4819)
+    add_compile_options(/we4566 /we4819)   # TEMPORARY: /utf-8 removed to prove the guard fires
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     add_compile_options(-Werror=invalid-source-encoding)
 endif()
