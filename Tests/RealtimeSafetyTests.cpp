@@ -35,6 +35,7 @@ public:
 
     void runTest() override
     {
+        beginTest ("processBlock does not allocate at the block size it was prepared for");
         /*  **Asserted only where a non-zero count is OURS.**
 
             `AllocationSentinel` counts a different population on each platform: on glibc Linux an
@@ -51,7 +52,6 @@ public:
                 "the allocation sentinel counted nothing for a known allocation — every allocation "
                 "figure in this suite is vacuous");
 
-        beginTest ("processBlock does not allocate at the block size it was prepared for");
         {
             GatecrasherAudioProcessor processor;
             const auto r = nf::testing::probeProcessBlockAllocation (processor, 48000.0, 512, 512, 2);
