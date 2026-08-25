@@ -115,7 +115,9 @@ public:
 
         for (const auto& spec : Layout::knobs)
         {
-            const auto* scale = std::find_if (Layout::knobScales.begin(), Layout::knobScales.end(),
+            // `const auto`, not `const auto*` — see GatecrasherEditorContent.cpp:50. MSVC's
+            // array iterator is a class, not a pointer.
+            const auto scale = std::find_if (Layout::knobScales.begin(), Layout::knobScales.end(),
                                                [&] (const auto& s) { return juce::String (s.paramID) == spec.paramID; });
             expect (scale != Layout::knobScales.end(), juce::String (spec.paramID) + " has no scale");
             if (scale == Layout::knobScales.end() || juce::String (spec.paramID) == "algorithm")

@@ -47,7 +47,12 @@ GatecrasherEditorContent::GatecrasherEditorContent(GatecrasherAudioProcessor& p)
         // §3.2's scale for this knob, matched by parameter ID rather than by index. The two tables
         // are written independently and a shared index is the kind of coupling that survives one
         // of them being reordered and nothing else.
-        const auto* scale = std::find_if (Layout::knobScales.begin(), Layout::knobScales.end(),
+        // `const auto`, NOT `const auto*`. `find_if` returns an ITERATOR, and `const auto*`
+        // deduces only where that iterator happens to BE a raw pointer — true of libc++ and
+        // libstdc++ for `std::array`, false for MSVC's `_Array_const_iterator`. It compiled
+        // on macOS and Linux for the life of this casting and was a hard error the first time
+        // Windows built it: C3535, cannot deduce type for 'const auto *' from '_InIt'.
+        const auto scale = std::find_if (Layout::knobScales.begin(), Layout::knobScales.end(),
                                            [&] (const auto& s) { return juce::String (s.paramID) == spec.paramID; });
         jassert (scale != Layout::knobScales.end());
 
