@@ -9,7 +9,7 @@ GatecrasherAudioProcessor::GatecrasherAudioProcessor()
                           .withInput("Input", juce::AudioChannelSet::stereo(), true)
                           .withInput("Sidechain", juce::AudioChannelSet::stereo(), false)
                           .withOutput("Output", juce::AudioChannelSet::stereo(), true)),
-      apvts(*this, nullptr, "PARAMETERS", createGatecrasherParameterLayout()),
+      apvts(*this, nullptr, ParamIDs::stateTreeType, createGatecrasherParameterLayout()),
       programManager(apvts)
 {
     thresholdParam = apvts.getRawParameterValue(ParamIDs::threshold);

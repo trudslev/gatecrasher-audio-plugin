@@ -15,7 +15,7 @@ namespace
     class LayoutHost final : public juce::AudioProcessor
     {
     public:
-        LayoutHost() : apvts (*this, nullptr, "PARAMETERS", createGatecrasherParameterLayout()) {}
+        LayoutHost() : apvts (*this, nullptr, ParamIDs::stateTreeType, createGatecrasherParameterLayout()) {}
 
         juce::AudioProcessorValueTreeState apvts;
 
