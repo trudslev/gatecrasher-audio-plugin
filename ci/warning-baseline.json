@@ -1,0 +1,16 @@
+{
+  "macos": {
+    "-Wdeprecated-declarations": 2,
+    "-Wfloat-equal": 4,
+    "-Wunused-private-field": 4
+  },
+  "linux": {
+    "-Wdeprecated-declarations": 1,
+    "-Wfloat-equal": 3,
+    "-Woverloaded-virtual": 28,
+    "-Wshadow": 3
+  },
+  "windows": {
+    "C4458": 3
+  }
+}
